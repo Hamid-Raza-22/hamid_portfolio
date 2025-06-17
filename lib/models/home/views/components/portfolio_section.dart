@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/constants/responsive_constants.dart'; // Ensure this path is correct
 import '../../controllers/home_controller.dart';
 
 class PortfolioSection extends StatelessWidget {
@@ -21,18 +22,19 @@ class PortfolioSection extends StatelessWidget {
       child: Opacity(
         opacity: isVisible ? rotationValue : 0.0,
         child: Container(
-          padding: const EdgeInsets.all(40),
+          // Use ResponsivePadding for the main container
+          padding: ResponsivePadding.all(context, multiplier: 1.0), // Example: 40 on desktop, 16 on mobile
           child: Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  // Use ResponsiveTextStyle for the title
+                  Text(
                     'Our Awesome Portfolio',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                    style: ResponsiveTextStyle.headline(context).copyWith(
+                      // You can still override specific properties if needed
+                      // fontSize: ResponsiveValue.get<double>(context, mobile: 28, desktop: 32),
                     ),
                   ),
                   AnimatedBuilder(
@@ -41,16 +43,16 @@ class PortfolioSection extends StatelessWidget {
                       return Transform.rotate(
                         angle: controller.geometricRotationAnimation.value,
                         child: Container(
-                          width: 40,
-                          height: 40,
+                          width: ResponsiveValue.get<double>(context, mobile: 35, desktop: 40), // Responsive width
+                          height: ResponsiveValue.get<double>(context, mobile: 35, desktop: 40), // Responsive height
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey[600]!),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.refresh,
                             color: Colors.white,
-                            size: 20,
+                            size: ResponsiveValue.get<double>(context, mobile: 18, desktop: 20), // Responsive icon size
                           ),
                         ),
                       );
@@ -58,17 +60,35 @@ class PortfolioSection extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 40),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildPortfolioItem(200, 250, 0),
-                  _buildPortfolioItem(180, 220, 1),
-                  _buildPortfolioItem(200, 280, 2),
-                ],
+              // Use ResponsivePadding for spacing
+              SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, desktop: 40)),
+              LayoutBuilder( // Keep LayoutBuilder for direct child width constraints if necessary
+                  builder: (context, constraints) {
+                    // Determine if we are on a mobile-like layout to stack items
+                    bool isMobileLayout = constraints.maxWidth < ResponsiveBreakpoints.smallTablet;
+
+                    return isMobileLayout
+                        ? Column( // Stack items vertically on smaller screens
+                      children: [
+                        _buildPortfolioItem(context, constraints, 200, 250, 0),
+                        SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, desktop: 0)), // Only vertical spacing on mobile
+                        _buildPortfolioItem(context, constraints, 180, 220, 1),
+                        SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, desktop: 0)),
+                        _buildPortfolioItem(context, constraints, 200, 280, 2),
+                      ],
+                    )
+                        : Row( // Keep items in a row on larger screens
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildPortfolioItem(context, constraints, 200, 250, 0),
+                        _buildPortfolioItem(context, constraints, 180, 220, 1),
+                        _buildPortfolioItem(context, constraints, 200, 280, 2),
+                      ],
+                    );
+                  }
               ),
-              const SizedBox(height: 40),
-              _buildProgressIndicator(),
+              SizedBox(height: ResponsiveValue.get<double>(context, mobile: 30, desktop: 40)),
+              _buildProgressIndicator(context),
             ],
           ),
         ),
@@ -76,30 +96,47 @@ class PortfolioSection extends StatelessWidget {
     );
   }
 
-  Widget _buildPortfolioItem(double width, double height, int index) {
+  Widget _buildPortfolioItem(BuildContext context, BoxConstraints constraints, double desktopWidth, double desktopHeight, int index) {
     final controller = Get.find<HomeController>();
+
+    // Use ResponsiveValue for item width and height, considering LayoutBuilder constraints for smaller screens
+    final itemWidth = ResponsiveValue.get<double>(
+      context,
+      mobile: constraints.maxWidth * 0.85, // Take more width on mobile
+      smallTablet: constraints.maxWidth * 0.45,
+      tablet: constraints.maxWidth * 0.3,
+      desktop: desktopWidth,
+    );
+
+    final itemHeight = ResponsiveValue.get<double>(
+      context,
+      mobile: itemWidth * 1.1, // Adjust aspect ratio for mobile if needed
+      smallTablet: itemWidth * 1.0,
+      tablet: desktopHeight * 0.9, // Slightly smaller than desktop height
+      desktop: desktopHeight,
+    );
 
     return Transform.translate(
       offset: Offset(
-        30 * (1 - rotationValue) * (index % 2 == 0 ? 1 : -1),
+        ResponsiveValue.get<double>(context, mobile: 15, desktop: 30) * (1 - rotationValue) * (index % 2 == 0 ? 1 : -1),
         0,
       ),
       child: Transform.scale(
         scale: 0.8 + (0.2 * rotationValue),
         child: MouseRegion(
-          onEnter: (_) {},
+          onEnter: (_) {}, // Add hover effects if needed
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            width: width,
-            height: height,
+            width: itemWidth,
+            height: itemHeight,
             decoration: BoxDecoration(
               color: Colors.grey[800],
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(ResponsiveValue.get<double>(context, mobile: 8, desktop: 10)), // Responsive border radius
               boxShadow: [
                 BoxShadow(
                   color: Colors.blue.withOpacity(0.1),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
+                  blurRadius: ResponsiveValue.get<double>(context, mobile: 10, desktop: 15),
+                  offset: Offset(0, ResponsiveValue.get<double>(context, mobile: 6, desktop: 8)),
                 ),
               ],
             ),
@@ -108,11 +145,11 @@ class PortfolioSection extends StatelessWidget {
                 animation: controller.floatingAnimation,
                 builder: (context, child) {
                   return Transform.translate(
-                    offset: Offset(0, controller.floatingAnimation.value * 0.2),
+                    offset: Offset(0, controller.floatingAnimation.value * ResponsiveValue.get<double>(context, mobile: 0.15, desktop: 0.2)),
                     child: Icon(
-                      Icons.web,
+                      Icons.web, // Placeholder icon
                       color: Colors.grey[600],
-                      size: 40,
+                      size: ResponsiveValue.get<double>(context, mobile: 30, desktop: 40), // Responsive icon size
                     ),
                   );
                 },
@@ -124,34 +161,34 @@ class PortfolioSection extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressIndicator() {
+  Widget _buildProgressIndicator(BuildContext context) {
     return Row(
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 800),
-          width: 60 * rotationValue,
-          height: 3,
+          width: ResponsiveValue.get<double>(context, mobile: 40, desktop: 60) * rotationValue, // Responsive width
+          height: ResponsiveValue.get<double>(context, mobile: 2.5, desktop: 3), // Responsive height
           decoration: BoxDecoration(
             color: Colors.blue,
-            borderRadius: BorderRadius.circular(2),
+            borderRadius: BorderRadius.circular(ResponsiveValue.get<double>(context, mobile: 1.5, desktop: 2)), // Responsive radius
             boxShadow: [
               BoxShadow(
                 color: Colors.blue.withOpacity(0.5),
-                blurRadius: 10,
-                spreadRadius: 2,
+                blurRadius: ResponsiveValue.get<double>(context, mobile: 7, desktop: 10),
+                spreadRadius: ResponsiveValue.get<double>(context, mobile: 1.5, desktop: 2),
               ),
             ],
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: ResponsiveValue.get<double>(context, mobile: 8, desktop: 10)),
         AnimatedBuilder(
           animation: Get.find<HomeController>().pulseAnimation,
           builder: (context, child) {
             return Transform.scale(
               scale: Get.find<HomeController>().pulseAnimation.value,
               child: Container(
-                width: 8,
-                height: 8,
+                width: ResponsiveValue.get<double>(context, mobile: 6, desktop: 8), // Responsive size
+                height: ResponsiveValue.get<double>(context, mobile: 6, desktop: 8), // Responsive size
                 decoration: BoxDecoration(
                   color: Colors.grey[600],
                   shape: BoxShape.circle,

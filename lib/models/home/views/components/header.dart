@@ -83,9 +83,53 @@ class Header extends GetView<HomeController> {
     );
   }
 
+  // Widget _buildMobileHeader() {
+  //   return AppBar(
+  //     title:
+  //     Row(
+  //       children: [
+  //         AnimatedBuilder(
+  //           animation: controller.pulseAnimation,
+  //           builder: (context, child) {
+  //             return Transform.scale(
+  //               scale: controller.pulseAnimation.value,
+  //               child: Container(
+  //                 width: 10,
+  //                 height: 10,
+  //                 decoration: BoxDecoration(
+  //                   gradient: const RadialGradient(colors: [Colors.blue, Colors.cyan]),
+  //                   shape: BoxShape.circle,
+  //                   boxShadow: [
+  //                     BoxShadow(
+  //                       color: Colors.blue.withOpacity(0.6),
+  //                       blurRadius: 15 * controller.pulseAnimation.value,
+  //                       spreadRadius: 3 * controller.pulseAnimation.value,
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             );
+  //           },
+  //         ),
+  //         const SizedBox(width: 12),
+  //         const Text('Hamid Raza'),
+  //       ],
+  //     ),
+  //     actions: [
+  //       IconButton(
+  //         icon: const Icon(Icons.menu),
+  //         onPressed: () {
+  //           // Add mobile menu drawer functionality
+  //         },
+  //       ),
+  //     ],
+  //   );
+  // }
+// Update _buildMobileHeader in header.dart
   Widget _buildMobileHeader() {
     return AppBar(
-      title: Row(
+      title:
+      Row(
         children: [
           AnimatedBuilder(
             animation: controller.pulseAnimation,
@@ -118,13 +162,41 @@ class Header extends GetView<HomeController> {
         IconButton(
           icon: const Icon(Icons.menu),
           onPressed: () {
-            // Add mobile menu drawer functionality
+            Get.bottomSheet(
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildMobileNavItem('Home'),
+                    _buildMobileNavItem('Services'),
+                    _buildMobileNavItem('Our Project'),
+                    _buildMobileNavItem('About us'),
+                    const SizedBox(height: 20),
+                   // _buildMobileContactButton(),
+                  ],
+                ),
+              ),
+            );
           },
         ),
-      ],
+    ],
     );
   }
 
+  Widget _buildMobileNavItem(String text) {
+    return ListTile(
+      title: Text(text, style: const TextStyle(color: Colors.white)),
+      onTap: () {
+        Get.back();
+        // Add navigation logic
+      },
+    );
+  }
   Widget _buildAnimatedNavItem(String text, int index) {
     return AnimatedBuilder(
       animation: controller.heroFadeAnimation,
