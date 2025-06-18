@@ -64551,8 +64551,8 @@ if(s==null)s=$.F=B.k
 r=s.ad(i,t.J9)
 q=A.a0(a,280,220,250,260)
 p=A.a0(a,350,280,310,330)
-o=A.a0(a,120,100,110,115)
-n=A.a0(a,120,100,110,115)
+o=A.a0(a,236,176,206,221)
+n=A.a0(a,296,236,256,266)
 m=A.a0(a,25,20,i,i)
 l=A.a0(a,40,30,i,i)
 k=A.a0(a,20,15,i,i)
@@ -64596,8 +64596,8 @@ $2(a,b){var s,r,q=null,p=this.a.k1
 p===$&&A.a()
 p=p.b.I(p.a.gp())
 s=this.b
-r=A.dj(s/2)
-return A.hd(A.afU(r,new A.tS(A.arY(q,q,new A.rf("assets/images/your_hero_image.png",q,q)),s,this.c,B.wI,q)),p)},
+r=A.dj(s/10)
+return A.hd(A.afU(r,new A.tS(A.arY(q,q,new A.rf("assets/images/Hamid pic wsvg.png",q,q)),s,this.c,B.wI,q)),p)},
 $S:6}
 A.oO.prototype={
 N(a){var s,r,q,p,o,n,m,l=this,k=null
