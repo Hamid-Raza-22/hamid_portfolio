@@ -385,6 +385,7 @@ class HeroSection extends StatelessWidget {
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(
                                     borderRadius - 4,
+
                                   ),
                                   child: Image.asset(
                                     AppAssets.anotherImage,
