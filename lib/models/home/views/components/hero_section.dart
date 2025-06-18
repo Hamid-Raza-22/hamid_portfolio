@@ -272,10 +272,10 @@ class HeroSection extends StatelessWidget {
     );
   }
 
-Widget _buildAnimatedHeroImage(
-      BuildContext context, {
-        required bool isMobileLayout,
-      }) {
+  Widget _buildAnimatedHeroImage(
+    BuildContext context, {
+    required bool isMobileLayout,
+  }) {
     final controller = Get.find<HomeController>();
 
     // Responsive dimensions for the image container
@@ -294,122 +294,351 @@ Widget _buildAnimatedHeroImage(
       desktop: 350,
     );
 
-    // --- MODIFICATION START ---
     // Define the gap you want
-    const double imageGap = 2.0; // The 2-point gap
+    const double imageGap = 2.0;
 
     // Responsive dimensions for the image itself, considering the gap
-    // The image will be smaller than the container by 2 * imageGap (for both sides)
     final double imageWidth = ResponsiveValue.get<double>(
       context,
-      mobile: 180 - (2 * imageGap), // Adjust base size as needed
+      mobile: 180 - (2 * imageGap),
       smallTablet: 210 - (2 * imageGap),
       tablet: 225 - (2 * imageGap),
       desktop: 240 - (2 * imageGap),
     );
     final double imageHeight = ResponsiveValue.get<double>(
       context,
-      mobile: 240 - (2 * imageGap), // Adjust base size as needed
+      mobile: 240 - (2 * imageGap),
       smallTablet: 260 - (2 * imageGap),
       tablet: 270 - (2 * imageGap),
       desktop: 300 - (2 * imageGap),
     );
-    // --- MODIFICATION END ---
 
     final double borderRadius = ResponsiveValue.get<double>(
       context,
       mobile: 20,
       desktop: 25,
     );
-    final double shadowBlurRadius = ResponsiveValue.get<double>(
-      context,
-      mobile: 30,
-      desktop: 40,
-    );
-    final double shadowOffsetY = ResponsiveValue.get<double>(
-      context,
-      mobile: 15,
-      desktop: 20,
-    );
-    final double shadowSpreadRadius = ResponsiveValue.get<double>(
-      context,
-      mobile: 3,
-      desktop: 5,
-    );
 
     return AnimatedBuilder(
-      animation:
-      controller.floatingAnimation,
+      animation: controller.floatingAnimation,
       builder: (context, child) {
         return Transform.translate(
           offset: Offset(
             0,
             controller.floatingAnimation.value * (isMobileLayout ? 0.7 : 1.0),
           ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              AnimatedBuilder(
-                animation: controller.heroFadeAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: isMobileLayout
-                        ? 1.0
-                        : controller.heroFadeAnimation.value,
-                    child: Container( // This is the outer gradient container
-                      width: containerBaseWidth,
-                      height: containerBaseHeight,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Colors.orange,
-                            Colors.deepOrange,
+          child: SizedBox(
+            width: containerBaseWidth * 2.2, // Increased for better spacing
+            height: containerBaseHeight * 2.0,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Background decorative elements positioned more accurately
+                _buildBackgroundDecorations(
+                  context,
+                  containerBaseWidth,
+                  containerBaseHeight,
+                ),
+
+                // Main image container - positioned slightly forward
+                AnimatedBuilder(
+                  animation: controller.heroFadeAnimation,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: isMobileLayout
+                          ? 1.0
+                          : controller.heroFadeAnimation.value,
+                      child: Container(
+                        width: containerBaseWidth,
+                        height: containerBaseHeight,
+                        decoration: BoxDecoration(
+                          // gradient: const LinearGradient(
+                          //   colors: [
+                          //     Color(0xFFFF8A00), // More vibrant orange
+                          //     Color(0xFFFF6B00),
+                          //   ],
+                          //   begin: Alignment.topLeft,
+                          //   end: Alignment.bottomRight,
+                          // ),
+                          borderRadius: BorderRadius.circular(borderRadius),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.orange.withOpacity(0.4),
+                              blurRadius: 25,
+                              offset: const Offset(0, 15),
+                              spreadRadius: 2,
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 40,
+                              offset: const Offset(0, 20),
+                              spreadRadius: -5,
+                            ),
                           ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
                         ),
-                        borderRadius: BorderRadius.circular(borderRadius),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.blue.withOpacity(0.3),
-                            blurRadius: shadowBlurRadius,
-                            offset: Offset(0, shadowOffsetY),
-                            spreadRadius: shadowSpreadRadius,
-                          ),
-                        ],
-                      ),
-                      child: Center( // This Center widget will ensure the gap is visually apparent
-                        child: AnimatedBuilder(
-                          animation: controller.pulseAnimation,
-                          builder: (context, child) {
-                            return Transform.scale(
-                              scale: controller.pulseAnimation.value,
-                              child: ClipRRect(
-                                // The ClipRRect's radius should be based on the *new* smaller image dimensions
-                                borderRadius: BorderRadius.circular(imageWidth / 10), // For circular clip
-                                child: Image.asset(
-                                  AppAssets.anotherImage,
-                                  // AppAssets.heroImagePath,
-                                  width: imageWidth,   // Use the new smaller width
-                                  height: imageHeight, // Use the new smaller height
-                                  fit: BoxFit.cover,
-                                  // errorBuilder: (context, error, stackTrace) {
-                                  //   return Icon(Icons.error, size: imageWidth, color: Colors.white);
-                                  // },
+                        child: Center(
+                          child: AnimatedBuilder(
+                            animation: controller.pulseAnimation,
+                            builder: (context, child) {
+                              return Transform.scale(
+                                scale: controller.pulseAnimation.value,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                    borderRadius - 4,
+                                  ),
+                                  child: Image.asset(
+                                    AppAssets.anotherImage,
+                                    width: imageWidth,
+                                    height: imageHeight,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ],
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },
     );
   }
+
+  // More accurate background decorations matching the reference
+  Widget _buildBackgroundDecorations(
+    BuildContext context,
+    double containerWidth,
+    double containerHeight,
+  ) {
+    return Stack(
+      children: [
+        // Large blue background card - positioned behind and to the right
+        Positioned(
+          top: containerHeight * 0.4,
+          left: containerWidth * 0.1, // More to the right
+          child: Transform.rotate(
+            angle: 0.15, // Slight tilt
+            child: Container(
+              width: containerWidth * 1.4,
+              height: containerHeight * 1.2,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF1E3A8A).withOpacity(0.8), // Dark blue
+                    const Color(0xFF3B82F6).withOpacity(0.2), // Lighter blue
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.3),
+                    blurRadius: 30,
+                    offset: const Offset(10, 15),
+                    spreadRadius: -5,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Scattered dots around the design
+        ...List.generate(12, (index) {
+          final positions = [
+            {'top': 0.05, 'left': 0.1},
+            {'top': 0.15, 'right': 0.05},
+            {'top': 0.25, 'left': 0.02},
+            {'top': 0.35, 'right': 0.15},
+            {'top': 0.45, 'left': 0.08},
+            {'top': 0.55, 'right': 0.03},
+            {'bottom': 0.35, 'left': 0.05},
+            {'bottom': 0.25, 'right': 0.12},
+            {'bottom': 0.15, 'left': 0.15},
+            {'bottom': 0.05, 'right': 0.08},
+            {'top': 0.08, 'left': 0.8},
+            {'bottom': 0.4, 'right': 0.7},
+          ];
+
+          final pos = positions[index];
+          return Positioned(
+            top: pos['top'] != null ? containerHeight * pos['top']! : null,
+            bottom: pos['bottom'] != null
+                ? containerHeight * pos['bottom']!
+                : null,
+            left: pos['left'] != null ? containerWidth * pos['left']! : null,
+            right: pos['right'] != null ? containerWidth * pos['right']! : null,
+            child: Container(
+              width: 3,
+              height: 3,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.7),
+                shape: BoxShape.circle,
+              ),
+            ),
+          );
+        }),
+
+        // Triangle outline - top left area
+        Positioned(
+          top: containerHeight * 0.15,
+          left: containerWidth * 0.2,
+          child: CustomPaint(
+            size: const Size(35, 35),
+            painter: TrianglePainter(color: Colors.white.withOpacity(0.8)),
+          ),
+        ),
+
+        // Zigzag/Mountain peaks - top center
+        Positioned(
+          top: containerHeight * 0.08,
+          left: containerWidth * 0.55,
+          child: CustomPaint(
+            size: const Size(45, 25),
+            painter: MountainPeaksPainter(color: Colors.white.withOpacity(0.7)),
+          ),
+        ),
+
+        // Circle outline - top right
+        Positioned(
+          top: containerHeight * 0.12,
+          right: containerWidth * 0.15,
+          child: Container(
+            width: 35,
+            height: 35,
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withOpacity(0.8),
+                width: 2.5,
+              ),
+            ),
+          ),
+        ),
+
+        // Play button - bottom left
+        Positioned(
+          bottom: containerHeight * 0.25,
+          left: containerWidth * 0.15,
+          child: Container(
+            width: 45,
+            height: 45,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              Icons.play_arrow,
+              color: Colors.white.withOpacity(0.8),
+              size: 22,
+            ),
+          ),
+        ),
+
+        // Plus sign - bottom right area
+        Positioned(
+          bottom: containerHeight * 0.15,
+          right: containerWidth * 0.1,
+          child: CustomPaint(
+            size: const Size(25, 25),
+            painter: PlusPainter(color: Colors.white.withOpacity(0.7)),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Updated custom painters
+class TrianglePainter extends CustomPainter {
+  final Color color;
+
+  TrianglePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+
+    final path = Path();
+    path.moveTo(size.width / 2, 5);
+    path.lineTo(5, size.height - 5);
+    path.lineTo(size.width - 5, size.height - 5);
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class MountainPeaksPainter extends CustomPainter {
+  final Color color;
+
+  MountainPeaksPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+
+    final path = Path();
+    path.moveTo(0, size.height);
+    path.lineTo(size.width * 0.25, size.height * 0.3);
+    path.lineTo(size.width * 0.5, size.height * 0.7);
+    path.lineTo(size.width * 0.75, size.height * 0.2);
+    path.lineTo(size.width, size.height * 0.6);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class PlusPainter extends CustomPainter {
+  final Color color;
+
+  PlusPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+
+    // Horizontal line
+    canvas.drawLine(
+      Offset(5, size.height / 2),
+      Offset(size.width - 5, size.height / 2),
+      paint,
+    );
+
+    // Vertical line
+    canvas.drawLine(
+      Offset(size.width / 2, 5),
+      Offset(size.width / 2, size.height - 5),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
