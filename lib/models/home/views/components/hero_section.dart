@@ -271,13 +271,13 @@ class HeroSection extends StatelessWidget {
     );
   }
 
-  Widget _buildAnimatedHeroImage(
-    BuildContext context, {
-    required bool isMobileLayout,
-  }) {
+ Widget _buildAnimatedHeroImage(
+      BuildContext context, {
+        required bool isMobileLayout,
+      }) {
     final controller = Get.find<HomeController>();
 
-    // Responsive dimensions for the image container and icon
+    // Responsive dimensions for the image container
     final double containerBaseWidth = ResponsiveValue.get<double>(
       context,
       mobile: 220,
@@ -292,9 +292,17 @@ class HeroSection extends StatelessWidget {
       tablet: 330,
       desktop: 350,
     );
-    final double iconSize = ResponsiveValue.get<double>(
+    // Responsive dimensions for the image itself (adjust as needed)
+    final double imageWidth = ResponsiveValue.get<double>(
       context,
-      mobile: 100,
+      mobile: 100, // Adjust this to your image's desired size
+      smallTablet: 110,
+      tablet: 115,
+      desktop: 120,
+    );
+    final double imageHeight = ResponsiveValue.get<double>(
+      context,
+      mobile: 100, // Adjust this to your image's desired size
       smallTablet: 110,
       tablet: 115,
       desktop: 120,
@@ -320,28 +328,29 @@ class HeroSection extends StatelessWidget {
       desktop: 5,
     );
 
+    // Ensure you have your image in the assets folder
+    // and defined in pubspec.yaml
+    const String heroImagePath = 'assets/images/your_hero_image.png'; // <-- REPLACE THIS PATH
+
     return AnimatedBuilder(
       animation:
-          controller.floatingAnimation, // This animation can remain as is
+      controller.floatingAnimation,
       builder: (context, child) {
         return Transform.translate(
           offset: Offset(
             0,
             controller.floatingAnimation.value * (isMobileLayout ? 0.7 : 1.0),
-          ), // Dampen float on mobile if needed
+          ),
           child: Stack(
             alignment: Alignment.center,
             children: [
               AnimatedBuilder(
-                animation: controller
-                    .heroFadeAnimation, // Or another relevant animation for the image itself
+                animation: controller.heroFadeAnimation,
                 builder: (context, child) {
                   return Transform.scale(
                     scale: isMobileLayout
                         ? 1.0
-                        : controller
-                              .heroFadeAnimation
-                              .value, // Only scale on desktop for this example
+                        : controller.heroFadeAnimation.value,
                     child: Container(
                       width: containerBaseWidth,
                       height: containerBaseHeight,
@@ -350,7 +359,7 @@ class HeroSection extends StatelessWidget {
                           colors: [
                             Colors.orange,
                             Colors.deepOrange,
-                          ], // Consider theme colors
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -366,15 +375,22 @@ class HeroSection extends StatelessWidget {
                       ),
                       child: Center(
                         child: AnimatedBuilder(
-                          animation: controller
-                              .pulseAnimation, // This animation can remain as is
+                          animation: controller.pulseAnimation,
                           builder: (context, child) {
                             return Transform.scale(
                               scale: controller.pulseAnimation.value,
-                              child: Icon(
-                                Icons.person, // Your hero icon
-                                size: iconSize,
-                                color: Colors.white,
+                              child: ClipRRect( // Optional: if your image is not circular but you want to clip it
+                                borderRadius: BorderRadius.circular(imageWidth / 2), // Example for circular clip
+                                child: Image.asset(
+                                  heroImagePath,
+                                  width: imageWidth,
+                                  height: imageHeight,
+                                  fit: BoxFit.cover, // Adjust fit as needed (cover, contain, etc.)
+                                  // Optional: Add a placeholder or error widget
+                                  // errorBuilder: (context, error, stackTrace) {
+                                  //   return Icon(Icons.error, size: imageWidth, color: Colors.white);
+                                  // },
+                                ),
                               ),
                             );
                           },

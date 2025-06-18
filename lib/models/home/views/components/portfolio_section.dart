@@ -123,39 +123,12 @@ class PortfolioSection extends StatelessWidget {
       ),
       child: Transform.scale(
         scale: 0.8 + (0.2 * rotationValue),
-        child: MouseRegion(
-          onEnter: (_) {}, // Add hover effects if needed
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: itemWidth,
-            height: itemHeight,
-            decoration: BoxDecoration(
-              color: Colors.grey[800],
-              borderRadius: BorderRadius.circular(ResponsiveValue.get<double>(context, mobile: 8, desktop: 10)), // Responsive border radius
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue.withOpacity(0.1),
-                  blurRadius: ResponsiveValue.get<double>(context, mobile: 10, desktop: 15),
-                  offset: Offset(0, ResponsiveValue.get<double>(context, mobile: 6, desktop: 8)),
-                ),
-              ],
-            ),
-            child: Center(
-              child: AnimatedBuilder(
-                animation: controller.floatingAnimation,
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(0, controller.floatingAnimation.value * ResponsiveValue.get<double>(context, mobile: 0.15, desktop: 0.2)),
-                    child: Icon(
-                      Icons.web, // Placeholder icon
-                      color: Colors.grey[600],
-                      size: ResponsiveValue.get<double>(context, mobile: 30, desktop: 40), // Responsive icon size
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
+        child: _PortfolioItemWithHover(
+          itemWidth: itemWidth,
+          itemHeight: itemHeight,
+          controller: controller,
+          context: context,
+          index: index,
         ),
       ),
     );
@@ -198,6 +171,228 @@ class PortfolioSection extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+class _PortfolioItemWithHover extends StatefulWidget {
+  final double itemWidth;
+  final double itemHeight;
+  final HomeController controller;
+  final BuildContext context;
+  final int index;
+
+  const _PortfolioItemWithHover({
+    Key? key,
+    required this.itemWidth,
+    required this.itemHeight,
+    required this.controller,
+    required this.context,
+    required this.index,
+  }) : super(key: key);
+
+  @override
+  State<_PortfolioItemWithHover> createState() => _PortfolioItemWithHoverState();
+}
+
+class _PortfolioItemWithHoverState extends State<_PortfolioItemWithHover>
+    with SingleTickerProviderStateMixin {
+  bool isHovered = false;
+  late AnimationController _hoverController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotationXAnimation;
+  late Animation<double> _rotationYAnimation;
+  late Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _hoverController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.08,
+    ).animate(CurvedAnimation(
+      parent: _hoverController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _rotationXAnimation = Tween<double>(
+      begin: 0.0,
+      end: 0.1,
+    ).animate(CurvedAnimation(
+      parent: _hoverController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _rotationYAnimation = Tween<double>(
+      begin: 0.0,
+      end: 0.05,
+    ).animate(CurvedAnimation(
+      parent: _hoverController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _glowAnimation = Tween<double>(
+      begin: 0.1,
+      end: 0.3,
+    ).animate(CurvedAnimation(
+      parent: _hoverController,
+      curve: Curves.easeOutCubic,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _hoverController.dispose();
+    super.dispose();
+  }
+
+  void _onHover(bool hovering) {
+    setState(() {
+      isHovered = hovering;
+    });
+
+    if (hovering) {
+      _hoverController.forward();
+    } else {
+      _hoverController.reverse();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => _onHover(true),
+      onExit: (_) => _onHover(false),
+      child: AnimatedBuilder(
+        animation: _hoverController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.001) // Perspective
+                ..rotateX(_rotationXAnimation.value)
+                ..rotateY(_rotationYAnimation.value * (widget.index % 2 == 0 ? 1 : -1)),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: widget.itemWidth,
+                height: widget.itemHeight,
+                decoration: BoxDecoration(
+                  color: isHovered
+                      ? Colors.grey[750]
+                      : Colors.grey[800],
+                  borderRadius: BorderRadius.circular(
+                      ResponsiveValue.get<double>(context, mobile: 8, desktop: 10)
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(_glowAnimation.value),
+                      blurRadius: ResponsiveValue.get<double>(context, mobile: 15, desktop: 25) * _glowAnimation.value * 2,
+                      offset: Offset(0, ResponsiveValue.get<double>(context, mobile: 8, desktop: 12) * _glowAnimation.value),
+                      spreadRadius: ResponsiveValue.get<double>(context, mobile: 2, desktop: 4) * _glowAnimation.value,
+                    ),
+                    if (isHovered)
+                      BoxShadow(
+                        color: Colors.cyan.withOpacity(0.2),
+                        blurRadius: ResponsiveValue.get<double>(context, mobile: 20, desktop: 30),
+                        offset: Offset(0, ResponsiveValue.get<double>(context, mobile: 10, desktop: 15)),
+                        spreadRadius: ResponsiveValue.get<double>(context, mobile: 1, desktop: 2),
+                      ),
+                  ],
+                  border: isHovered
+                      ? Border.all(
+                    color: Colors.blue.withOpacity(0.5),
+                    width: 2,
+                  )
+                      : null,
+                ),
+                child: Stack(
+                  children: [
+                    // Gradient overlay for 3D effect
+                    if (isHovered)
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(
+                              ResponsiveValue.get<double>(context, mobile: 8, desktop: 10)
+                          ),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.blue.withOpacity(0.1),
+                              Colors.transparent,
+                              Colors.cyan.withOpacity(0.05),
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ),
+                        ),
+                      ),
+                    Center(
+                      child: AnimatedBuilder(
+                        animation: widget.controller.floatingAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(
+                                0,
+                                widget.controller.floatingAnimation.value *
+                                    ResponsiveValue.get<double>(context, mobile: 0.15, desktop: 0.2)
+                            ),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              child: Icon(
+                                Icons.web, // Placeholder icon
+                                color: isHovered
+                                    ? Colors.blue[300]
+                                    : Colors.grey[600],
+                                size: ResponsiveValue.get<double>(
+                                    context,
+                                    mobile: isHovered ? 35 : 30,
+                                    desktop: isHovered ? 45 : 40
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    // Shimmer effect for hovered state
+                    if (isHovered)
+                      Positioned.fill(
+                        child: AnimatedBuilder(
+                          animation: widget.controller.geometricRotationAnimation,
+                          builder: (context, child) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(
+                                    ResponsiveValue.get<double>(context, mobile: 8, desktop: 10)
+                                ),
+                                gradient: LinearGradient(
+                                  begin: Alignment(-1.0 + (widget.controller.geometricRotationAnimation.value * 4) % 2, 0),
+                                  end: Alignment(1.0 + (widget.controller.geometricRotationAnimation.value * 4) % 2, 0),
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.white.withOpacity(0.1),
+                                    Colors.transparent,
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

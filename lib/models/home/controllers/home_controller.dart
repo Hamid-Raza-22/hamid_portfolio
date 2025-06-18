@@ -11,6 +11,8 @@ class HomeController extends GetxController
   late AnimationController geometricAnimationController;
   late AnimationController floatingAnimationController;
   late AnimationController backgroundAnimationController;
+  late AnimationController galaxyAnimationController; // New galaxy controller
+  late AnimationController portfolioHoverController; // New hover controller
 
   // Animations
   late Animation<double> heroFadeAnimation;
@@ -21,6 +23,8 @@ class HomeController extends GetxController
   late Animation<double> floatingAnimation;
   late Animation<double> pulseAnimation;
   late Animation<double> backgroundAnimation;
+  late Animation<double> galaxyRotationAnimation; // New galaxy animation
+  late Animation<double> portfolioHoverAnimation; // New hover animation
 
   // Scroll Controller
   final ScrollController scrollController = ScrollController();
@@ -28,6 +32,7 @@ class HomeController extends GetxController
   // Observables
   final isServicesVisible = false.obs;
   final isPortfolioVisible = false.obs;
+  final hoveredPortfolioIndex = (-1).obs; // Track which portfolio item is hovered
 
   @override
   void onInit() {
@@ -85,6 +90,19 @@ class HomeController extends GetxController
       ),
     );
 
+    // Portfolio hover animations
+    portfolioHoverController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    portfolioHoverAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: portfolioHoverController,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
     // Geometric shapes animations
     geometricAnimationController = AnimationController(
       duration: const Duration(milliseconds: 8000),
@@ -94,6 +112,19 @@ class HomeController extends GetxController
     geometricRotationAnimation = Tween<double>(begin: 0.0, end: 2 * math.pi).animate(
       CurvedAnimation(
         parent: geometricAnimationController,
+        curve: Curves.linear,
+      ),
+    );
+
+    // Galaxy animation controller
+    galaxyAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 20000), // Slow rotation for galaxy
+      vsync: this,
+    );
+
+    galaxyRotationAnimation = Tween<double>(begin: 0.0, end: 2 * math.pi).animate(
+      CurvedAnimation(
+        parent: galaxyAnimationController,
         curve: Curves.linear,
       ),
     );
@@ -138,6 +169,7 @@ class HomeController extends GetxController
     });
 
     geometricAnimationController.repeat();
+    galaxyAnimationController.repeat(); // Start galaxy animation
     floatingAnimationController.repeat(reverse: true);
     backgroundAnimationController.repeat(reverse: true);
   }
@@ -160,14 +192,30 @@ class HomeController extends GetxController
     }
   }
 
+  // Portfolio hover methods
+  void setPortfolioHover(int index, bool isHovered) {
+    hoveredPortfolioIndex.value = isHovered ? index : -1;
+    if (isHovered) {
+      portfolioHoverController.forward();
+    } else {
+      portfolioHoverController.reverse();
+    }
+  }
+
+  bool isPortfolioItemHovered(int index) {
+    return hoveredPortfolioIndex.value == index;
+  }
+
   @override
   void onClose() {
     heroAnimationController.dispose();
     servicesAnimationController.dispose();
     portfolioAnimationController.dispose();
     geometricAnimationController.dispose();
+    galaxyAnimationController.dispose(); // Dispose galaxy controller
     floatingAnimationController.dispose();
     backgroundAnimationController.dispose();
+    portfolioHoverController.dispose(); // Dispose hover controller
     scrollController.dispose();
     super.onClose();
   }
