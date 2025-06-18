@@ -25,18 +25,18 @@ class ServiceCard extends GetView<HomeController> {
       builder: (context, constraints) {
         final iconSize = ResponsiveValue.get<double>(
           context,
-          mobile: 40,
-          smallTablet: 45,
-          tablet: 45,
-          desktop: 50,
+          mobile: 80,
+          smallTablet: 75,
+          tablet: 90,
+          desktop:75,
         );
 
         final padding = ResponsiveValue.get<EdgeInsets>(
           context,
-          mobile: const EdgeInsets.all(12),
-          smallTablet: const EdgeInsets.all(15),
-          tablet: const EdgeInsets.all(18),
-          desktop: const EdgeInsets.all(20),
+          mobile: const EdgeInsets.all(40),
+          smallTablet: const EdgeInsets.all(40),
+          tablet: const EdgeInsets.all(37),
+          desktop: const EdgeInsets.all(50),
         );
 
         return AnimatedBuilder(
@@ -45,20 +45,28 @@ class ServiceCard extends GetView<HomeController> {
             return Transform.translate(
               offset: Offset(
                 0,
-                50 * (1 - controller.servicesScaleAnimation.value) *
+                50 *
+                    (1 - controller.servicesScaleAnimation.value) *
                     (index % 2 == 0 ? 1 : -1),
               ),
               child: MouseRegion(
                 onEnter: (_) {},
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  // padding: const EdgeInsets.all(20),
                   padding: padding,
                   decoration: BoxDecoration(
-                    color: Colors.grey[900],
+                    // --- MODIFICATION START ---
+                    color: Colors
+                        .transparent, // Set background color to transparent
+                    // --- MODIFICATION END ---
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.grey[800]!),
+                    // Optional: You might want to adjust or remove the border if the background is transparent
+                    // depending on the desired visual effect against the page background.
+                    border: Border.all(
+                      color: Colors.grey[800]!.withOpacity(0.5),
+                    ), // Example: Make border less opaque or a different color
                     boxShadow: [
+                      // Shadows will still be visible
                       BoxShadow(
                         color: color.withOpacity(0.1),
                         blurRadius: 15,
@@ -67,19 +75,23 @@ class ServiceCard extends GetView<HomeController> {
                     ],
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       AnimatedBuilder(
                         animation: controller.floatingAnimation,
                         builder: (context, child) {
                           return Transform.translate(
                             offset: Offset(
-                                0, controller.floatingAnimation.value * 0.1),
+                              0,
+                              controller.floatingAnimation.value * 0.1,
+                            ),
                             child: Container(
-                              width: 50,
-                              height: 50,
+                              width: iconSize,
+                              height: iconSize,
                               decoration: BoxDecoration(
-                                color: color.withOpacity(0.2),
+                                color: color.withOpacity(
+                                  0.2,
+                                ), // Icon background can remain
                                 borderRadius: BorderRadius.circular(10),
                                 boxShadow: [
                                   BoxShadow(
@@ -92,24 +104,16 @@ class ServiceCard extends GetView<HomeController> {
                               child: Icon(
                                 icon,
                                 color: color,
-                                size: 24,
+                                size: iconSize * 0.6,
                               ),
                             ),
                           );
                         },
                       ),
                       const SizedBox(height: 12),
-                      // const SizedBox(height: 15),
-                      // Text(
-                      //   title,
-                      //   style: const TextStyle(
-                      //     fontSize: 18,
-                      //     fontWeight: FontWeight.bold,
-                      //     color: Colors.white,
-                      //   ),
-                      // ),
                       Text(
                         title,
+                        textAlign: TextAlign.center,
                         style: ResponsiveTextStyle.headline(context).copyWith(
                           fontSize: ResponsiveValue.get<double>(
                             context,
@@ -118,21 +122,18 @@ class ServiceCard extends GetView<HomeController> {
                             tablet: 18,
                             desktop: 18,
                           ),
+                          color: Colors
+                              .white, // Ensure text is visible against transparent background
                         ),
                       ),
-                      // const SizedBox(height: 10),
                       const SizedBox(height: 8),
-                      // Text(
-                      //   description,
-                      //   style: TextStyle(
-                      //     color: Colors.grey[400],
-                      //     fontSize: 14,
-                      //     height: 1.4,
-                      //   ),
-                      // ),
                       Text(
                         description,
-                        style: ResponsiveTextStyle.body(context),
+                        textAlign: TextAlign.center,
+                        style: ResponsiveTextStyle.body(context).copyWith(
+                          color: Colors.grey[300], // Ensure text is visible
+                          // height: 1.4,
+                        ),
                       ),
                     ],
                   ),
@@ -141,6 +142,7 @@ class ServiceCard extends GetView<HomeController> {
             );
           },
         );
-      },);
+      },
+    );
   }
 }

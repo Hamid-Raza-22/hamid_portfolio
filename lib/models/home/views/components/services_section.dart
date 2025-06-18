@@ -23,16 +23,16 @@ class ServicesSection extends StatelessWidget {
       context,
       mobile: 1, // 1 column on mobile
       smallTablet: 2, // 2 columns on small tablets
-      tablet: 2, // 2 columns on tablets
-      desktop: 3, // 3 columns on desktop
+      tablet: 3, // 2 columns on tablets
+      desktop: 4, // 3 columns on desktop
     );
 
     final double childAspectRatio = ResponsiveValue.get<double>(
       context,
-      mobile: 1.4, // Adjust for better fit on mobile (height > width)
-      smallTablet: 1.2,
+      mobile: 1.5, // Adjust for better fit on mobile (height > width)
+      smallTablet: 1.4,
       tablet: 1.1,
-      desktop: 1.2, // Can be adjusted for optimal look on desktop
+      desktop: 1.15, // Can be adjusted for optimal look on desktop
     );
 
     final double mainAxisSpacing = ResponsiveValue.get<double>(context, mobile: 15, desktop: 20);
@@ -127,7 +127,7 @@ class ServicesSection extends StatelessWidget {
                   ServiceCard(
                     icon: Icons.palette,
                     title: 'UI/UX Designer',
-                    description: 'We provide UI/UX Design services,\nand of course with the best quality',
+                    description: 'We provide UI/UX Design services,\nwith the best quality',
                     color: Colors.red,
                     index: 1,
                   ),
@@ -148,7 +148,7 @@ class ServicesSection extends StatelessWidget {
                   ServiceCard(
                     icon: Icons.camera_alt,
                     title: 'Photography',
-                    description: 'We provide Photography services,\nand of course with the best quality',
+                    description: 'We provide Photography services,\nwith the best quality',
                     color: Colors.pink,
                     index: 4,
                   ),
@@ -158,6 +158,18 @@ class ServicesSection extends StatelessWidget {
                     description: 'Create a platform with the best\nand coolest quality from us.',
                     color: Colors.blue,
                     index: 5,
+                  ), ServiceCard(
+                    icon: Icons.local_fire_department_rounded,
+                    title: 'Videography',
+                    description: 'Create a platform with the best\nand coolest quality from us.',
+                    color: Colors.orange,
+                    index: 6,
+                  ), ServiceCard(
+                    icon: Icons.face,
+                    title: 'Videography',
+                    description: 'Create a platform with the best\nand coolest quality from us.',
+                    color: Colors.blue,
+                    index: 7,
                   ),
                 ],
               ),

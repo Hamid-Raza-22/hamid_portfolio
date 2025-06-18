@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/constants/assets.dart';
 import '../../../../core/constants/responsive_constants.dart'; // Ensure this path is correct
 import '../../controllers/home_controller.dart';
 
@@ -271,7 +272,7 @@ class HeroSection extends StatelessWidget {
     );
   }
 
- Widget _buildAnimatedHeroImage(
+Widget _buildAnimatedHeroImage(
       BuildContext context, {
         required bool isMobileLayout,
       }) {
@@ -292,21 +293,29 @@ class HeroSection extends StatelessWidget {
       tablet: 330,
       desktop: 350,
     );
-    // Responsive dimensions for the image itself (adjust as needed)
+
+    // --- MODIFICATION START ---
+    // Define the gap you want
+    const double imageGap = 2.0; // The 2-point gap
+
+    // Responsive dimensions for the image itself, considering the gap
+    // The image will be smaller than the container by 2 * imageGap (for both sides)
     final double imageWidth = ResponsiveValue.get<double>(
       context,
-      mobile: 100, // Adjust this to your image's desired size
-      smallTablet: 110,
-      tablet: 115,
-      desktop: 120,
+      mobile: 180 - (2 * imageGap), // Adjust base size as needed
+      smallTablet: 210 - (2 * imageGap),
+      tablet: 225 - (2 * imageGap),
+      desktop: 240 - (2 * imageGap),
     );
     final double imageHeight = ResponsiveValue.get<double>(
       context,
-      mobile: 100, // Adjust this to your image's desired size
-      smallTablet: 110,
-      tablet: 115,
-      desktop: 120,
+      mobile: 240 - (2 * imageGap), // Adjust base size as needed
+      smallTablet: 260 - (2 * imageGap),
+      tablet: 270 - (2 * imageGap),
+      desktop: 300 - (2 * imageGap),
     );
+    // --- MODIFICATION END ---
+
     final double borderRadius = ResponsiveValue.get<double>(
       context,
       mobile: 20,
@@ -328,10 +337,6 @@ class HeroSection extends StatelessWidget {
       desktop: 5,
     );
 
-    // Ensure you have your image in the assets folder
-    // and defined in pubspec.yaml
-    const String heroImagePath = 'assets/images/your_hero_image.png'; // <-- REPLACE THIS PATH
-
     return AnimatedBuilder(
       animation:
       controller.floatingAnimation,
@@ -351,7 +356,7 @@ class HeroSection extends StatelessWidget {
                     scale: isMobileLayout
                         ? 1.0
                         : controller.heroFadeAnimation.value,
-                    child: Container(
+                    child: Container( // This is the outer gradient container
                       width: containerBaseWidth,
                       height: containerBaseHeight,
                       decoration: BoxDecoration(
@@ -373,20 +378,21 @@ class HeroSection extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: Center(
+                      child: Center( // This Center widget will ensure the gap is visually apparent
                         child: AnimatedBuilder(
                           animation: controller.pulseAnimation,
                           builder: (context, child) {
                             return Transform.scale(
                               scale: controller.pulseAnimation.value,
-                              child: ClipRRect( // Optional: if your image is not circular but you want to clip it
-                                borderRadius: BorderRadius.circular(imageWidth / 2), // Example for circular clip
+                              child: ClipRRect(
+                                // The ClipRRect's radius should be based on the *new* smaller image dimensions
+                                borderRadius: BorderRadius.circular(imageWidth / 10), // For circular clip
                                 child: Image.asset(
-                                  heroImagePath,
-                                  width: imageWidth,
-                                  height: imageHeight,
-                                  fit: BoxFit.cover, // Adjust fit as needed (cover, contain, etc.)
-                                  // Optional: Add a placeholder or error widget
+                                  AppAssets.anotherImage,
+                                  // AppAssets.heroImagePath,
+                                  width: imageWidth,   // Use the new smaller width
+                                  height: imageHeight, // Use the new smaller height
+                                  fit: BoxFit.cover,
                                   // errorBuilder: (context, error, stackTrace) {
                                   //   return Icon(Icons.error, size: imageWidth, color: Colors.white);
                                   // },
