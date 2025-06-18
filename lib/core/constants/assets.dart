@@ -5,6 +5,7 @@ class AppAssets {
   AppAssets._();
 
 
+
   // ----- IMAGES -----
   static const String _imagesBasePath = 'assets/images';
   static const String heroImagePath = '$_imagesBasePath/your_hero_image.png'; // <-- MAKE SURE THIS FILENAME IS CORRECT
