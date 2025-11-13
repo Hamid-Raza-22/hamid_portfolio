@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/responsive_constants.dart';
-import '../../controllers/home_controller.dart';
+import '../../../../presentation/home/controllers/home_controller.dart';
 
 class Header extends GetView<HomeController> {
   const Header({super.key});
@@ -208,18 +208,37 @@ class Header extends GetView<HomeController> {
             opacity: controller.heroFadeAnimation.value,
             child: MouseRegion(
               onEnter: (_) {},
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  text,
-                  style: TextStyle(
-                    color: Colors.grey[300],
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
+              child: GestureDetector(
+                onTap: () {
+                  // Navigate based on index
+                  switch (index) {
+                    case 0:
+                      Get.toNamed('/home');
+                      break;
+                    case 1:
+                      Get.toNamed('/skills');
+                      break;
+                    case 2:
+                      Get.toNamed('/projects');
+                      break;
+                    case 3:
+                      Get.toNamed('/about');
+                      break;
+                  }
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    text,
+                    style: TextStyle(
+                      color: Colors.grey[300],
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ),
@@ -238,32 +257,37 @@ class Header extends GetView<HomeController> {
           scale: controller.heroFadeAnimation.value,
           child: MouseRegion(
             onEnter: (_) {},
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 400),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue.withOpacity(0.1), Colors.blue.withOpacity(0.05)],
-                ),
-                border: Border.all(
-                  color: Colors.blue.withOpacity(0.8),
-                  width: 1.5,
-                ),
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.2),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
+            child: GestureDetector(
+              onTap: () {
+                Get.toNamed('/contact');
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 400),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue.withOpacity(0.1), Colors.blue.withOpacity(0.05)],
                   ),
-                ],
-              ),
-              child: Text(
-                'Contact us',
-                style: TextStyle(
-                  color: Colors.blue[300],
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+                  border: Border.all(
+                    color: Colors.blue.withOpacity(0.8),
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.2),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  'Contact us',
+                  style: TextStyle(
+                    color: Colors.blue[300],
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),

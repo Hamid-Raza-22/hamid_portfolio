@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/constants/assets.dart';
-import '../../../../core/constants/responsive_constants.dart'; // Ensure this path is correct
-import '../../controllers/home_controller.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_assets.dart';
+import '../../../../core/constants/responsive_constants.dart';
+import '../../../../presentation/home/controllers/home_controller.dart';
 
 class HeroSection extends StatelessWidget {
   final double fadeAnimationValue; // For desktop animation
@@ -143,36 +145,107 @@ class HeroSection extends StatelessWidget {
   // --- Shared Reusable Widgets (Made Responsive) ---
 
   Widget _buildAnimatedText(BuildContext context) {
-    return ShaderMask(
-      shaderCallback: (bounds) => const LinearGradient(
-        colors: [
-          Colors.white,
-          Colors.blue,
-        ], // Consider making these theme colors
-      ).createShader(bounds),
-      child: Text(
-        'Build Your\nAwesome\nPlatform', // Consider internationalization for text
-        // Use ResponsiveTextStyle for the headline
-        style: ResponsiveTextStyle.headline(context).copyWith(
-          // More granular control for hero text if needed
-          fontSize: ResponsiveValue.get<double>(
-            context,
-            mobile: 36, // Slightly larger for mobile hero
-            smallTablet: 42,
-            tablet: 48,
-            desktop: 52,
+    return Column(
+      crossAxisAlignment: ResponsiveValue.get<bool>(context, mobile: true, desktop: false)
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
+      children: [
+        // Futuristic badge
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primary.withOpacity(0.2),
+                AppColors.neonBlue.withOpacity(0.1),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.primary.withOpacity(0.3),
+              width: 1,
+            ),
           ),
-          fontWeight: FontWeight.w800,
-          color: Colors
-              .white, // Ensure this matches if not default in ResponsiveTextStyle
-          height: 1.1,
-          letterSpacing: -0.5,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: AppColors.neonBlue,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.glowBlue,
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Flutter Developer Portfolio',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontSize: ResponsiveValue.get<double>(
+                    context,
+                    mobile: 12,
+                    desktop: 14,
+                  ),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
-        textAlign:
-            ResponsiveValue.get<bool>(context, mobile: true, desktop: false)
-            ? TextAlign.center
-            : TextAlign.left, // Center on mobile, left on desktop
-      ),
+        SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, desktop: 24)),
+        // Animated gradient text
+        ShaderMask(
+          shaderCallback: (bounds) => LinearGradient(
+            colors: [
+              AppColors.textPrimary,
+              AppColors.primary,
+              AppColors.neonBlue,
+            ],
+            stops: const [0.0, 0.5, 1.0],
+          ).createShader(bounds),
+          child: AnimatedTextKit(
+            animatedTexts: [
+              TypewriterAnimatedText(
+                'Build Your\nAwesome\nPlatform',
+                textStyle: ResponsiveTextStyle.headline(context).copyWith(
+                  fontSize: ResponsiveValue.get<double>(
+                    context,
+                    mobile: 38,
+                    smallTablet: 44,
+                    tablet: 50,
+                    desktop: 56,
+                  ),
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  height: 1.1,
+                  letterSpacing: -1.0,
+                  shadows: [
+                    Shadow(
+                      color: AppColors.glowBlue.withOpacity(0.5),
+                      blurRadius: 20,
+                      offset: const Offset(0, 0),
+                    ),
+                  ],
+                ),
+                textAlign: ResponsiveValue.get<bool>(context, mobile: true, desktop: false)
+                    ? TextAlign.center
+                    : TextAlign.left,
+                speed: const Duration(milliseconds: 100),
+              ),
+            ],
+            totalRepeatCount: 1,
+            displayFullTextOnTap: true,
+          ),
+        ),
+      ],
     );
   }
 
@@ -180,22 +253,25 @@ class HeroSection extends StatelessWidget {
     BuildContext context, {
     required TextAlign textAlign,
   }) {
-    return Text(
-      'Hamid Raza studio is a digital studio that offers several services\nsuch as UI/UX Design to developers, we will provide the best\nservice for those of you who use our services.',
-      // Use ResponsiveTextStyle for body text
-      style: ResponsiveTextStyle.body(context).copyWith(
-        fontSize: ResponsiveValue.get<double>(
-          context,
-          mobile: 15,
-          smallTablet: 16,
-          tablet: 16,
-          desktop: 17,
+    return Container(
+      padding: const EdgeInsets.only(top: 8),
+      child: Text(
+        'Crafting exceptional Flutter applications with cutting-edge technology and innovative design. '
+        'Transforming ideas into powerful, scalable mobile experiences that captivate users and drive success.',
+        style: ResponsiveTextStyle.body(context).copyWith(
+          fontSize: ResponsiveValue.get<double>(
+            context,
+            mobile: 15,
+            smallTablet: 16,
+            tablet: 17,
+            desktop: 18,
+          ),
+          height: 1.7,
+          color: AppColors.textSecondary,
+          letterSpacing: 0.3,
         ),
-        height: 1.6,
-        color: Colors
-            .grey[300], // Ensure this matches if not default in ResponsiveTextStyle
+        textAlign: textAlign,
       ),
-      textAlign: textAlign,
     );
   }
 
@@ -232,43 +308,13 @@ class HeroSection extends StatelessWidget {
       desktop: 10,
     );
 
-    return MouseRegion(
-      onEnter: (_) {
-        // controller.startHoverAnimation(); // Example
-      },
-      onExit: (_) {
-        // controller.stopHoverAnimation(); // Example
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 400),
-        padding: EdgeInsets.symmetric(
-          horizontal: buttonHorizontalPadding,
-          vertical: buttonVerticalPadding,
-        ),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Colors.blue, Colors.indigo], // Consider theme colors
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(buttonBorderRadius),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.blue.withOpacity(0.4),
-              blurRadius: buttonBlurRadius,
-              offset: Offset(0, buttonShadowOffsetY),
-            ),
-          ],
-        ),
-        child: Text(
-          'Our Services',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: buttonFontSize,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+    return _HoverableButton(
+      buttonHorizontalPadding: buttonHorizontalPadding,
+      buttonVerticalPadding: buttonVerticalPadding,
+      buttonBorderRadius: buttonBorderRadius,
+      buttonBlurRadius: buttonBlurRadius,
+      buttonShadowOffsetY: buttonShadowOffsetY,
+      buttonFontSize: buttonFontSize,
     );
   }
 
@@ -352,25 +398,29 @@ class HeroSection extends StatelessWidget {
                         width: containerBaseWidth,
                         height: containerBaseHeight,
                         decoration: BoxDecoration(
-                          // gradient: const LinearGradient(
-                          //   colors: [
-                          //     Color(0xFFFF8A00), // More vibrant orange
-                          //     Color(0xFFFF6B00),
-                          //   ],
-                          //   begin: Alignment.topLeft,
-                          //   end: Alignment.bottomRight,
-                          // ),
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.primary.withOpacity(0.3),
+                              AppColors.neonBlue.withOpacity(0.2),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                           borderRadius: BorderRadius.circular(borderRadius),
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.4),
+                            width: 2,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.orange.withOpacity(0.4),
-                              blurRadius: 25,
+                              color: AppColors.glowBlue.withOpacity(0.5),
+                              blurRadius: 30,
                               offset: const Offset(0, 15),
-                              spreadRadius: 2,
+                              spreadRadius: 5,
                             ),
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 40,
+                              color: AppColors.primary.withOpacity(0.3),
+                              blurRadius: 50,
                               offset: const Offset(0, 20),
                               spreadRadius: -5,
                             ),
@@ -642,4 +692,138 @@ class PlusPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Hoverable Button Widget with Neon Glow Effect
+class _HoverableButton extends StatefulWidget {
+  final double buttonHorizontalPadding;
+  final double buttonVerticalPadding;
+  final double buttonBorderRadius;
+  final double buttonBlurRadius;
+  final double buttonShadowOffsetY;
+  final double buttonFontSize;
+
+  const _HoverableButton({
+    required this.buttonHorizontalPadding,
+    required this.buttonVerticalPadding,
+    required this.buttonBorderRadius,
+    required this.buttonBlurRadius,
+    required this.buttonShadowOffsetY,
+    required this.buttonFontSize,
+  });
+
+  @override
+  State<_HoverableButton> createState() => _HoverableButtonState();
+}
+
+class _HoverableButtonState extends State<_HoverableButton>
+    with SingleTickerProviderStateMixin {
+  bool _isHovered = false;
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
+    _glowAnimation = Tween<double>(begin: 0.4, end: 0.8).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) {
+        setState(() => _isHovered = true);
+        _controller.forward();
+      },
+      onExit: (_) {
+        setState(() => _isHovered = false);
+        _controller.reverse();
+      },
+      child: GestureDetector(
+        onTap: () {
+          // Navigate to Projects page
+          Get.toNamed('/projects');
+        },
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _scaleAnimation.value,
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: widget.buttonHorizontalPadding,
+                  vertical: widget.buttonVerticalPadding,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary,
+                      AppColors.neonBlue,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(widget.buttonBorderRadius),
+                  border: Border.all(
+                    color: AppColors.primaryLight.withOpacity(_glowAnimation.value),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.glowBlue.withOpacity(_glowAnimation.value),
+                      blurRadius: widget.buttonBlurRadius * _glowAnimation.value,
+                      offset: Offset(0, widget.buttonShadowOffsetY),
+                      spreadRadius: 2,
+                    ),
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.5 * _glowAnimation.value),
+                      blurRadius: widget.buttonBlurRadius * 1.5,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'View Projects',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: widget.buttonFontSize,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.black,
+                      size: widget.buttonFontSize + 2,
+                    ),
+                  ],
+                ),
+              ),
+            );
+        },
+      ),
+    ));
+  }
 }

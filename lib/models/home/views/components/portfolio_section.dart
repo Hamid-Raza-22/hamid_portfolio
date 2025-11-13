@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/constants/responsive_constants.dart'; // Ensure this path is correct
-import '../../controllers/home_controller.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/responsive_constants.dart';
+import '../../../../presentation/home/controllers/home_controller.dart';
 
 class PortfolioSection extends StatelessWidget {
   final double rotationValue;
@@ -29,12 +30,27 @@ class PortfolioSection extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Use ResponsiveTextStyle for the title
-                  Text(
-                    'Our Awesome Portfolio',
-                    style: ResponsiveTextStyle.headline(context).copyWith(
-                      // You can still override specific properties if needed
-                      // fontSize: ResponsiveValue.get<double>(context, mobile: 28, desktop: 32),
+                  ShaderMask(
+                    shaderCallback: (bounds) => LinearGradient(
+                      colors: [
+                        AppColors.textPrimary,
+                        AppColors.primary,
+                        AppColors.neonBlue,
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                    ).createShader(bounds),
+                    child: Text(
+                      'Our Awesome Portfolio',
+                      style: ResponsiveTextStyle.headline(context).copyWith(
+                        fontSize: ResponsiveValue.get<double>(
+                          context, 
+                          mobile: 28, 
+                          desktop: 38
+                        ),
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: -0.5,
+                      ),
                     ),
                   ),
                   AnimatedBuilder(
@@ -43,16 +59,25 @@ class PortfolioSection extends StatelessWidget {
                       return Transform.rotate(
                         angle: controller.geometricRotationAnimation.value,
                         child: Container(
-                          width: ResponsiveValue.get<double>(context, mobile: 35, desktop: 40), // Responsive width
-                          height: ResponsiveValue.get<double>(context, mobile: 35, desktop: 40), // Responsive height
+                          width: ResponsiveValue.get<double>(context, mobile: 40, desktop: 48),
+                          height: ResponsiveValue.get<double>(context, mobile: 40, desktop: 48),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey[600]!),
+                            gradient: LinearGradient(
+                              colors: [AppColors.primary, AppColors.neonBlue],
+                            ),
                             shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.glowBlue.withOpacity(0.5),
+                                blurRadius: 15,
+                                spreadRadius: 2,
+                              ),
+                            ],
                           ),
                           child: Icon(
-                            Icons.refresh,
-                            color: Colors.white,
-                            size: ResponsiveValue.get<double>(context, mobile: 18, desktop: 20), // Responsive icon size
+                            Icons.refresh_rounded,
+                            color: Colors.black,
+                            size: ResponsiveValue.get<double>(context, mobile: 20, desktop: 24),
                           ),
                         ),
                       );
@@ -139,16 +164,18 @@ class PortfolioSection extends StatelessWidget {
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 800),
-          width: ResponsiveValue.get<double>(context, mobile: 40, desktop: 60) * rotationValue, // Responsive width
-          height: ResponsiveValue.get<double>(context, mobile: 2.5, desktop: 3), // Responsive height
+          width: ResponsiveValue.get<double>(context, mobile: 50, desktop: 70) * rotationValue,
+          height: ResponsiveValue.get<double>(context, mobile: 3, desktop: 4),
           decoration: BoxDecoration(
-            color: Colors.blue,
-            borderRadius: BorderRadius.circular(ResponsiveValue.get<double>(context, mobile: 1.5, desktop: 2)), // Responsive radius
+            gradient: LinearGradient(
+              colors: [AppColors.primary, AppColors.neonBlue],
+            ),
+            borderRadius: BorderRadius.circular(ResponsiveValue.get<double>(context, mobile: 2, desktop: 2)),
             boxShadow: [
               BoxShadow(
-                color: Colors.blue.withOpacity(0.5),
-                blurRadius: ResponsiveValue.get<double>(context, mobile: 7, desktop: 10),
-                spreadRadius: ResponsiveValue.get<double>(context, mobile: 1.5, desktop: 2),
+                color: AppColors.glowBlue.withOpacity(0.6),
+                blurRadius: ResponsiveValue.get<double>(context, mobile: 10, desktop: 15),
+                spreadRadius: ResponsiveValue.get<double>(context, mobile: 2, desktop: 3),
               ),
             ],
           ),
@@ -160,10 +187,10 @@ class PortfolioSection extends StatelessWidget {
             return Transform.scale(
               scale: Get.find<HomeController>().pulseAnimation.value,
               child: Container(
-                width: ResponsiveValue.get<double>(context, mobile: 6, desktop: 8), // Responsive size
-                height: ResponsiveValue.get<double>(context, mobile: 6, desktop: 8), // Responsive size
+                width: ResponsiveValue.get<double>(context, mobile: 8, desktop: 10),
+                height: ResponsiveValue.get<double>(context, mobile: 8, desktop: 10),
                 decoration: BoxDecoration(
-                  color: Colors.grey[600],
+                  color: AppColors.borderSecondary,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -285,32 +312,35 @@ class _PortfolioItemWithHoverState extends State<_PortfolioItemWithHover>
                 height: widget.itemHeight,
                 decoration: BoxDecoration(
                   color: isHovered
-                      ? Colors.grey[750]
-                      : Colors.grey[800],
+                      ? AppColors.cardBgLight.withOpacity(0.8)
+                      : AppColors.cardBg.withOpacity(0.6),
                   borderRadius: BorderRadius.circular(
-                      ResponsiveValue.get<double>(context, mobile: 8, desktop: 10)
+                      ResponsiveValue.get<double>(context, mobile: 16, desktop: 20)
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.withOpacity(_glowAnimation.value),
-                      blurRadius: ResponsiveValue.get<double>(context, mobile: 15, desktop: 25) * _glowAnimation.value * 2,
-                      offset: Offset(0, ResponsiveValue.get<double>(context, mobile: 8, desktop: 12) * _glowAnimation.value),
-                      spreadRadius: ResponsiveValue.get<double>(context, mobile: 2, desktop: 4) * _glowAnimation.value,
+                      color: AppColors.primary.withOpacity(_glowAnimation.value),
+                      blurRadius: ResponsiveValue.get<double>(context, mobile: 20, desktop: 30) * _glowAnimation.value * 2,
+                      offset: Offset(0, ResponsiveValue.get<double>(context, mobile: 10, desktop: 15) * _glowAnimation.value),
+                      spreadRadius: ResponsiveValue.get<double>(context, mobile: 3, desktop: 5) * _glowAnimation.value,
                     ),
                     if (isHovered)
                       BoxShadow(
-                        color: Colors.cyan.withOpacity(0.2),
-                        blurRadius: ResponsiveValue.get<double>(context, mobile: 20, desktop: 30),
-                        offset: Offset(0, ResponsiveValue.get<double>(context, mobile: 10, desktop: 15)),
-                        spreadRadius: ResponsiveValue.get<double>(context, mobile: 1, desktop: 2),
+                        color: AppColors.glowBlue.withOpacity(0.4),
+                        blurRadius: ResponsiveValue.get<double>(context, mobile: 30, desktop: 40),
+                        offset: Offset(0, ResponsiveValue.get<double>(context, mobile: 12, desktop: 18)),
+                        spreadRadius: ResponsiveValue.get<double>(context, mobile: 2, desktop: 4),
                       ),
                   ],
                   border: isHovered
                       ? Border.all(
-                    color: Colors.blue.withOpacity(0.5),
+                    color: AppColors.primary.withOpacity(0.6),
                     width: 2,
                   )
-                      : null,
+                      : Border.all(
+                    color: AppColors.borderSecondary.withOpacity(0.3),
+                    width: 1,
+                  ),
                 ),
                 child: Stack(
                   children: [
@@ -319,15 +349,15 @@ class _PortfolioItemWithHoverState extends State<_PortfolioItemWithHover>
                       Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(
-                              ResponsiveValue.get<double>(context, mobile: 8, desktop: 10)
+                              ResponsiveValue.get<double>(context, mobile: 16, desktop: 20)
                           ),
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Colors.blue.withOpacity(0.1),
+                              AppColors.primary.withOpacity(0.15),
                               Colors.transparent,
-                              Colors.cyan.withOpacity(0.05),
+                              AppColors.neonBlue.withOpacity(0.08),
                             ],
                             stops: const [0.0, 0.5, 1.0],
                           ),
@@ -346,14 +376,14 @@ class _PortfolioItemWithHoverState extends State<_PortfolioItemWithHover>
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
                               child: Icon(
-                                Icons.web, // Placeholder icon
+                                Icons.web_rounded,
                                 color: isHovered
-                                    ? Colors.blue[300]
-                                    : Colors.grey[600],
+                                    ? AppColors.primary
+                                    : AppColors.textSecondary,
                                 size: ResponsiveValue.get<double>(
                                     context,
-                                    mobile: isHovered ? 35 : 30,
-                                    desktop: isHovered ? 45 : 40
+                                    mobile: isHovered ? 40 : 35,
+                                    desktop: isHovered ? 50 : 45
                                 ),
                               ),
                             ),
@@ -370,14 +400,14 @@ class _PortfolioItemWithHoverState extends State<_PortfolioItemWithHover>
                             return Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(
-                                    ResponsiveValue.get<double>(context, mobile: 8, desktop: 10)
+                                    ResponsiveValue.get<double>(context, mobile: 16, desktop: 20)
                                 ),
                                 gradient: LinearGradient(
                                   begin: Alignment(-1.0 + (widget.controller.geometricRotationAnimation.value * 4) % 2, 0),
                                   end: Alignment(1.0 + (widget.controller.geometricRotationAnimation.value * 4) % 2, 0),
                                   colors: [
                                     Colors.transparent,
-                                    Colors.white.withOpacity(0.1),
+                                    AppColors.primaryLight.withOpacity(0.15),
                                     Colors.transparent,
                                   ],
                                 ),

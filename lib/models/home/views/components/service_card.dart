@@ -1,9 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/responsive_constants.dart';
-import '../../controllers/home_controller.dart';
+import '../../../../presentation/home/controllers/home_controller.dart';
 
-class ServiceCard extends GetView<HomeController> {
+class ServiceCard extends StatefulWidget {
   final IconData icon;
   final String title;
   final String description;
@@ -20,7 +22,41 @@ class ServiceCard extends GetView<HomeController> {
   });
 
   @override
+  State<ServiceCard> createState() => _ServiceCardState();
+}
+
+class _ServiceCardState extends State<ServiceCard> with SingleTickerProviderStateMixin {
+  bool _isHovered = false;
+  late AnimationController _hoverController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _hoverController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _hoverController, curve: Curves.easeOutCubic),
+    );
+
+    _glowAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _hoverController, curve: Curves.easeOutCubic),
+    );
+  }
+
+  @override
+  void dispose() {
+    _hoverController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final controller = Get.find<HomeController>();
     return LayoutBuilder(
       builder: (context, constraints) {
         final iconSize = ResponsiveValue.get<double>(
@@ -40,102 +76,147 @@ class ServiceCard extends GetView<HomeController> {
         );
 
         return AnimatedBuilder(
-          animation: controller.servicesScaleAnimation,
+          animation: Listenable.merge([controller.servicesScaleAnimation, _hoverController]),
           builder: (context, child) {
             return Transform.translate(
               offset: Offset(
                 0,
                 50 *
                     (1 - controller.servicesScaleAnimation.value) *
-                    (index % 2 == 0 ? 1 : -1),
+                    (widget.index % 2 == 0 ? 1 : -1),
               ),
               child: MouseRegion(
-                onEnter: (_) {},
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: padding,
-                  decoration: BoxDecoration(
-                    // --- MODIFICATION START ---
-                    color: Colors
-                        .transparent, // Set background color to transparent
-                    // --- MODIFICATION END ---
-                    borderRadius: BorderRadius.circular(10),
-                    // Optional: You might want to adjust or remove the border if the background is transparent
-                    // depending on the desired visual effect against the page background.
-                    border: Border.all(
-                      color: Colors.grey[800]!.withOpacity(0.5),
-                    ), // Example: Make border less opaque or a different color
-                    boxShadow: [
-                      // Shadows will still be visible
-                      BoxShadow(
-                        color: color.withOpacity(0.1),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
+                onEnter: (_) {
+                  setState(() => _isHovered = true);
+                  _hoverController.forward();
+                },
+                onExit: (_) {
+                  setState(() => _isHovered = false);
+                  _hoverController.reverse();
+                },
+                child: Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Container(
+                    padding: padding,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _isHovered
+                            ? AppColors.primary.withOpacity(0.6)
+                            : AppColors.borderSecondary.withOpacity(0.3),
+                        width: 1.5,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      AnimatedBuilder(
-                        animation: controller.floatingAnimation,
-                        builder: (context, child) {
-                          return Transform.translate(
-                            offset: Offset(
-                              0,
-                              controller.floatingAnimation.value * 0.1,
-                            ),
-                            child: Container(
-                              width: iconSize,
-                              height: iconSize,
-                              decoration: BoxDecoration(
-                                color: color.withOpacity(
-                                  0.2,
-                                ), // Icon background can remain
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: color.withOpacity(0.3),
-                                    blurRadius: 10,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                icon,
-                                color: color,
-                                size: iconSize * 0.6,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        title,
-                        textAlign: TextAlign.center,
-                        style: ResponsiveTextStyle.headline(context).copyWith(
-                          fontSize: ResponsiveValue.get<double>(
-                            context,
-                            mobile: 16,
-                            smallTablet: 17,
-                            tablet: 18,
-                            desktop: 18,
+                      boxShadow: [
+                        BoxShadow(
+                          color: widget.color.withOpacity(0.1 + (0.2 * _glowAnimation.value)),
+                          blurRadius: 20 + (15 * _glowAnimation.value),
+                          offset: const Offset(0, 5),
+                          spreadRadius: 2 * _glowAnimation.value,
+                        ),
+                        if (_isHovered)
+                          BoxShadow(
+                            color: AppColors.glowBlue.withOpacity(0.3),
+                            blurRadius: 30,
+                            spreadRadius: 5,
                           ),
-                          color: Colors
-                              .white, // Ensure text is visible against transparent background
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppColors.cardBg.withOpacity(0.7),
+                                AppColors.cardBgLight.withOpacity(0.5),
+                              ],
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              AnimatedBuilder(
+                                animation: controller.floatingAnimation,
+                                builder: (context, child) {
+                                  return Transform.translate(
+                                    offset: Offset(
+                                      0,
+                                      controller.floatingAnimation.value * 0.1,
+                                    ),
+                                    child: Container(
+                                      width: iconSize,
+                                      height: iconSize,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            widget.color.withOpacity(0.3),
+                                            widget.color.withOpacity(0.1),
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(15),
+                                        border: Border.all(
+                                          color: widget.color.withOpacity(_isHovered ? 0.6 : 0.3),
+                                          width: 2,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: widget.color.withOpacity(0.3 + (0.3 * _glowAnimation.value)),
+                                            blurRadius: 15 + (10 * _glowAnimation.value),
+                                            spreadRadius: 2 + (3 * _glowAnimation.value),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Icon(
+                                        widget.icon,
+                                        color: _isHovered ? widget.color : widget.color.withOpacity(0.8),
+                                        size: iconSize * 0.55,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                widget.title,
+                                textAlign: TextAlign.center,
+                                style: ResponsiveTextStyle.headline(context).copyWith(
+                                  fontSize: ResponsiveValue.get<double>(
+                                    context,
+                                    mobile: 17,
+                                    smallTablet: 18,
+                                    tablet: 19,
+                                    desktop: 20,
+                                  ),
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                widget.description,
+                                textAlign: TextAlign.center,
+                                style: ResponsiveTextStyle.body(context).copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontSize: ResponsiveValue.get<double>(
+                                    context,
+                                    mobile: 13,
+                                    desktop: 14,
+                                  ),
+                                  height: 1.5,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        description,
-                        textAlign: TextAlign.center,
-                        style: ResponsiveTextStyle.body(context).copyWith(
-                          color: Colors.grey[300], // Ensure text is visible
-                          // height: 1.4,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),

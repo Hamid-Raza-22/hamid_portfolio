@@ -1,9 +1,13 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/repositories/portfolio_repository.dart';
+import '../../../data/models/project_model.dart';
 
-class HomeController extends GetxController
-    with GetTickerProviderStateMixin {
+class HomeController extends GetxController with GetTickerProviderStateMixin {
+  // Repository
+  final PortfolioRepository _repository = Get.find<PortfolioRepository>();
+
   // Animation Controllers
   late AnimationController heroAnimationController;
   late AnimationController servicesAnimationController;
@@ -11,8 +15,8 @@ class HomeController extends GetxController
   late AnimationController geometricAnimationController;
   late AnimationController floatingAnimationController;
   late AnimationController backgroundAnimationController;
-  late AnimationController galaxyAnimationController; // New galaxy controller
-  late AnimationController portfolioHoverController; // New hover controller
+  late AnimationController galaxyAnimationController;
+  late AnimationController portfolioHoverController;
 
   // Animations
   late Animation<double> heroFadeAnimation;
@@ -23,36 +27,38 @@ class HomeController extends GetxController
   late Animation<double> floatingAnimation;
   late Animation<double> pulseAnimation;
   late Animation<double> backgroundAnimation;
-  late Animation<double> galaxyRotationAnimation; // New galaxy animation
-  late Animation<double> portfolioHoverAnimation; // New hover animation
+  late Animation<double> galaxyRotationAnimation;
+  late Animation<double> portfolioHoverAnimation;
 
-  // Scroll Controller
-  final ScrollController scrollController = ScrollController();
+  // Track scroll offset for animations
+  double _lastScrollOffset = 0.0;
 
   // Observables
   final isServicesVisible = false.obs;
   final isPortfolioVisible = false.obs;
-  final hoveredPortfolioIndex = (-1).obs; // Track which portfolio item is hovered
+  final hoveredPortfolioIndex = (-1).obs;
+  final isLoading = false.obs;
+  final featuredProjects = <ProjectModel>[].obs;
 
   @override
   void onInit() {
     super.onInit();
     _initAnimations();
     _startAnimations();
-    scrollController.addListener(_onScroll);
+    _loadFeaturedProjects();
   }
 
   void _initAnimations() {
-    // Hero animations
+    // Hero animations (1000ms for better performance)
     heroAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
 
     heroFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: heroAnimationController,
-        curve: const Interval(0.0, 0.8, curve: Curves.easeOutExpo),
+        curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
       ),
     );
 
@@ -66,20 +72,20 @@ class HomeController extends GetxController
 
     // Services animations
     servicesAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
     servicesScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: servicesAnimationController,
-        curve: Curves.easeOutBack,
+        curve: Curves.easeOutCubic,
       ),
     );
 
     // Portfolio animations
     portfolioAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1800),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
@@ -103,7 +109,7 @@ class HomeController extends GetxController
       ),
     );
 
-    // Geometric shapes animations
+    // Geometric shapes animations (optimized for 60fps)
     geometricAnimationController = AnimationController(
       duration: const Duration(milliseconds: 8000),
       vsync: this,
@@ -118,7 +124,7 @@ class HomeController extends GetxController
 
     // Galaxy animation controller
     galaxyAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 20000), // Slow rotation for galaxy
+      duration: const Duration(milliseconds: 20000),
       vsync: this,
     );
 
@@ -131,18 +137,18 @@ class HomeController extends GetxController
 
     // Floating animations
     floatingAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 6000),
+      duration: const Duration(milliseconds: 3000), // Reduced for performance
       vsync: this,
     );
 
-    floatingAnimation = Tween<double>(begin: -15.0, end: 15.0).animate(
+    floatingAnimation = Tween<double>(begin: -10.0, end: 10.0).animate(
       CurvedAnimation(
         parent: floatingAnimationController,
         curve: Curves.easeInOutSine,
       ),
     );
 
-    pulseAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
+    pulseAnimation = Tween<double>(begin: 0.98, end: 1.02).animate(
       CurvedAnimation(
         parent: floatingAnimationController,
         curve: Curves.easeInOutSine,
@@ -164,31 +170,46 @@ class HomeController extends GetxController
   }
 
   void _startAnimations() {
-    Future.delayed(const Duration(milliseconds: 300), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       heroAnimationController.forward();
     });
 
     geometricAnimationController.repeat();
-    galaxyAnimationController.repeat(); // Start galaxy animation
+    galaxyAnimationController.repeat();
     floatingAnimationController.repeat(reverse: true);
     backgroundAnimationController.repeat(reverse: true);
   }
 
-  void _onScroll() {
+  // Handle scroll updates from NotificationListener
+  void onScrollUpdate(double offset) {
+    _lastScrollOffset = offset;
+    
     final renderBox = Get.context?.findRenderObject() as RenderBox?;
     if (renderBox != null) {
       final size = renderBox.size;
-      final offset = scrollController.offset;
 
-      if (offset > size.height * 0.4 && !isServicesVisible.value) {
+      if (offset > size.height * 0.3 && !isServicesVisible.value) {
         isServicesVisible.value = true;
         servicesAnimationController.forward();
       }
 
-      if (offset > size.height * 1.0 && !isPortfolioVisible.value) {
+      if (offset > size.height * 0.8 && !isPortfolioVisible.value) {
         isPortfolioVisible.value = true;
         portfolioAnimationController.forward();
       }
+    }
+  }
+
+  // Load featured projects from repository
+  Future<void> _loadFeaturedProjects() async {
+    try {
+      isLoading.value = true;
+      final projects = await _repository.getFeaturedProjects();
+      featuredProjects.value = projects;
+    } catch (e) {
+      debugPrint('Error loading featured projects: $e');
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -206,17 +227,24 @@ class HomeController extends GetxController
     return hoveredPortfolioIndex.value == index;
   }
 
+  // Navigation methods
+  void navigateToAbout() => Get.toNamed('/about');
+  void navigateToSkills() => Get.toNamed('/skills');
+  void navigateToProjects() => Get.toNamed('/projects');
+  void navigateToContact() => Get.toNamed('/contact');
+
   @override
   void onClose() {
+    // Dispose all animation controllers
     heroAnimationController.dispose();
     servicesAnimationController.dispose();
     portfolioAnimationController.dispose();
     geometricAnimationController.dispose();
-    galaxyAnimationController.dispose(); // Dispose galaxy controller
+    galaxyAnimationController.dispose();
     floatingAnimationController.dispose();
     backgroundAnimationController.dispose();
-    portfolioHoverController.dispose(); // Dispose hover controller
-    scrollController.dispose();
+    portfolioHoverController.dispose();
+    
     super.onClose();
   }
 }

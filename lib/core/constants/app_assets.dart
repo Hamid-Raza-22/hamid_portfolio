@@ -1,4 +1,4 @@
-// assets.dart
+// app_assets.dart
 
 class AppAssets {
   // Prevent instantiation

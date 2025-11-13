@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/constants/responsive_constants.dart'; // Ensure this path is correct
-import '../../controllers/home_controller.dart';
+import '../../../../core/constants/responsive_constants.dart';
+import '../../../../presentation/home/controllers/home_controller.dart';
 
 class WhySection extends GetView<HomeController> {
   const WhySection({super.key});

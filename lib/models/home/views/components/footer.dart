@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/responsive_constants.dart';
-import '../../controllers/home_controller.dart'; // Assuming HomeController
+import '../../../../presentation/home/controllers/home_controller.dart';
 // Import your responsive constants
 
 class Footer extends GetView<HomeController> {

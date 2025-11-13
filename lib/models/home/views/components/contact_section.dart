@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/constants/responsive_constants.dart'; // Ensure this path is correct
-import '../../controllers/home_controller.dart';
+import '../../../../core/constants/responsive_constants.dart';
+import '../../../../presentation/home/controllers/home_controller.dart';
 
 class ContactSection extends GetView<HomeController> {
   const ContactSection({super.key});
@@ -78,29 +78,35 @@ class ContactSection extends GetView<HomeController> {
             onExit: (_) {
               // controller.stopPulse();
             },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: EdgeInsets.symmetric(
-                horizontal: buttonHorizontalPadding,
-                vertical: buttonVerticalPadding,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.blue, // Consider making this a theme color
-                borderRadius: BorderRadius.circular(buttonBorderRadius),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.4),
-                    blurRadius: buttonBlurRadius,
-                    offset: Offset(0, buttonShadowOffsetY),
+            child: GestureDetector(
+              onTap: () {
+                // Navigate to Contact page
+                Get.toNamed('/contact');
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: EdgeInsets.symmetric(
+                  horizontal: buttonHorizontalPadding,
+                  vertical: buttonVerticalPadding,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.blue, // Consider making this a theme color
+                  borderRadius: BorderRadius.circular(buttonBorderRadius),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.4),
+                      blurRadius: buttonBlurRadius,
+                      offset: Offset(0, buttonShadowOffsetY),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  'Contact us',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: buttonFontSize,
+                    fontWeight: FontWeight.w600, // Added for slight emphasis
                   ),
-                ],
-              ),
-              child: Text(
-                'Contact us',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: buttonFontSize,
-                  fontWeight: FontWeight.w600, // Added for slight emphasis
                 ),
               ),
             ),

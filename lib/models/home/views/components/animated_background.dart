@@ -3,7 +3,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../controllers/home_controller.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../presentation/home/controllers/home_controller.dart';
+import 'custom_painters.dart';
 
 class AnimatedBackground extends GetView<HomeController> {
   const AnimatedBackground({super.key});
@@ -18,23 +20,32 @@ class AnimatedBackground extends GetView<HomeController> {
       builder: (context, child) {
         return Stack(
           children: [
-            // Galaxy Core
+            // AI Neural Network Grid
+            _buildNeuralGrid(),
+            
+            // Electric Particles
+            _buildElectricParticles(),
+            
+            // Flowing Waves
+            _buildFlowingWaves(),
+            
+            // Galaxy Core (Enhanced with Electric Blue)
             _buildGalaxyCore(),
 
-            // Galaxy Arms
+            // Galaxy Arms (Enhanced)
             _buildGalaxyArms(),
 
-            // Distant Stars
-            _buildDistantStars(),
+            // Neon Stars
+            _buildNeonStars(),
 
-            // Nebula Effects
+            // Nebula Effects (Electric Blue)
             _buildNebulaEffects(),
 
-            // Original floating gradient orbs (enhanced)
+            // Floating Orbs (Enhanced)
             _buildFloatingOrbs(),
 
-            // Stardust particles
-            _buildStardust(),
+            // Digital Rain Effect
+            _buildDigitalRain(),
           ],
         );
       },
@@ -56,19 +67,24 @@ class AnimatedBackground extends GetView<HomeController> {
               center: Alignment.center,
               radius: 0.8,
               colors: [
-                Colors.white.withOpacity(0.3),
-                Colors.blue.withOpacity(0.2),
-                Colors.purple.withOpacity(0.15),
-                Colors.indigo.withOpacity(0.1),
+                AppColors.neonBlue.withOpacity(0.4),
+                AppColors.primary.withOpacity(0.3),
+                AppColors.primaryDark.withOpacity(0.2),
+                AppColors.neonPurple.withOpacity(0.1),
                 Colors.transparent,
               ],
               stops: const [0.0, 0.3, 0.5, 0.7, 1.0],
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.white.withOpacity(0.1),
-                blurRadius: 50,
-                spreadRadius: 10,
+                color: AppColors.glowBlue.withOpacity(0.3),
+                blurRadius: 80,
+                spreadRadius: 20,
+              ),
+              BoxShadow(
+                color: AppColors.glowCyan.withOpacity(0.2),
+                blurRadius: 120,
+                spreadRadius: 40,
               ),
             ],
           ),
@@ -98,9 +114,9 @@ class AnimatedBackground extends GetView<HomeController> {
                   end: Alignment.centerRight,
                   colors: [
                     Colors.transparent,
-                    Colors.blue.withOpacity(0.08),
-                    Colors.cyan.withOpacity(0.12),
-                    Colors.white.withOpacity(0.06),
+                    AppColors.primary.withOpacity(0.15),
+                    AppColors.neonBlue.withOpacity(0.20),
+                    AppColors.primaryLight.withOpacity(0.12),
                     Colors.transparent,
                   ],
                   stops: const [0.0, 0.2, 0.5, 0.8, 1.0],
@@ -113,29 +129,37 @@ class AnimatedBackground extends GetView<HomeController> {
     );
   }
 
-  Widget _buildDistantStars() {
+  Widget _buildNeonStars() {
     return Stack(
-      children: List.generate(50, (index) {
+      children: List.generate(60, (index) {
         final x = (index * 123.4) % Get.width;
         final y = (index * 234.5) % Get.height;
         final twinkle = math.sin(
             (controller.backgroundAnimation.value * 4 * math.pi) +
                 (index * 0.5)
         ).abs();
+        
+        // Alternate between electric blue and cyan neon colors
+        final color = index % 3 == 0 
+            ? AppColors.neonBlue 
+            : index % 3 == 1 
+                ? AppColors.primaryLight 
+                : AppColors.glowCyan;
 
         return Positioned(
           left: x,
           top: y,
           child: Container(
-            width: 2 + (twinkle * 2),
-            height: 2 + (twinkle * 2),
+            width: 2 + (twinkle * 3),
+            height: 2 + (twinkle * 3),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.3 + (twinkle * 0.4)),
+              color: color.withOpacity(0.4 + (twinkle * 0.5)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.white.withOpacity(0.2),
-                  blurRadius: 4 + (twinkle * 4),
+                  color: color.withOpacity(0.4),
+                  blurRadius: 6 + (twinkle * 6),
+                  spreadRadius: 1,
                 ),
               ],
             ),
@@ -163,9 +187,9 @@ class AnimatedBackground extends GetView<HomeController> {
                   center: Alignment.center,
                   radius: 1.2,
                   colors: [
-                    Colors.pink.withOpacity(0.08),
-                    Colors.purple.withOpacity(0.12),
-                    Colors.indigo.withOpacity(0.06),
+                    AppColors.neonPurple.withOpacity(0.12),
+                    AppColors.primary.withOpacity(0.15),
+                    AppColors.neonBlue.withOpacity(0.08),
                     Colors.transparent,
                   ],
                 ),
@@ -188,8 +212,8 @@ class AnimatedBackground extends GetView<HomeController> {
                   center: Alignment.center,
                   radius: 1.0,
                   colors: [
-                    Colors.teal.withOpacity(0.1),
-                    Colors.cyan.withOpacity(0.08),
+                    AppColors.neonBlue.withOpacity(0.15),
+                    AppColors.glowCyan.withOpacity(0.10),
                     Colors.transparent,
                   ],
                 ),
@@ -215,16 +239,16 @@ class AnimatedBackground extends GetView<HomeController> {
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  Colors.blue.withOpacity(0.15),
-                  Colors.cyan.withOpacity(0.08),
+                  AppColors.primary.withOpacity(0.25),
+                  AppColors.neonBlue.withOpacity(0.15),
                   Colors.transparent,
                 ],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blue.withOpacity(0.1),
-                  blurRadius: 30,
-                  spreadRadius: 5,
+                  color: AppColors.glowBlue.withOpacity(0.2),
+                  blurRadius: 50,
+                  spreadRadius: 10,
                 ),
               ],
             ),
@@ -241,16 +265,16 @@ class AnimatedBackground extends GetView<HomeController> {
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  Colors.purple.withOpacity(0.12),
-                  Colors.pink.withOpacity(0.08),
+                  AppColors.neonPurple.withOpacity(0.18),
+                  AppColors.neonPink.withOpacity(0.10),
                   Colors.transparent,
                 ],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.purple.withOpacity(0.08),
-                  blurRadius: 25,
-                  spreadRadius: 3,
+                  color: AppColors.glowPurple.withOpacity(0.12),
+                  blurRadius: 40,
+                  spreadRadius: 8,
                 ),
               ],
             ),
@@ -260,34 +284,93 @@ class AnimatedBackground extends GetView<HomeController> {
     );
   }
 
-  Widget _buildStardust() {
+  Widget _buildDigitalRain() {
     return Stack(
-      children: List.generate(30, (index) {
+      children: List.generate(40, (index) {
         final progress = (controller.backgroundAnimation.value + (index * 0.1)) % 1.0;
         final x = (index * 67.8) % Get.width;
-        final startY = Get.height + 50;
-        final endY = -50;
+        final startY = -100.0;
+        final endY = Get.height + 100;
         final y = startY + (progress * (endY - startY));
+        
+        final color = index % 2 == 0 ? AppColors.neonBlue : AppColors.primaryLight;
 
         return Positioned(
           left: x + (20 * math.sin(progress * 4 * math.pi)),
           top: y,
           child: Container(
-            width: 1,
-            height: 1,
+            width: 2,
+            height: 8 + (progress * 12),
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(2),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  color.withOpacity(0.8),
+                  color.withOpacity(0.3),
+                  Colors.transparent,
+                ],
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.white.withOpacity(0.3),
-                  blurRadius: 2,
+                  color: color.withOpacity(0.4),
+                  blurRadius: 4,
                 ),
               ],
             ),
           ),
         );
       }),
+    );
+  }
+  
+  Widget _buildNeuralGrid() {
+    return CustomPaint(
+      size: Size(Get.width, Get.height),
+      painter: NeuralGridPainter(
+        animationValue: controller.backgroundAnimation.value,
+      ),
+    );
+  }
+  
+  Widget _buildElectricParticles() {
+    return Stack(
+      children: List.generate(25, (index) {
+        final angle = (index * 2 * math.pi / 25) + (controller.backgroundAnimation.value * 2 * math.pi);
+        final radius = 100 + (50 * math.sin(controller.backgroundAnimation.value * math.pi));
+        final x = Get.width / 2 + (radius * math.cos(angle));
+        final y = Get.height / 2 + (radius * math.sin(angle));
+        
+        return Positioned(
+          left: x,
+          top: y,
+          child: Container(
+            width: 4,
+            height: 4,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.neonBlue,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.glowBlue.withOpacity(0.6),
+                  blurRadius: 10,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+  
+  Widget _buildFlowingWaves() {
+    return CustomPaint(
+      size: Size(Get.width, Get.height),
+      painter: FlowingWavesPainter(
+        animationValue: controller.backgroundAnimation.value,
+      ),
     );
   }
 }

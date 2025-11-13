@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/constants/responsive_constants.dart'; // Make sure this path is correct
-import '../../controllers/home_controller.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/responsive_constants.dart';
+import '../../../../presentation/home/controllers/home_controller.dart';
 import 'service_card.dart'; // Assuming ServiceCard is also made responsive or handles it internally
 
 class ServicesSection extends StatelessWidget {
@@ -60,35 +61,54 @@ class ServicesSection extends StatelessWidget {
                             return Transform.rotate(
                               angle: controller.geometricRotationAnimation.value * 0.3,
                               child: Container(
-                                padding: ResponsivePadding.all(context, multiplier: 0.2), // Smaller responsive padding
+                                padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Colors.white, Colors.lightBlue],
+                                  gradient: LinearGradient(
+                                    colors: [AppColors.primary, AppColors.neonBlue],
                                   ),
                                   shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.glowBlue.withOpacity(0.5),
+                                      blurRadius: 15,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
                                 ),
                                 child: Icon(
-                                  Icons.play_arrow,
-                                  color: Colors.blue,
-                                  size: ResponsiveValue.get<double>(context, mobile: 18, desktop: 22), // Responsive icon size
+                                  Icons.widgets_rounded,
+                                  color: Colors.black,
+                                  size: ResponsiveValue.get<double>(context, mobile: 20, desktop: 24),
                                 ),
                               ),
                             );
                           },
                         ),
                         SizedBox(width: ResponsiveValue.get<double>(context, mobile: 10, desktop: 20)), // Responsive spacing
-                        Flexible( // Use Flexible for the text as well
+                        Flexible(
                           child: ShaderMask(
-                            shaderCallback: (bounds) => const LinearGradient(
-                              colors: [Colors.white, Colors.blue],
+                            shaderCallback: (bounds) => LinearGradient(
+                              colors: [
+                                AppColors.textPrimary,
+                                AppColors.primary,
+                                AppColors.neonBlue,
+                              ],
+                              stops: const [0.0, 0.5, 1.0],
                             ).createShader(bounds),
                             child: Text(
-                              'The Service We Provide\nFor You',
-                              // Use ResponsiveTextStyle for the headline
+                              'Services We Provide\nFor You',
                               style: ResponsiveTextStyle.headline(context).copyWith(
-                                fontSize: ResponsiveValue.get<double>(context, mobile: 26, smallTablet: 30, tablet: 32, desktop: 34), // More granular font size control
+                                fontSize: ResponsiveValue.get<double>(
+                                  context, 
+                                  mobile: 28, 
+                                  smallTablet: 32, 
+                                  tablet: 36, 
+                                  desktop: 38
+                                ),
+                                fontWeight: FontWeight.w800,
                                 height: 1.2,
-                                // color: Colors.white, // Already in ResponsiveTextStyle.headline, but can be overridden
+                                letterSpacing: -0.5,
+                                color: Colors.white,
                               ),
                               textAlign: TextAlign.left,
                             ),
