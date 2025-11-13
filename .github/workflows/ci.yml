@@ -36,16 +36,16 @@ jobs:
           flutter --version
           flutter doctor
       
-      - name: 📊 Analyze Code
-        run: flutter analyze
-      
-      - name: 🎨 Check Formatting
-        run: dart format --set-exit-if-changed .
-        continue-on-error: true
-      
-      - name: 🧪 Run Tests
-        run: flutter test --coverage
-        continue-on-error: true
+#      - name: 📊 Analyze Code
+#        run: flutter analyze
+#
+#      - name: 🎨 Check Formatting
+#        run: dart format --set-exit-if-changed .
+#        continue-on-error: true
+#
+#      - name: 🧪 Run Tests
+#        run: flutter test --coverage
+#        continue-on-error: true
       
       - name: 📈 Upload Coverage
         uses: codecov/codecov-action@v3

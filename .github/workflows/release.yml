@@ -39,9 +39,9 @@ jobs:
           tar -czf ../../portfolio-web-${{ github.ref_name }}.tar.gz .
           cd ../..
       
-      - name: 🏗️ Build Android APK
-        run: flutter build apk --release
-        continue-on-error: true
+#      - name: 🏗️ Build Android APK
+#        run: flutter build apk --release
+#        continue-on-error: true
       
       - name: 🏗️ Build Android App Bundle
         run: flutter build appbundle --release

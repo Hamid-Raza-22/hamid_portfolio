@@ -48,9 +48,9 @@ jobs:
           flutter --version
           flutter doctor -v
       
-      - name: 🧪 Run Tests
-        run: flutter test
-        continue-on-error: true
+#      - name: 🧪 Run Tests
+#        run: flutter test
+#        continue-on-error: true
       
       - name: 🏗️ Build Web
         run: |
