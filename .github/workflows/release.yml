@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  create-release:
+    name: 🎉 Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: ⚙️ Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      - name: 🔧 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+      
+      - name: 📦 Install Dependencies
+        run: flutter pub get
+      
+      - name: 🏗️ Build Web Release
+        run: flutter build web --release --web-renderer html
+      
+      - name: 📦 Create Web Archive
+        run: |
+          cd build/web
+          tar -czf ../../portfolio-web-${{ github.ref_name }}.tar.gz .
+          cd ../..
+      
+      - name: 🏗️ Build Android APK
+        run: flutter build apk --release
+        continue-on-error: true
+      
+      - name: 🏗️ Build Android App Bundle
+        run: flutter build appbundle --release
+        continue-on-error: true
+      
+      - name: 📝 Generate Release Notes
+        id: release_notes
+        run: |
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_OUTPUT
+          git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"- %s" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: 🎉 Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            portfolio-web-${{ github.ref_name }}.tar.gz
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+          body: |
+            ## 🚀 Release ${{ github.ref_name }}
+            
+            ### Changes in this release:
+            ${{ steps.release_notes.outputs.RELEASE_NOTES }}
+            
+            ### 📦 Downloads
+            - **Web Build**: `portfolio-web-${{ github.ref_name }}.tar.gz`
+            - **Android APK**: `app-release.apk`
+            - **Android Bundle**: `app-release.aab`
+            
+            ### 🌐 Live Demo
+            Visit: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

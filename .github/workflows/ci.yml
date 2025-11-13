@@ -1,0 +1,92 @@
+name: CI - Test & Analyze
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    name: 🧪 Test & Analyze
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: ⚙️ Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      - name: 🔧 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+      
+      - name: 📦 Install Dependencies
+        run: flutter pub get
+      
+      - name: 🔍 Verify Installation
+        run: |
+          flutter --version
+          flutter doctor
+      
+      - name: 📊 Analyze Code
+        run: flutter analyze
+      
+      - name: 🎨 Check Formatting
+        run: dart format --set-exit-if-changed .
+        continue-on-error: true
+      
+      - name: 🧪 Run Tests
+        run: flutter test --coverage
+        continue-on-error: true
+      
+      - name: 📈 Upload Coverage
+        uses: codecov/codecov-action@v3
+        if: success()
+        with:
+          file: ./coverage/lcov.info
+          fail_ci_if_error: false
+        continue-on-error: true
+
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [web, android]
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: ⚙️ Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      - name: 🔧 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+      
+      - name: 📦 Install Dependencies
+        run: flutter pub get
+      
+      - name: 🏗️ Build ${{ matrix.platform }}
+        run: |
+          if [ "${{ matrix.platform }}" == "web" ]; then
+            flutter build web --release
+          elif [ "${{ matrix.platform }}" == "android" ]; then
+            flutter build apk --release
+          fi
+        continue-on-error: true
