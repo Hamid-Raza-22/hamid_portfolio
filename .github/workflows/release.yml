@@ -14,16 +14,10 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
       
-      - name: ⚙️ Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-      
       - name: 🔧 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.0'
+          flutter-version: '3.24.0'
           channel: 'stable'
           cache: true
       
@@ -39,14 +33,6 @@ jobs:
           tar -czf ../../portfolio-web-${{ github.ref_name }}.tar.gz .
           cd ../..
       
-#      - name: 🏗️ Build Android APK
-#        run: flutter build apk --release
-#        continue-on-error: true
-      
-      - name: 🏗️ Build Android App Bundle
-        run: flutter build appbundle --release
-        continue-on-error: true
-      
       - name: 📝 Generate Release Notes
         id: release_notes
         run: |
@@ -59,8 +45,6 @@ jobs:
         with:
           files: |
             portfolio-web-${{ github.ref_name }}.tar.gz
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/bundle/release/app-release.aab
           body: |
             ## 🚀 Release ${{ github.ref_name }}
             
@@ -69,8 +53,6 @@ jobs:
             
             ### 📦 Downloads
             - **Web Build**: `portfolio-web-${{ github.ref_name }}.tar.gz`
-            - **Android APK**: `app-release.apk`
-            - **Android Bundle**: `app-release.aab`
             
             ### 🌐 Live Demo
             Visit: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}

@@ -15,16 +15,10 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
       
-      - name: ⚙️ Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-      
       - name: 🔧 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.0'
+          flutter-version: '3.24.0'
           channel: 'stable'
           cache: true
       
@@ -56,37 +50,22 @@ jobs:
         continue-on-error: true
 
   build:
-    name: 🏗️ Build
+    name: 🏗️ Build Web
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform: [web, android]
     
     steps:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
       
-      - name: ⚙️ Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-      
       - name: 🔧 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.0'
+          flutter-version: '3.24.0'
           channel: 'stable'
           cache: true
       
       - name: 📦 Install Dependencies
         run: flutter pub get
       
-      - name: 🏗️ Build ${{ matrix.platform }}
-        run: |
-          if [ "${{ matrix.platform }}" == "web" ]; then
-            flutter build web --release
-          elif [ "${{ matrix.platform }}" == "android" ]; then
-            flutter build apk --release
-          fi
-        continue-on-error: true
+      - name: 🏗️ Build Web
+        run: flutter build web --release --web-renderer html
