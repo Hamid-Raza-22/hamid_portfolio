@@ -8,26 +8,99 @@ class ResponsiveBreakpoints {
   static const double smallTablet = 768;
   static const double tablet = 900;
   static const double desktop = 1200;
+  static const double largeDesktop = 1440;
+  
+  static bool isSmallMobile(BuildContext context) => 
+      MediaQuery.of(context).size.width < smallMobile;
+  static bool isMobile(BuildContext context) => 
+      MediaQuery.of(context).size.width < mobile;
+  static bool isSmallTablet(BuildContext context) => 
+      MediaQuery.of(context).size.width >= mobile && 
+      MediaQuery.of(context).size.width < smallTablet;
+  static bool isTablet(BuildContext context) => 
+      MediaQuery.of(context).size.width >= smallTablet && 
+      MediaQuery.of(context).size.width < desktop;
+  static bool isDesktop(BuildContext context) => 
+      MediaQuery.of(context).size.width >= desktop;
+  static bool isLargeDesktop(BuildContext context) => 
+      MediaQuery.of(context).size.width >= largeDesktop;
 }
 
 class ResponsiveValue {
   static T get<T>(BuildContext context, {
+    T? smallMobile,
     required T mobile,
     T? smallTablet,
     T? tablet,
     required T desktop,
+    T? largeDesktop,
   }) {
     final width = MediaQuery.of(context).size.width;
 
-    if (width >= ResponsiveBreakpoints.desktop) {
+    if (width >= ResponsiveBreakpoints.largeDesktop && largeDesktop != null) {
+      return largeDesktop;
+    } else if (width >= ResponsiveBreakpoints.desktop) {
       return desktop;
     } else if (width >= ResponsiveBreakpoints.tablet && tablet != null) {
       return tablet;
     } else if (width >= ResponsiveBreakpoints.smallTablet && smallTablet != null) {
       return smallTablet;
+    } else if (width < ResponsiveBreakpoints.smallMobile && smallMobile != null) {
+      return smallMobile;
     } else {
       return mobile;
     }
+  }
+  
+  /// Get grid cross axis count based on screen size
+  static int gridCount(BuildContext context, {
+    int smallMobile = 1,
+    int mobile = 1,
+    int smallTablet = 2,
+    int tablet = 2,
+    int desktop = 3,
+    int largeDesktop = 4,
+  }) {
+    return get<int>(
+      context,
+      smallMobile: smallMobile,
+      mobile: mobile,
+      smallTablet: smallTablet,
+      tablet: tablet,
+      desktop: desktop,
+      largeDesktop: largeDesktop,
+    );
+  }
+  
+  /// Get card width based on screen size with constraints
+  static double cardWidth(BuildContext context, {
+    double? maxWidth,
+    double mobilePercent = 1.0,
+    double tabletPercent = 0.48,
+    double desktopPercent = 0.32,
+  }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final padding = ResponsiveValue.get<double>(
+      context,
+      mobile: 32,
+      tablet: 64,
+      desktop: 80,
+    );
+    final availableWidth = screenWidth - padding;
+    
+    double width;
+    if (screenWidth >= ResponsiveBreakpoints.desktop) {
+      width = availableWidth * desktopPercent;
+    } else if (screenWidth >= ResponsiveBreakpoints.smallTablet) {
+      width = availableWidth * tabletPercent;
+    } else {
+      width = availableWidth * mobilePercent;
+    }
+    
+    if (maxWidth != null && width > maxWidth) {
+      return maxWidth;
+    }
+    return width;
   }
 }
 

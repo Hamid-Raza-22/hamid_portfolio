@@ -113,7 +113,7 @@ class ContactSection extends GetView<HomeController> {
           ),
         ),
         SizedBox(height: ResponsiveValue.get<double>(context, mobile: 32, desktop: 40)),
-        const Wrap(
+        Wrap(
           alignment: WrapAlignment.center,
           spacing: 16,
           runSpacing: 12,
@@ -123,12 +123,14 @@ class ContactSection extends GetView<HomeController> {
               icon: Icons.rocket_launch_rounded,
               isPrimary: true,
               iconLeading: true,
+              onTap: () => controller.launchEmail(),
             ),
             AnimatedButton(
               text: 'Send Email',
               icon: Icons.mail_outline_rounded,
               isPrimary: false,
               iconLeading: true,
+              onTap: () => controller.launchEmail(),
             ),
           ],
         ),

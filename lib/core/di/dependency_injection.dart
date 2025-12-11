@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../../data/datasources/local/portfolio_local_datasource.dart';
+import '../../data/datasources/local/portfolio_local_datasource_interface.dart';
 import '../../data/repositories/portfolio_repository_impl.dart';
 import '../../domain/repositories/portfolio_repository.dart';
 import '../../domain/usecases/usecases.dart';
@@ -8,44 +9,99 @@ import '../../domain/usecases/usecases.dart';
 /// Dependency Injection setup following Clean Architecture.
 /// Registers all dependencies in GetX dependency injection container.
 class DependencyInjection {
+  DependencyInjection._();
+
   static void init() {
-    // Data Sources
+    _registerDataSources();
+    _registerRepositories();
+    _registerUseCases();
+  }
+
+  static void _registerDataSources() {
     Get.lazyPut<PortfolioLocalDataSource>(
       () => PortfolioLocalDataSourceImpl(),
       fenix: true,
     );
+  }
 
-    // Repositories
+  static void _registerRepositories() {
     Get.lazyPut<PortfolioRepository>(
       () => PortfolioRepositoryImpl(
         localDataSource: Get.find<PortfolioLocalDataSource>(),
       ),
       fenix: true,
     );
+  }
 
-    // Use Cases
+  static void _registerUseCases() {
+    final repository = Get.find<PortfolioRepository>();
+
+    // Core use cases
     Get.lazyPut<GetServicesUseCase>(
-      () => GetServicesUseCase(Get.find<PortfolioRepository>()),
+      () => GetServicesUseCase(repository),
       fenix: true,
     );
 
     Get.lazyPut<GetPortfolioItemsUseCase>(
-      () => GetPortfolioItemsUseCase(Get.find<PortfolioRepository>()),
+      () => GetPortfolioItemsUseCase(repository),
       fenix: true,
     );
 
     Get.lazyPut<GetSocialLinksUseCase>(
-      () => GetSocialLinksUseCase(Get.find<PortfolioRepository>()),
+      () => GetSocialLinksUseCase(repository),
       fenix: true,
     );
 
     Get.lazyPut<GetStatsUseCase>(
-      () => GetStatsUseCase(Get.find<PortfolioRepository>()),
+      () => GetStatsUseCase(repository),
       fenix: true,
     );
 
     Get.lazyPut<GetNavItemsUseCase>(
-      () => GetNavItemsUseCase(Get.find<PortfolioRepository>()),
+      () => GetNavItemsUseCase(repository),
+      fenix: true,
+    );
+
+    // About page use cases
+    Get.lazyPut<GetProfileUseCase>(
+      () => GetProfileUseCase(repository),
+      fenix: true,
+    );
+
+    Get.lazyPut<GetExperiencesUseCase>(
+      () => GetExperiencesUseCase(repository),
+      fenix: true,
+    );
+
+    Get.lazyPut<GetEducationUseCase>(
+      () => GetEducationUseCase(repository),
+      fenix: true,
+    );
+
+    Get.lazyPut<GetCertificationsUseCase>(
+      () => GetCertificationsUseCase(repository),
+      fenix: true,
+    );
+
+    Get.lazyPut<GetAchievementsUseCase>(
+      () => GetAchievementsUseCase(repository),
+      fenix: true,
+    );
+
+    Get.lazyPut<GetExpertiseUseCase>(
+      () => GetExpertiseUseCase(repository),
+      fenix: true,
+    );
+
+    // Contact page use cases
+    Get.lazyPut<GetContactInfoUseCase>(
+      () => GetContactInfoUseCase(repository),
+      fenix: true,
+    );
+
+    // Projects page use cases
+    Get.lazyPut<GetProjectDetailsUseCase>(
+      () => GetProjectDetailsUseCase(repository),
       fenix: true,
     );
   }

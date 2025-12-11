@@ -245,7 +245,7 @@ class _HeroDescription extends StatelessWidget {
   }
 }
 
-class _HeroButtons extends StatelessWidget {
+class _HeroButtons extends GetView<HomeController> {
   final bool isMobile;
 
   const _HeroButtons({required this.isMobile});
@@ -256,16 +256,18 @@ class _HeroButtons extends StatelessWidget {
       alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
       spacing: 16,
       runSpacing: 12,
-      children: const [
+      children: [
         AnimatedButton(
           text: 'View My Work',
           icon: Icons.arrow_forward_rounded,
           isPrimary: true,
+          onTap: () => controller.scrollToSection('portfolio'),
         ),
         AnimatedButton(
           text: 'Get In Touch',
           icon: Icons.mail_outline_rounded,
           isPrimary: false,
+          onTap: () => controller.scrollToSection('contact'),
         ),
       ],
     );

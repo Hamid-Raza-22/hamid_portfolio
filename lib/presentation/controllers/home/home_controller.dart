@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../domain/entities/entities.dart';
 import '../../../domain/usecases/usecases.dart';
+import '../../routes/app_routes.dart';
 import 'home_animation_mixin.dart';
 
 /// HomeController following MVVM pattern.
@@ -113,8 +115,69 @@ class HomeController extends GetxController
 
   // Navigation methods
   void scrollToSection(String sectionKey) {
-    // Implementation for section navigation
-    // Can be extended to use GlobalKeys for each section
+    double targetOffset = 0;
+    final screenHeight = Get.height;
+    
+    switch (sectionKey) {
+      case 'home':
+        targetOffset = 0;
+        break;
+      case 'services':
+        targetOffset = screenHeight * 0.9;
+        break;
+      case 'portfolio':
+      case 'projects':
+        targetOffset = screenHeight * 1.8;
+        break;
+      case 'contact':
+        targetOffset = scrollController.position.maxScrollExtent;
+        break;
+    }
+    
+    scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 800),
+      curve: Curves.easeInOutCubic,
+    );
+  }
+
+  // Navigate to Contact page
+  void goToContactPage() {
+    Get.toNamed(AppRoutes.contact);
+  }
+
+  // Navigate to About page
+  void goToAboutPage() {
+    Get.toNamed(AppRoutes.about);
+  }
+
+  // Navigate to Projects page
+  void goToProjectsPage() {
+    Get.toNamed(AppRoutes.projects);
+  }
+
+  // Launch email
+  Future<void> launchEmail() async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: 'hamidraza.engr@gmail.com',
+      queryParameters: {
+        'subject': 'Project Inquiry',
+        'body': 'Hi Hamid,\n\nI would like to discuss a project with you.',
+      },
+    );
+    
+    if (await canLaunchUrl(emailUri)) {
+      await launchUrl(emailUri);
+    }
+  }
+
+  // Launch URL
+  Future<void> launchSocialUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   @override

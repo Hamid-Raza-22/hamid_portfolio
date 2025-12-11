@@ -99,6 +99,7 @@ class PortfolioSection extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobileLayout = constraints.maxWidth < ResponsiveBreakpoints.tablet;
+        final isSmallTablet = constraints.maxWidth < ResponsiveBreakpoints.desktop;
 
         return Obx(() {
           if (isMobileLayout) {
@@ -109,7 +110,7 @@ class PortfolioSection extends StatelessWidget {
                     bottom: entry.key < controller.portfolioItems.length - 1 ? 24 : 0,
                   ),
                   child: SizedBox(
-                    height: 320,
+                    height: 380,
                     child: PortfolioCard(
                       portfolio: entry.value,
                       index: entry.key,
@@ -121,35 +122,51 @@ class PortfolioSection extends StatelessWidget {
             );
           }
 
-          return Row(
-            children: controller.portfolioItems.asMap().entries.map((entry) {
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: SizedBox(
-                    height: 360,
-                    child: PortfolioCard(
-                      portfolio: entry.value,
-                      index: entry.key,
-                      rotationValue: rotationValue,
-                    ),
-                  ),
+          // Desktop/Tablet: 3 columns grid
+          final itemsPerRow = isSmallTablet ? 2 : 3;
+          final rows = <Widget>[];
+          
+          for (var i = 0; i < controller.portfolioItems.length; i += itemsPerRow) {
+            final rowItems = controller.portfolioItems.skip(i).take(itemsPerRow).toList();
+            rows.add(
+              Padding(
+                padding: EdgeInsets.only(bottom: i + itemsPerRow < controller.portfolioItems.length ? 24 : 0),
+                child: Row(
+                  children: rowItems.asMap().entries.map((entry) {
+                    final actualIndex = i + entry.key;
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: SizedBox(
+                          height: 400,
+                          child: PortfolioCard(
+                            portfolio: entry.value,
+                            index: actualIndex,
+                            rotationValue: rotationValue,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
-              );
-            }).toList(),
-          );
+              ),
+            );
+          }
+
+          return Column(children: rows);
         });
       },
     );
   }
 }
 
-class _ViewAllButton extends StatelessWidget {
+class _ViewAllButton extends GetView<HomeController> {
   const _ViewAllButton();
 
   @override
   Widget build(BuildContext context) {
     return HoverContainer(
+      onTap: () => controller.goToProjectsPage(),
       builder: (isHovered) {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),

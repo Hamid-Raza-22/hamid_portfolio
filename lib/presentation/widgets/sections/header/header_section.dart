@@ -112,10 +112,23 @@ class _DesktopHeader extends StatelessWidget {
     );
   }
 
+  void _handleNavTap(String navItem) {
+    switch (navItem) {
+      case 'About':
+        controller.goToAboutPage();
+        break;
+      case 'Contact':
+        controller.goToContactPage();
+        break;
+      default:
+        controller.scrollToSection(navItem.toLowerCase());
+    }
+  }
+
   Widget _buildNavigation() {
     return Row(
       children: [
-        ...['Home', 'Services', 'Projects', 'About'].asMap().entries.map(
+        ...['Home', 'Services', 'Projects', 'About', 'Contact'].asMap().entries.map(
           (entry) => AnimatedBuilder(
             animation: controller.heroFadeAnimation,
             builder: (context, child) {
@@ -124,7 +137,10 @@ class _DesktopHeader extends StatelessWidget {
                 child: AnimatedOpacity(
                   duration: Duration(milliseconds: 400 + (entry.key * 150)),
                   opacity: controller.heroFadeAnimation.value,
-                  child: NavItem(text: entry.value),
+                  child: NavItem(
+                    text: entry.value,
+                    onTap: () => _handleNavTap(entry.value),
+                  ),
                 ),
               );
             },
@@ -145,12 +161,13 @@ class _DesktopHeader extends StatelessWidget {
   }
 }
 
-class _ContactButton extends StatelessWidget {
+class _ContactButton extends GetView<HomeController> {
   const _ContactButton();
 
   @override
   Widget build(BuildContext context) {
     return HoverContainer(
+      onTap: () => controller.goToContactPage(),
       builder: (isHovered) {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
@@ -267,10 +284,11 @@ class _MobileHeader extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildMobileNavItem('Home'),
-            _buildMobileNavItem('Services'),
-            _buildMobileNavItem('Our Project'),
-            _buildMobileNavItem('About us'),
+            _buildMobileNavItem('Home', 'home', isPage: false),
+            _buildMobileNavItem('Services', 'services', isPage: false),
+            _buildMobileNavItem('Projects', 'portfolio', isPage: false),
+            _buildMobileNavItem('About', 'about', isPage: true),
+            _buildMobileNavItem('Contact', 'contact', isPage: true),
             const SizedBox(height: 20),
           ],
         ),
@@ -278,10 +296,21 @@ class _MobileHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildMobileNavItem(String text) {
+  Widget _buildMobileNavItem(String text, String sectionKey, {bool isPage = false}) {
     return ListTile(
       title: Text(text, style: const TextStyle(color: Colors.white)),
-      onTap: () => Get.back(),
+      onTap: () {
+        Get.back();
+        if (isPage) {
+          if (sectionKey == 'contact') {
+            controller.goToContactPage();
+          } else if (sectionKey == 'about') {
+            controller.goToAboutPage();
+          }
+        } else {
+          controller.scrollToSection(sectionKey);
+        }
+      },
     );
   }
 }
