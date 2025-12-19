@@ -87,7 +87,7 @@ class _DesktopHero extends StatelessWidget {
                 width: ResponsiveValue.get<double>(
                   context,
                   mobile: 0,
-                  desktop: 30,
+                  desktop: 5,
                 ),
               ),
               Expanded(
@@ -97,7 +97,10 @@ class _DesktopHero extends StatelessWidget {
                   tablet: 1,
                   desktop: 1,
                 ),
-                child: const HeroImage(isMobileLayout: false),
+                child: Transform.translate(
+                  offset: const Offset(-50, -80),
+                  child: const HeroImage(isMobileLayout: false),
+                ),
               ),
             ],
           ),
@@ -127,10 +130,10 @@ class _MobileHero extends StatelessWidget {
     );
     final verticalSpaceMedium = ResponsiveValue.get<double>(
       context,
-      mobile: 25,
-      smallTablet: 30,
-      tablet: 30,
-      desktop: 30,
+      mobile: 12,
+      smallTablet: 15,
+      tablet: 15,
+      desktop: 15,
     );
 
     return Container(
@@ -187,7 +190,7 @@ class _HeroTextContent extends StatelessWidget {
                 'Flutter Developer & UI/UX Designer',
                 style: TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: ResponsiveValue.get<double>(context, mobile: 12, desktop: 14),
+                  fontSize: ResponsiveValue.get<double>(context, mobile: 12, desktop: 30),
                   fontWeight: FontWeight.w500,
                   letterSpacing: 0.5,
                 ),
@@ -206,7 +209,7 @@ class _HeroTextContent extends StatelessWidget {
               mobile: 38,
               smallTablet: 46,
               tablet: 54,
-              desktop: 62,
+              desktop: 82,
             ),
             fontWeight: FontWeight.w800,
             height: 1.05,

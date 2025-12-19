@@ -9,7 +9,8 @@ class AppAssets {
   // ----- IMAGES -----
   static const String _imagesBasePath = 'assets/images';
   static const String heroImagePath = '$_imagesBasePath/Hamid pic w.jpg'; // <-- MAKE SURE THIS FILENAME IS CORRECT
-  static const String anotherImage = '$_imagesBasePath/Hamid pic wsvg.png'; // Example
+  static const String anotherImage = '$_imagesBasePath/HamidProfessionalPic.png'; // Example
+  // static const String anotherImage = '$_imagesBasePath/Hamid pic wsvg.png'; // Example
 // Add more image paths here...
 
 // ----- ICONS -----

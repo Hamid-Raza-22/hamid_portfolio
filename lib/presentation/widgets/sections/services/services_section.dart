@@ -102,7 +102,13 @@ class ServicesSection extends StatelessWidget {
           colors: const [Colors.white, AppColors.primaryLight, AppColors.accent],
           stops: const [0.0, 0.5, 1.0],
           style: ResponsiveTextStyle.headline(context).copyWith(
-            fontSize: ResponsiveValue.get<double>(context, mobile: 32, smallTablet: 36, tablet: 40, desktop: 44),
+            fontSize: ResponsiveValue.get<double>(
+              context,
+              mobile: 28,
+              smallTablet: 34,
+              tablet: 40,
+              desktop: 48,
+            ),
             fontWeight: FontWeight.w800,
             height: 1.1,
             letterSpacing: -1,
@@ -111,12 +117,24 @@ class ServicesSection extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          width: ResponsiveValue.get<double>(context, mobile: double.infinity, desktop: 500),
+          width: ResponsiveValue.get<double>(
+            context,
+            mobile: double.infinity,
+            smallTablet: double.infinity,
+            tablet: 450,
+            desktop: 550,
+          ),
           child: Text(
             'Comprehensive solutions tailored to bring your digital vision to life with cutting-edge technology.',
             style: TextStyle(
               color: AppColors.textSecondary,
-              fontSize: ResponsiveValue.get<double>(context, mobile: 15, desktop: 16),
+              fontSize: ResponsiveValue.get<double>(
+                context,
+                mobile: 14,
+                smallTablet: 15,
+                tablet: 16,
+                desktop: 17,
+              ),
               height: 1.6,
             ),
             textAlign: isMobile ? TextAlign.center : TextAlign.left,

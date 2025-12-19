@@ -15,33 +15,33 @@ class HeroImage extends GetView<HomeController> {
   Widget build(BuildContext context) {
     final containerBaseWidth = ResponsiveValue.get<double>(
       context,
-      mobile: 220,
-      smallTablet: 250,
-      tablet: 260,
-      desktop: 280,
+      mobile: 300,
+      smallTablet: 370,
+      tablet: 440,
+      desktop: 500,
     );
     final containerBaseHeight = ResponsiveValue.get<double>(
       context,
-      mobile: 280,
-      smallTablet: 310,
-      tablet: 330,
-      desktop: 350,
+      mobile: 380,
+      smallTablet: 460,
+      tablet: 550,
+      desktop: 620,
     );
 
     const imageGap = 2.0;
     final imageWidth = ResponsiveValue.get<double>(
       context,
-      mobile: 180 - (2 * imageGap),
-      smallTablet: 210 - (2 * imageGap),
-      tablet: 225 - (2 * imageGap),
-      desktop: 240 - (2 * imageGap),
+      mobile: 296 - (2 * imageGap),
+      smallTablet: 366 - (2 * imageGap),
+      tablet: 436 - (2 * imageGap),
+      desktop: 496 - (2 * imageGap),
     );
     final imageHeight = ResponsiveValue.get<double>(
       context,
-      mobile: 240 - (2 * imageGap),
-      smallTablet: 260 - (2 * imageGap),
-      tablet: 270 - (2 * imageGap),
-      desktop: 300 - (2 * imageGap),
+      mobile: 376 - (2 * imageGap),
+      smallTablet: 456 - (2 * imageGap),
+      tablet: 546 - (2 * imageGap),
+      desktop: 616 - (2 * imageGap),
     );
 
     final borderRadius = ResponsiveValue.get<double>(
@@ -59,8 +59,8 @@ class HeroImage extends GetView<HomeController> {
             controller.floatingAnimation.value * (isMobileLayout ? 0.7 : 1.0),
           ),
           child: SizedBox(
-            width: containerBaseWidth * 2.2,
-            height: containerBaseHeight * 2.0,
+            width: containerBaseWidth * 1.6,
+            height: containerBaseHeight * 1.4,
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -109,7 +109,7 @@ class HeroImage extends GetView<HomeController> {
                                     AppAssets.anotherImage,
                                     width: imageWidth,
                                     height: imageHeight,
-                                    fit: BoxFit.cover,
+                                    fit: BoxFit.contain,
                                   ),
                                 ),
                               );
@@ -146,13 +146,13 @@ class HeroBackgroundDecorations extends StatelessWidget {
       children: [
         // Blue background card
         Positioned(
-          top: containerHeight * 0.4,
-          left: containerWidth * 0.1,
+          top: containerHeight * 0.15,
+          left: containerWidth * -0.05,
           child: Transform.rotate(
             angle: 0.15,
             child: Container(
-              width: containerWidth * 1.4,
-              height: containerHeight * 1.2,
+              width: containerWidth * 1.15,
+              height: containerHeight * 1.05,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
