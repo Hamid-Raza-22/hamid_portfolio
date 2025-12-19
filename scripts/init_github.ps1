@@ -7,7 +7,7 @@ Write-Host ""
 
 # Get user information
 $username = Read-Host "Enter your GitHub username (e.g., Hamid-Raza-22)"
-$reponame = Read-Host "Enter repository name (e.g., Engr_Hamid_Raza)"
+$reponame = Read-Host "Enter repository name (e.g., hamid_portfolio)"
 
 Write-Host ""
 Write-Host "Repository will be created at:" -ForegroundColor Yellow

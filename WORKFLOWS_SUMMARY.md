@@ -234,7 +234,7 @@ channel: 'stable'
   run: |
     flutter build web --release \
       --web-renderer html \           # یا canvaskit
-      --base-href /Engr_Hamid_Raza/   # custom base
+      --base-href /hamid_portfolio/   # custom base
 ```
 
 ### Add Environment-Specific Builds
