@@ -252,7 +252,7 @@ flutter build web --release --web-renderer html
 ```yaml
 flutter build web --release \
   --web-renderer html \
-  --base-href /hamid_portfolio/
+  --base-href /Engr_Hamid_Raza/
 ```
 
 **Flags**:
@@ -295,7 +295,7 @@ GitHub Actions Triggered
     ↓
 Live Website Updated! ✅
     ↓
-https://Hamid-Raza-22.github.io/hamid_portfolio
+https://Hamid-Raza-22.github.io/Engr_Hamid_Raza
 ```
 
 ---
@@ -382,10 +382,10 @@ Total: ~2 minutes 40 seconds
 ls .github/workflows/
 
 # See recent runs
-https://github.com/Hamid-Raza-22/hamid_portfolio/actions
+https://github.com/Hamid-Raza-22/Engr_Hamid_Raza/actions
 
 # Check deployment
-https://Hamid-Raza-22.github.io/hamid_portfolio
+https://Hamid-Raza-22.github.io/Engr_Hamid_Raza
 ```
 
 ---
