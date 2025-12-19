@@ -119,12 +119,12 @@ Rename the file to `.yml.disabled` or delete it.
 Add these to your main README.md:
 
 ```markdown
-![Deploy](https://github.com/Hamid-Raza-22/Engr_Hamid_Raza/workflows/Deploy%20Flutter%20Web%20to%20GitHub%20Pages/badge.svg)
-![CI](https://github.com/Hamid-Raza-22/Engr_Hamid_Raza/workflows/CI%20-%20Test%20%26%20Analyze/badge.svg)
-![Security](https://github.com/Hamid-Raza-22/Engr_Hamid_Raza/workflows/Security%20%26%20Dependency%20Check/badge.svg)
+![Deploy](https://github.com/Hamid-Raza-22/hamid_portfolio/workflows/Deploy%20Flutter%20Web%20to%20GitHub%20Pages/badge.svg)
+![CI](https://github.com/Hamid-Raza-22/hamid_portfolio/workflows/CI%20-%20Test%20%26%20Analyze/badge.svg)
+![Security](https://github.com/Hamid-Raza-22/hamid_portfolio/workflows/Security%20%26%20Dependency%20Check/badge.svg)
 ```
 
-Replace `Hamid-Raza-22/Engr_Hamid_Raza` with your username and repo name.
+Replace `Hamid-Raza-22/hamid_portfolio` with your username and repo name.
 
 ---
 

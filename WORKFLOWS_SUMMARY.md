@@ -47,7 +47,7 @@ Script خود بخود:
 git init
 
 # 2. Add remote (replace with your details)
-git remote add origin https://github.com/Hamid-Raza-22/Engr_Hamid_Raza.git
+git remote add origin https://github.com/Hamid-Raza-22/hamid_portfolio.git
 
 # 3. Add files
 git add .
@@ -216,10 +216,10 @@ channel: 'stable'
 اپنی `README.md` میں add کریں:
 
 ```markdown
-![Deploy Status](https://github.com/Hamid-Raza-22/Engr_Hamid_Raza/workflows/Deploy%20Flutter%20Web%20to%20GitHub%20Pages/badge.svg)
-![CI Status](https://github.com/Hamid-Raza-22/Engr_Hamid_Raza/workflows/CI%20-%20Test%20%26%20Analyze/badge.svg)
-![Security Status](https://github.com/Hamid-Raza-22/Engr_Hamid_Raza/workflows/Security%20%26%20Dependency%20Check/badge.svg)
-![Release Status](https://github.com/Hamid-Raza-22/Engr_Hamid_Raza/workflows/Release/badge.svg)
+![Deploy Status](https://github.com/Hamid-Raza-22/hamid_portfolio/workflows/Deploy%20Flutter%20Web%20to%20GitHub%20Pages/badge.svg)
+![CI Status](https://github.com/Hamid-Raza-22/hamid_portfolio/workflows/CI%20-%20Test%20%26%20Analyze/badge.svg)
+![Security Status](https://github.com/Hamid-Raza-22/hamid_portfolio/workflows/Security%20%26%20Dependency%20Check/badge.svg)
+![Release Status](https://github.com/Hamid-Raza-22/hamid_portfolio/workflows/Release/badge.svg)
 ```
 
 ---

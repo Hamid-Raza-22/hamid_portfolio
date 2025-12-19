@@ -22,10 +22,10 @@
 git init
 
 # Add remote repository
-git remote add origin https://github.com/Hamid-Raza-22/Engr_Hamid_Raza.git
+git remote add origin https://github.com/Hamid-Raza-22/hamid_portfolio.git
 
 # Or use SSH
-git remote add origin git@github.com:Hamid-Raza-22/Engr_Hamid_Raza.git
+git remote add origin git@github.com:Hamid-Raza-22/hamid_portfolio.git
 ```
 
 ---
@@ -81,7 +81,7 @@ https://<your-username>.github.io/<repository-name>
 
 **مثال:**
 ```
-https://Hamid-Raza-22.github.io/Engr_Hamid_Raza
+https://Hamid-Raza-22.github.io/hamid_portfolio
 ```
 
 ⏰ **Note**: First deployment میں 2-5 منٹ لگ سکتے ہیں۔
@@ -171,12 +171,12 @@ git push origin v1.0.0
 ```markdown
 # Hamid Raza - Portfolio
 
-![Deploy](https://github.com/Hamid-Raza-22/Engr_Hamid_Raza/workflows/Deploy%20Flutter%20Web%20to%20GitHub%20Pages/badge.svg)
-![CI](https://github.com/Hamid-Raza-22/Engr_Hamid_Raza/workflows/CI%20-%20Test%20%26%20Analyze/badge.svg)
-![Release](https://github.com/Hamid-Raza-22/Engr_Hamid_Raza/workflows/Release/badge.svg)
-![Security](https://github.com/Hamid-Raza-22/Engr_Hamid_Raza/workflows/Security%20%26%20Dependency%20Check/badge.svg)
+![Deploy](https://github.com/Hamid-Raza-22/hamid_portfolio/workflows/Deploy%20Flutter%20Web%20to%20GitHub%20Pages/badge.svg)
+![CI](https://github.com/Hamid-Raza-22/hamid_portfolio/workflows/CI%20-%20Test%20%26%20Analyze/badge.svg)
+![Release](https://github.com/Hamid-Raza-22/hamid_portfolio/workflows/Release/badge.svg)
+![Security](https://github.com/Hamid-Raza-22/hamid_portfolio/workflows/Security%20%26%20Dependency%20Check/badge.svg)
 
-🌐 **Live Demo**: https://Hamid-Raza-22.github.io/Engr_Hamid_Raza
+🌐 **Live Demo**: https://Hamid-Raza-22.github.io/hamid_portfolio
 ```
 
 یہ badges automatically update ہوتے ہیں! 📈
