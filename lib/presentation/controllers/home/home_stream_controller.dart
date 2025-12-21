@@ -8,10 +8,9 @@ import '../../../domain/usecases/stream/stream_usecases.dart';
 import '../../routes/app_routes.dart';
 import 'home_animation_mixin.dart';
 
-/// HomeController following MVVM pattern.
-/// Manages UI state and coordinates between View and Use Cases.
-/// Now uses Firebase real-time streams for live updates.
-class HomeController extends GetxController
+/// HomeStreamController - Real-time version of HomeController.
+/// Uses Firebase streams for real-time data updates.
+class HomeStreamController extends GetxController
     with GetTickerProviderStateMixin, HomeAnimationMixin {
   // Stream Use Cases (injected dependencies)
   final WatchServicesUseCase _watchServicesUseCase;
@@ -20,7 +19,7 @@ class HomeController extends GetxController
   final WatchStatsUseCase _watchStatsUseCase;
   final WatchNavItemsUseCase _watchNavItemsUseCase;
 
-  HomeController({
+  HomeStreamController({
     required WatchServicesUseCase watchServicesUseCase,
     required WatchPortfolioItemsUseCase watchPortfolioItemsUseCase,
     required WatchSocialLinksUseCase watchSocialLinksUseCase,
@@ -32,11 +31,11 @@ class HomeController extends GetxController
         _watchStatsUseCase = watchStatsUseCase,
         _watchNavItemsUseCase = watchNavItemsUseCase;
 
-  // Stream subscriptions
-  final List<StreamSubscription> _subscriptions = [];
-
   // Scroll Controller
   final ScrollController scrollController = ScrollController();
+
+  // Stream subscriptions
+  final List<StreamSubscription> _subscriptions = [];
 
   // Observable State
   final isLoading = true.obs;
@@ -44,7 +43,7 @@ class HomeController extends GetxController
   final isPortfolioVisible = false.obs;
   final hoveredPortfolioIndex = (-1).obs;
 
-  // Data State
+  // Data State (reactive - auto-updates from Firebase)
   final services = <ServiceEntity>[].obs;
   final portfolioItems = <PortfolioEntity>[].obs;
   final socialLinks = <SocialLinkEntity>[].obs;
@@ -103,6 +102,7 @@ class HomeController extends GetxController
   }
 
   void _checkLoadingComplete() {
+    // Loading complete when we have at least some data
     if (isLoading.value) {
       isLoading.value = false;
     }
@@ -168,22 +168,18 @@ class HomeController extends GetxController
     );
   }
 
-  // Navigate to Contact page
   void goToContactPage() {
     Get.toNamed(AppRoutes.contact);
   }
 
-  // Navigate to About page
   void goToAboutPage() {
     Get.toNamed(AppRoutes.about);
   }
 
-  // Navigate to Projects page
   void goToProjectsPage() {
     Get.toNamed(AppRoutes.projects);
   }
 
-  // Launch email
   Future<void> launchEmail() async {
     final Uri emailUri = Uri(
       scheme: 'mailto',
@@ -199,7 +195,6 @@ class HomeController extends GetxController
     }
   }
 
-  // Launch URL
   Future<void> launchSocialUrl(String url) async {
     final Uri uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {

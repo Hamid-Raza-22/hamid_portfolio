@@ -1,15 +1,15 @@
 import 'package:get/get.dart';
 
-import '../../domain/usecases/usecases.dart';
+import '../../domain/usecases/stream/stream_usecases.dart';
 import '../controllers/projects/projects_controller.dart';
 
-/// Binding for Projects page dependencies.
+/// Binding for Projects page dependencies with Firebase streams.
 class ProjectsBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<ProjectsController>(
       () => ProjectsController(
-        getProjectDetailsUseCase: Get.find<GetProjectDetailsUseCase>(),
+        watchProjectDetailsUseCase: Get.find<WatchProjectDetailsUseCase>(),
       ),
     );
   }

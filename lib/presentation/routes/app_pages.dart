@@ -4,10 +4,14 @@ import '../bindings/about_binding.dart';
 import '../bindings/contact_binding.dart';
 import '../bindings/home_binding.dart';
 import '../bindings/projects_binding.dart';
+import '../bindings/admin/auth_binding.dart';
+import '../bindings/admin/admin_dashboard_binding.dart';
 import '../pages/about/about_page.dart';
 import '../pages/contact/contact_page.dart';
 import '../pages/home/home_page.dart';
 import '../pages/projects/projects_page.dart';
+import '../pages/admin/login_page.dart';
+import '../pages/admin/admin_dashboard_page.dart';
 import 'app_routes.dart';
 
 /// Application page configuration for GetX routing.
@@ -39,6 +43,19 @@ abstract class AppPages {
       page: () => const ProjectsPage(),
       binding: ProjectsBinding(),
       transition: Transition.rightToLeft,
+    ),
+    // Admin routes
+    GetPage(
+      name: AppRoutes.adminLogin,
+      page: () => const LoginPage(),
+      binding: AuthBinding(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.adminDashboard,
+      page: () => const AdminDashboardPage(),
+      bindings: [AuthBinding(), AdminDashboardBinding()],
+      transition: Transition.fadeIn,
     ),
   ];
 }

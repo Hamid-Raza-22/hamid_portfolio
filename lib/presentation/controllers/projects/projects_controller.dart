@@ -1,16 +1,20 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../domain/entities/entities.dart';
-import '../../../domain/usecases/usecases.dart';
+import '../../../domain/usecases/stream/stream_usecases.dart';
 
 /// Controller for Projects page following MVVM pattern.
+/// Uses Firebase real-time streams for live updates.
 class ProjectsController extends GetxController {
-  final GetProjectDetailsUseCase _getProjectDetailsUseCase;
+  final WatchProjectDetailsUseCase _watchProjectDetailsUseCase;
 
   ProjectsController({
-    required GetProjectDetailsUseCase getProjectDetailsUseCase,
-  }) : _getProjectDetailsUseCase = getProjectDetailsUseCase;
+    required WatchProjectDetailsUseCase watchProjectDetailsUseCase,
+  }) : _watchProjectDetailsUseCase = watchProjectDetailsUseCase;
+
+  StreamSubscription? _subscription;
 
   // Observable State
   final isLoading = true.obs;
@@ -19,19 +23,28 @@ class ProjectsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _loadData();
+    _subscribeToStream();
   }
 
-  Future<void> _loadData() async {
-    try {
-      isLoading.value = true;
-      projects.value = await _getProjectDetailsUseCase();
-      isLoading.value = false;
-    } catch (e) {
-      isLoading.value = false;
-      debugPrint('Error loading projects data: $e');
-    }
+  void _subscribeToStream() {
+    isLoading.value = true;
+
+    _subscription = _watchProjectDetailsUseCase().listen(
+      (data) {
+        projects.value = data;
+        if (isLoading.value) {
+          isLoading.value = false;
+        }
+      },
+      onError: (e) => debugPrint('Error watching projects: $e'),
+    );
   }
 
   void goBack() => Get.back();
+
+  @override
+  void onClose() {
+    _subscription?.cancel();
+    super.onClose();
+  }
 }

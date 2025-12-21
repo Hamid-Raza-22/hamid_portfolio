@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/responsive_constants.dart';
 import '../../../controllers/home/home_controller.dart';
+import '../../../routes/app_routes.dart';
 import '../../common/common_widgets.dart';
 
 /// Footer section with links and social icons.
@@ -199,7 +200,52 @@ class FooterSection extends GetView<HomeController> {
             color: AppColors.textMuted,
           ),
         ),
+        const SizedBox(width: 16),
+        _buildAdminButton(),
       ],
+    );
+  }
+
+  Widget _buildAdminButton() {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => Get.toNamed(AppRoutes.adminLogin),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primary.withOpacity(0.2),
+                AppColors.accentPurple.withOpacity(0.1),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: AppColors.primary.withOpacity(0.4),
+            ),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.admin_panel_settings,
+                size: 16,
+                color: AppColors.primaryLight,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Admin',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.primaryLight,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

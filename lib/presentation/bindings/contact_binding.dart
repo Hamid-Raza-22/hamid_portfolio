@@ -1,16 +1,16 @@
 import 'package:get/get.dart';
 
-import '../../domain/usecases/usecases.dart';
+import '../../domain/usecases/stream/stream_usecases.dart';
 import '../controllers/contact/contact_controller.dart';
 
-/// Binding for Contact page dependencies.
+/// Binding for Contact page dependencies with Firebase streams.
 class ContactBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<ContactController>(
       () => ContactController(
-        getContactInfoUseCase: Get.find<GetContactInfoUseCase>(),
-        getSocialLinksUseCase: Get.find<GetSocialLinksUseCase>(),
+        watchContactInfoUseCase: Get.find<WatchContactInfoUseCase>(),
+        watchSocialLinksUseCase: Get.find<WatchSocialLinksUseCase>(),
       ),
     );
   }

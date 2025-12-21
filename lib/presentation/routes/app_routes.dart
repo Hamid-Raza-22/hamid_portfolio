@@ -7,4 +7,8 @@ abstract class AppRoutes {
   static const String about = '/about';
   static const String contact = '/contact';
   static const String projects = '/projects';
+  
+  // Admin routes
+  static const String adminLogin = '/admin/login';
+  static const String adminDashboard = '/admin/dashboard';
 }

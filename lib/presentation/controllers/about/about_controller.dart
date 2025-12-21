@@ -1,31 +1,35 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../domain/entities/entities.dart';
-import '../../../domain/usecases/usecases.dart';
+import '../../../domain/usecases/stream/stream_usecases.dart';
 
 /// Controller for About page following MVVM pattern.
+/// Uses Firebase real-time streams for live updates.
 class AboutController extends GetxController {
-  final GetProfileUseCase _getProfileUseCase;
-  final GetExperiencesUseCase _getExperiencesUseCase;
-  final GetEducationUseCase _getEducationUseCase;
-  final GetCertificationsUseCase _getCertificationsUseCase;
-  final GetAchievementsUseCase _getAchievementsUseCase;
-  final GetExpertiseUseCase _getExpertiseUseCase;
+  final WatchProfileUseCase _watchProfileUseCase;
+  final WatchExperiencesUseCase _watchExperiencesUseCase;
+  final WatchEducationUseCase _watchEducationUseCase;
+  final WatchCertificationsUseCase _watchCertificationsUseCase;
+  final WatchAchievementsUseCase _watchAchievementsUseCase;
+  final WatchExpertiseUseCase _watchExpertiseUseCase;
 
   AboutController({
-    required GetProfileUseCase getProfileUseCase,
-    required GetExperiencesUseCase getExperiencesUseCase,
-    required GetEducationUseCase getEducationUseCase,
-    required GetCertificationsUseCase getCertificationsUseCase,
-    required GetAchievementsUseCase getAchievementsUseCase,
-    required GetExpertiseUseCase getExpertiseUseCase,
-  })  : _getProfileUseCase = getProfileUseCase,
-        _getExperiencesUseCase = getExperiencesUseCase,
-        _getEducationUseCase = getEducationUseCase,
-        _getCertificationsUseCase = getCertificationsUseCase,
-        _getAchievementsUseCase = getAchievementsUseCase,
-        _getExpertiseUseCase = getExpertiseUseCase;
+    required WatchProfileUseCase watchProfileUseCase,
+    required WatchExperiencesUseCase watchExperiencesUseCase,
+    required WatchEducationUseCase watchEducationUseCase,
+    required WatchCertificationsUseCase watchCertificationsUseCase,
+    required WatchAchievementsUseCase watchAchievementsUseCase,
+    required WatchExpertiseUseCase watchExpertiseUseCase,
+  })  : _watchProfileUseCase = watchProfileUseCase,
+        _watchExperiencesUseCase = watchExperiencesUseCase,
+        _watchEducationUseCase = watchEducationUseCase,
+        _watchCertificationsUseCase = watchCertificationsUseCase,
+        _watchAchievementsUseCase = watchAchievementsUseCase,
+        _watchExpertiseUseCase = watchExpertiseUseCase;
+
+  final List<StreamSubscription> _subscriptions = [];
 
   // Observable State
   final isLoading = true.obs;
@@ -39,35 +43,71 @@ class AboutController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _loadData();
+    _subscribeToStreams();
   }
 
-  Future<void> _loadData() async {
-    try {
-      isLoading.value = true;
+  void _subscribeToStreams() {
+    isLoading.value = true;
 
-      final results = await Future.wait([
-        _getProfileUseCase(),
-        _getExperiencesUseCase(),
-        _getEducationUseCase(),
-        _getCertificationsUseCase(),
-        _getAchievementsUseCase(),
-        _getExpertiseUseCase(),
-      ]);
+    _subscriptions.addAll([
+      _watchProfileUseCase().listen(
+        (data) {
+          profile.value = data;
+          _checkLoadingComplete();
+        },
+        onError: (e) => debugPrint('Error watching profile: $e'),
+      ),
+      _watchExperiencesUseCase().listen(
+        (data) {
+          experiences.value = data;
+          _checkLoadingComplete();
+        },
+        onError: (e) => debugPrint('Error watching experiences: $e'),
+      ),
+      _watchEducationUseCase().listen(
+        (data) {
+          education.value = data;
+          _checkLoadingComplete();
+        },
+        onError: (e) => debugPrint('Error watching education: $e'),
+      ),
+      _watchCertificationsUseCase().listen(
+        (data) {
+          certifications.value = data;
+          _checkLoadingComplete();
+        },
+        onError: (e) => debugPrint('Error watching certifications: $e'),
+      ),
+      _watchAchievementsUseCase().listen(
+        (data) {
+          achievements.value = data;
+          _checkLoadingComplete();
+        },
+        onError: (e) => debugPrint('Error watching achievements: $e'),
+      ),
+      _watchExpertiseUseCase().listen(
+        (data) {
+          expertise.value = data;
+          _checkLoadingComplete();
+        },
+        onError: (e) => debugPrint('Error watching expertise: $e'),
+      ),
+    ]);
+  }
 
-      profile.value = results[0] as ProfileEntity;
-      experiences.value = results[1] as List<ExperienceEntity>;
-      education.value = results[2] as List<EducationEntity>;
-      certifications.value = results[3] as List<CertificationEntity>;
-      achievements.value = results[4] as List<AchievementEntity>;
-      expertise.value = results[5] as List<ExpertiseEntity>;
-
+  void _checkLoadingComplete() {
+    if (isLoading.value) {
       isLoading.value = false;
-    } catch (e) {
-      isLoading.value = false;
-      debugPrint('Error loading about data: $e');
     }
   }
 
   void goBack() => Get.back();
+
+  @override
+  void onClose() {
+    for (final sub in _subscriptions) {
+      sub.cancel();
+    }
+    super.onClose();
+  }
 }

@@ -1,20 +1,24 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../domain/entities/entities.dart';
-import '../../../domain/usecases/usecases.dart';
+import '../../../domain/usecases/stream/stream_usecases.dart';
 
 /// Controller for Contact page following MVVM pattern.
+/// Uses Firebase real-time streams for live updates.
 class ContactController extends GetxController {
-  final GetContactInfoUseCase _getContactInfoUseCase;
-  final GetSocialLinksUseCase _getSocialLinksUseCase;
+  final WatchContactInfoUseCase _watchContactInfoUseCase;
+  final WatchSocialLinksUseCase _watchSocialLinksUseCase;
 
   ContactController({
-    required GetContactInfoUseCase getContactInfoUseCase,
-    required GetSocialLinksUseCase getSocialLinksUseCase,
-  })  : _getContactInfoUseCase = getContactInfoUseCase,
-        _getSocialLinksUseCase = getSocialLinksUseCase;
+    required WatchContactInfoUseCase watchContactInfoUseCase,
+    required WatchSocialLinksUseCase watchSocialLinksUseCase,
+  })  : _watchContactInfoUseCase = watchContactInfoUseCase,
+        _watchSocialLinksUseCase = watchSocialLinksUseCase;
+
+  final List<StreamSubscription> _subscriptions = [];
 
   // Observable State
   final isLoading = true.obs;
@@ -24,25 +28,33 @@ class ContactController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _loadData();
+    _subscribeToStreams();
   }
 
-  Future<void> _loadData() async {
-    try {
-      isLoading.value = true;
+  void _subscribeToStreams() {
+    isLoading.value = true;
 
-      final results = await Future.wait([
-        _getContactInfoUseCase(),
-        _getSocialLinksUseCase(),
-      ]);
+    _subscriptions.addAll([
+      _watchContactInfoUseCase().listen(
+        (data) {
+          contactInfo.value = data;
+          _checkLoadingComplete();
+        },
+        onError: (e) => debugPrint('Error watching contact info: $e'),
+      ),
+      _watchSocialLinksUseCase().listen(
+        (data) {
+          socialLinks.value = data;
+          _checkLoadingComplete();
+        },
+        onError: (e) => debugPrint('Error watching social links: $e'),
+      ),
+    ]);
+  }
 
-      contactInfo.value = results[0] as List<ContactInfoEntity>;
-      socialLinks.value = results[1] as List<SocialLinkEntity>;
-
+  void _checkLoadingComplete() {
+    if (isLoading.value) {
       isLoading.value = false;
-    } catch (e) {
-      isLoading.value = false;
-      debugPrint('Error loading contact data: $e');
     }
   }
 
@@ -89,5 +101,13 @@ class ContactController extends GetxController {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
+  }
+
+  @override
+  void onClose() {
+    for (final sub in _subscriptions) {
+      sub.cancel();
+    }
+    super.onClose();
   }
 }
