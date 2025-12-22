@@ -12,3 +12,4 @@ export 'achievement_model.dart';
 export 'expertise_model.dart';
 export 'contact_info_model.dart';
 export 'project_detail_model.dart';
+export 'hero_section_model.dart';

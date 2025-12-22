@@ -91,3 +91,10 @@ class WatchProjectDetailsUseCase {
   WatchProjectDetailsUseCase(this._repository);
   Stream<List<ProjectDetailEntity>> call() => _repository.watchProjectDetails();
 }
+
+/// Use case for watching hero section in real-time.
+class WatchHeroSectionUseCase {
+  final PortfolioRepositoryStream _repository;
+  WatchHeroSectionUseCase(this._repository);
+  Stream<HeroSectionEntity> call() => _repository.watchHeroSection();
+}

@@ -72,5 +72,10 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAuthenticated();
     }
+    
+    match /heroSection/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
   }
 }

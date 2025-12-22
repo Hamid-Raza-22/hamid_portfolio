@@ -137,9 +137,35 @@ class FooterSection extends GetView<HomeController> {
       spacing: ResponsiveValue.get<double>(context, mobile: 24, desktop: 40),
       runSpacing: 16,
       children: controller.navItems.map((item) {
-        return FooterNavItem(text: item.title);
+        return FooterNavItem(
+          text: item.title,
+          onTap: () => _handleNavigation(item.sectionKey ?? item.title.toLowerCase()),
+        );
       }).toList(),
     ));
+  }
+
+  void _handleNavigation(String sectionKey) {
+    switch (sectionKey.toLowerCase()) {
+      case 'home':
+        controller.scrollToSection('home');
+        break;
+      case 'about':
+        Get.toNamed(AppRoutes.about);
+        break;
+      case 'services':
+        controller.scrollToSection('services');
+        break;
+      case 'portfolio':
+      case 'projects':
+        Get.toNamed(AppRoutes.projects);
+        break;
+      case 'contact':
+        Get.toNamed(AppRoutes.contact);
+        break;
+      default:
+        controller.scrollToSection(sectionKey);
+    }
   }
 
   Widget _buildDivider() {

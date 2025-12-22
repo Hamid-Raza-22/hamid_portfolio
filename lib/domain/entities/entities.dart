@@ -5,6 +5,7 @@ export 'contact_info_entity.dart';
 export 'education_entity.dart';
 export 'experience_entity.dart';
 export 'expertise_entity.dart';
+export 'hero_section_entity.dart';
 export 'nav_item_entity.dart';
 export 'portfolio_entity.dart';
 export 'profile_entity.dart';

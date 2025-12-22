@@ -256,3 +256,11 @@ class DeleteNavItemUseCase {
   DeleteNavItemUseCase(this._repository);
   Future<void> call(String id) => _repository.deleteNavItem(id);
 }
+
+// ============ HERO SECTION USE CASE ============
+
+class UpdateHeroSectionUseCase {
+  final PortfolioRepositoryStream _repository;
+  UpdateHeroSectionUseCase(this._repository);
+  Future<void> call(HeroSectionEntity heroSection) => _repository.updateHeroSection(heroSection);
+}

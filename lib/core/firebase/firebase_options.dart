@@ -3,13 +3,16 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
+/// Configuration is loaded from .env file for security.
 ///
 /// Example:
 /// ```dart
 /// import 'firebase_options.dart';
 /// // ...
+/// await dotenv.load();
 /// await Firebase.initializeApp(
 ///   options: DefaultFirebaseOptions.currentPlatform,
 /// );
@@ -23,27 +26,27 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for android - '
-              'you can reconfigure this by running the FlutterFire CLI again.',
+          'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.iOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for ios - '
-              'you can reconfigure this by running the FlutterFire CLI again.',
+          'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
-              'you can reconfigure this by running the FlutterFire CLI again.',
+          'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
-              'you can reconfigure this by running the FlutterFire CLI again.',
+          'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
-              'you can reconfigure this by running the FlutterFire CLI again.',
+          'you can reconfigure this by running the FlutterFire CLI again.',
         );
       default:
         throw UnsupportedError(
@@ -52,13 +55,25 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCn_uR2xr_5qKp-bJSEKRlFS7RI_zZxvuA',
-    appId: '1:950615257454:web:ef7f9f6c34e0163933d17f',
-    messagingSenderId: '950615257454',
-    projectId: 'hamid-raza-portfolio',
-    authDomain: 'hamid-raza-portfolio.firebaseapp.com',
-    storageBucket: 'hamid-raza-portfolio.firebasestorage.app',
-    measurementId: 'G-7J6R9EP5KK',
+  // Environment variables loaded from .env file
+  static String get _apiKey => dotenv.env['FIREBASE_API_KEY'] ?? '';
+  static String get _authDomain => dotenv.env['FIREBASE_AUTH_DOMAIN'] ?? '';
+  static String get _projectId => dotenv.env['FIREBASE_PROJECT_ID'] ?? '';
+  static String get _storageBucket =>
+      dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? '';
+  static String get _messagingSenderId =>
+      dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '';
+  static String get _appId => dotenv.env['FIREBASE_APP_ID'] ?? '';
+  static String get _measurementId =>
+      dotenv.env['FIREBASE_MEASUREMENT_ID'] ?? '';
+
+  static FirebaseOptions get web => FirebaseOptions(
+    apiKey: _apiKey,
+    appId: _appId,
+    messagingSenderId: _messagingSenderId,
+    projectId: _projectId,
+    authDomain: _authDomain,
+    storageBucket: _storageBucket,
+    measurementId: _measurementId,
   );
 }

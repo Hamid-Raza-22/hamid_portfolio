@@ -18,6 +18,8 @@ abstract class PortfolioRepositoryStream {
   Stream<List<ContactInfoEntity>> watchContactInfo();
   Stream<List<ProjectDetailEntity>> watchProjectDetails();
 
+  Stream<HeroSectionEntity> watchHeroSection();
+
   // CRUD methods for admin operations
   Future<void> addService(ServiceEntity service);
   Future<void> updateService(ServiceEntity service);
@@ -68,6 +70,8 @@ abstract class PortfolioRepositoryStream {
   Future<void> addProjectDetail(ProjectDetailEntity project);
   Future<void> updateProjectDetail(ProjectDetailEntity project);
   Future<void> deleteProjectDetail(String id);
+
+  Future<void> updateHeroSection(HeroSectionEntity heroSection);
 
   // Seed initial data from local source
   Future<void> seedInitialData();

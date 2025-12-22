@@ -83,6 +83,11 @@ class PortfolioRepositoryStreamImpl implements PortfolioRepositoryStream {
     return _firebaseDataSource.watchProjectDetails();
   }
 
+  @override
+  Stream<HeroSectionEntity> watchHeroSection() {
+    return _firebaseDataSource.watchHeroSection();
+  }
+
   // ============ CRUD METHODS ============
 
   @override
@@ -232,6 +237,10 @@ class PortfolioRepositoryStreamImpl implements PortfolioRepositoryStream {
   @override
   Future<void> deleteProjectDetail(String id) =>
       _firebaseDataSource.deleteProjectDetail(id);
+
+  @override
+  Future<void> updateHeroSection(HeroSectionEntity heroSection) =>
+      _firebaseDataSource.updateHeroSection(heroSection);
 
   // ============ SEED DATA METHOD ============
 

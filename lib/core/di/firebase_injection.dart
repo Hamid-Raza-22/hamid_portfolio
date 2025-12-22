@@ -4,6 +4,7 @@ import '../../data/datasources/local/portfolio_local_datasource.dart';
 import '../../data/datasources/local/portfolio_local_datasource_interface.dart';
 import '../../data/datasources/remote/auth_datasource.dart';
 import '../../data/datasources/remote/firebase_datasource.dart';
+import '../../data/datasources/remote/storage_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/repositories/portfolio_repository_stream_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -41,6 +42,12 @@ class FirebaseInjection {
     // Auth data source
     Get.lazyPut<AuthDataSource>(
       () => AuthDataSourceImpl(),
+      fenix: true,
+    );
+
+    // Storage data source for image uploads
+    Get.lazyPut<StorageDataSource>(
+      () => StorageDataSourceImpl(),
       fenix: true,
     );
   }
@@ -147,6 +154,9 @@ class FirebaseInjection {
     Get.lazyPut(() => AddProjectDetailUseCase(repository), fenix: true);
     Get.lazyPut(() => UpdateProjectDetailUseCase(repository), fenix: true);
     Get.lazyPut(() => DeleteProjectDetailUseCase(repository), fenix: true);
+
+    // Hero Section
+    Get.lazyPut(() => UpdateHeroSectionUseCase(repository), fenix: true);
 
     // Seed data
     Get.lazyPut(() => SeedInitialDataUseCase(repository), fenix: true);

@@ -19,6 +19,7 @@ abstract class FirebaseDataSource {
   Stream<List<ExpertiseEntity>> watchExpertise();
   Stream<List<ContactInfoEntity>> watchContactInfo();
   Stream<List<ProjectDetailEntity>> watchProjectDetails();
+  Stream<HeroSectionEntity> watchHeroSection();
 
   // CRUD methods for admin operations
   Future<void> addService(ServiceEntity service);
@@ -71,6 +72,8 @@ abstract class FirebaseDataSource {
   Future<void> updateProjectDetail(ProjectDetailEntity project);
   Future<void> deleteProjectDetail(String id);
 
+  Future<void> updateHeroSection(HeroSectionEntity heroSection);
+
   // Seed data method
   Future<void> seedInitialData();
 }
@@ -93,6 +96,7 @@ class FirebaseDataSourceImpl implements FirebaseDataSource {
   static const String _expertiseCollection = 'expertise';
   static const String _contactInfoCollection = 'contactInfo';
   static const String _projectDetailsCollection = 'projectDetails';
+  static const String _heroSectionCollection = 'heroSection';
 
   FirebaseDataSourceImpl({FirebaseFirestore? firestore})
       : _firestore = firestore ?? FirebaseFirestore.instance;
@@ -227,6 +231,29 @@ class FirebaseDataSourceImpl implements FirebaseDataSource {
               .map((doc) => ProjectDetailModel.fromJson(doc.data(), doc.id))
               .toList(),
         );
+  }
+
+  @override
+  Stream<HeroSectionEntity> watchHeroSection() {
+    return _firestore
+        .collection(_heroSectionCollection)
+        .doc('main')
+        .snapshots()
+        .map((doc) {
+      if (doc.exists && doc.data() != null) {
+        return HeroSectionModel.fromJson(doc.data()!, doc.id);
+      }
+      return const HeroSectionEntity(
+        id: 'main',
+        greeting: "Hello, I'm",
+        name: 'Hamid Raza',
+        title: 'Flutter Developer',
+        subtitle: 'Mobile & Web Applications',
+        description: 'Passionate about creating beautiful, functional applications',
+        ctaButtonText: 'Get In Touch',
+        ctaButtonLink: '/contact',
+      );
+    });
   }
 
   // ============ CRUD METHODS (Admin Operations) ============
@@ -452,6 +479,13 @@ class FirebaseDataSourceImpl implements FirebaseDataSource {
   @override
   Future<void> deleteProjectDetail(String id) async {
     await _firestore.collection(_projectDetailsCollection).doc(id).delete();
+  }
+
+  // Hero Section
+  @override
+  Future<void> updateHeroSection(HeroSectionEntity heroSection) async {
+    final model = HeroSectionModel.fromEntity(heroSection);
+    await _firestore.collection(_heroSectionCollection).doc('main').set(model.toJson());
   }
 
   // ============ SEED DATA METHOD ============

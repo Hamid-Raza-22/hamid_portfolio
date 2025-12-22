@@ -49,7 +49,7 @@ jobs:
           flutter pub outdated >> dependency-report.md || true
       
       - name: 📤 Upload Dependency Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dependency-report
           path: dependency-report.md
