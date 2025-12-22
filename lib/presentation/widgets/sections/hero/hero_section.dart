@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/assets.dart';
 import '../../../../core/constants/responsive_constants.dart';
 import '../../../controllers/home/home_controller.dart';
 import '../../common/common_widgets.dart';
 import 'hero_image.dart';
-import 'hero_painters.dart';
 
 /// Hero section with animated content.
 class HeroSection extends StatelessWidget {
@@ -155,96 +153,109 @@ class _MobileHero extends StatelessWidget {
   }
 }
 
-class _HeroTextContent extends StatelessWidget {
+class _HeroTextContent extends GetView<HomeController> {
   final bool isMobile;
 
   const _HeroTextContent({required this.isMobile});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.primary.withOpacity(0.2), AppColors.accentPurple.withOpacity(0.1)],
-            ),
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: AppColors.accent,
-                  shape: BoxShape.circle,
-                ),
+    return Obx(() {
+      final hero = controller.heroSection.value;
+      debugPrint('📝 HeroTextContent Obx: hero=${hero?.name}, title=${hero?.title}');
+      final subtitle = hero?.subtitle ?? 'Flutter Developer & UI/UX Designer';
+      final title = hero?.title ?? 'Crafting Digital\nExperiences That\nInspire';
+      
+      return Column(
+        crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.primary.withOpacity(0.2), AppColors.accentPurple.withOpacity(0.1)],
               ),
-              const SizedBox(width: 10),
-              Text(
-                'Flutter Developer & UI/UX Designer',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: ResponsiveValue.get<double>(context, mobile: 12, desktop: 30),
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, desktop: 28)),
-        GradientText(
-          text: 'Crafting Digital\nExperiences That\nInspire',
-          colors: const [Colors.white, AppColors.primaryLight, AppColors.accent],
-          stops: const [0.0, 0.5, 1.0],
-          style: ResponsiveTextStyle.headline(context).copyWith(
-            fontSize: ResponsiveValue.get<double>(
-              context,
-              mobile: 38,
-              smallTablet: 46,
-              tablet: 54,
-              desktop: 82,
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: AppColors.primary.withOpacity(0.3)),
             ),
-            fontWeight: FontWeight.w800,
-            height: 1.05,
-            letterSpacing: -1.5,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: AppColors.accent,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: ResponsiveValue.get<double>(context, mobile: 12, desktop: 30),
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
           ),
-          textAlign: isMobile ? TextAlign.center : TextAlign.left,
-        ),
-      ],
-    );
+          SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, desktop: 28)),
+          GradientText(
+            text: title,
+            colors: const [Colors.white, AppColors.primaryLight, AppColors.accent],
+            stops: const [0.0, 0.5, 1.0],
+            style: ResponsiveTextStyle.headline(context).copyWith(
+              fontSize: ResponsiveValue.get<double>(
+                context,
+                mobile: 38,
+                smallTablet: 46,
+                tablet: 54,
+                desktop: 82,
+              ),
+              fontWeight: FontWeight.w800,
+              height: 1.05,
+              letterSpacing: -1.5,
+            ),
+            textAlign: isMobile ? TextAlign.center : TextAlign.left,
+          ),
+        ],
+      );
+    });
   }
 }
 
-class _HeroDescription extends StatelessWidget {
+class _HeroDescription extends GetView<HomeController> {
   final TextAlign textAlign;
 
   const _HeroDescription({required this.textAlign});
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      'Passionate about building beautiful, performant mobile and web applications.\nTransforming ideas into elegant solutions with Flutter and modern technologies.',
-      style: ResponsiveTextStyle.body(context).copyWith(
-        fontSize: ResponsiveValue.get<double>(
-          context,
-          mobile: 15,
-          smallTablet: 16,
-          tablet: 17,
-          desktop: 18,
+    return Obx(() {
+      final hero = controller.heroSection.value;
+      final description = hero?.description ?? 
+        'Passionate about building beautiful, performant mobile and web applications.\nTransforming ideas into elegant solutions with Flutter and modern technologies.';
+      
+      return Text(
+        description,
+        style: ResponsiveTextStyle.body(context).copyWith(
+          fontSize: ResponsiveValue.get<double>(
+            context,
+            mobile: 15,
+            smallTablet: 16,
+            tablet: 17,
+            desktop: 18,
+          ),
+          height: 1.7,
+          color: AppColors.textSecondary,
+          letterSpacing: 0.2,
         ),
-        height: 1.7,
-        color: AppColors.textSecondary,
-        letterSpacing: 0.2,
-      ),
-      textAlign: textAlign,
-    );
+        textAlign: textAlign,
+      );
+    });
   }
 }
 
@@ -255,24 +266,30 @@ class _HeroButtons extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
-      spacing: 16,
-      runSpacing: 12,
-      children: [
-        AnimatedButton(
-          text: 'View My Work',
-          icon: Icons.arrow_forward_rounded,
-          isPrimary: true,
-          onTap: () => controller.scrollToSection('portfolio'),
-        ),
-        AnimatedButton(
-          text: 'Get In Touch',
-          icon: Icons.mail_outline_rounded,
-          isPrimary: false,
-          onTap: () => controller.scrollToSection('contact'),
-        ),
-      ],
-    );
+    return Obx(() {
+      final hero = controller.heroSection.value;
+      final ctaText = hero?.ctaButtonText ?? 'Get In Touch';
+      
+      return Wrap(
+        alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
+        spacing: 16,
+        runSpacing: 12,
+        children: [
+          AnimatedButton(
+            text: 'View My Work',
+            icon: Icons.arrow_forward_rounded,
+            isPrimary: true,
+            onTap: () => controller.scrollToSection('portfolio'),
+          ),
+          AnimatedButton(
+            text: ctaText,
+            icon: Icons.mail_outline_rounded,
+            isPrimary: false,
+            onTap: () => controller.scrollToSection('contact'),
+          ),
+        ],
+      );
+    });
   }
 }
+

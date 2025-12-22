@@ -15,6 +15,8 @@ class PortfolioModel extends PortfolioEntity {
     required super.tags,
     super.imageUrl,
     super.projectUrl,
+    super.customIconUrl,
+    super.useCustomImage,
   });
 
   /// Create from Firestore document
@@ -29,6 +31,8 @@ class PortfolioModel extends PortfolioEntity {
       tags: List<String>.from(json['tags'] ?? []),
       imageUrl: json['imageUrl'] as String?,
       projectUrl: json['projectUrl'] as String?,
+      customIconUrl: json['customIconUrl'] as String?,
+      useCustomImage: json['useCustomImage'] as bool? ?? false,
     );
   }
 
@@ -43,6 +47,8 @@ class PortfolioModel extends PortfolioEntity {
       'tags': tags,
       'imageUrl': imageUrl,
       'projectUrl': projectUrl,
+      'useCustomImage': useCustomImage,
+      if (customIconUrl != null) 'customIconUrl': customIconUrl,
     };
   }
 
@@ -58,6 +64,8 @@ class PortfolioModel extends PortfolioEntity {
       tags: entity.tags,
       imageUrl: entity.imageUrl,
       projectUrl: entity.projectUrl,
+      customIconUrl: entity.customIconUrl,
+      useCustomImage: entity.useCustomImage,
     );
   }
 
@@ -73,6 +81,8 @@ class PortfolioModel extends PortfolioEntity {
       tags: tags,
       imageUrl: imageUrl,
       projectUrl: projectUrl,
+      customIconUrl: customIconUrl,
+      useCustomImage: useCustomImage,
     );
   }
 
@@ -87,6 +97,8 @@ class PortfolioModel extends PortfolioEntity {
     List<String>? tags,
     String? imageUrl,
     String? projectUrl,
+    String? customIconUrl,
+    bool? useCustomImage,
   }) {
     return PortfolioModel(
       id: id ?? this.id,
@@ -98,6 +110,8 @@ class PortfolioModel extends PortfolioEntity {
       tags: tags ?? this.tags,
       imageUrl: imageUrl ?? this.imageUrl,
       projectUrl: projectUrl ?? this.projectUrl,
+      customIconUrl: customIconUrl ?? this.customIconUrl,
+      useCustomImage: useCustomImage ?? this.useCustomImage,
     );
   }
 }

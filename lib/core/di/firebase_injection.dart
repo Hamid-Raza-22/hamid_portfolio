@@ -87,6 +87,7 @@ class FirebaseInjection {
     Get.lazyPut(() => WatchExpertiseUseCase(repository), fenix: true);
     Get.lazyPut(() => WatchContactInfoUseCase(repository), fenix: true);
     Get.lazyPut(() => WatchProjectDetailsUseCase(repository), fenix: true);
+    Get.lazyPut(() => WatchHeroSectionUseCase(repository), fenix: true);
   }
 
   static void _registerAdminUseCases() {

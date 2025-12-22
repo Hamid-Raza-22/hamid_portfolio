@@ -143,6 +143,10 @@ class _PortfolioCardState extends State<PortfolioCard>
   }
 
   Widget _buildIconAndCategory() {
+    final useCustomImage = widget.portfolio.useCustomImage && 
+        widget.portfolio.customIconUrl != null && 
+        widget.portfolio.customIconUrl!.isNotEmpty;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -164,11 +168,26 @@ class _PortfolioCardState extends State<PortfolioCard>
               width: 1,
             ),
           ),
-          child: Icon(
-            widget.portfolio.icon,
-            color: isHovered ? widget.portfolio.color : widget.portfolio.color.withOpacity(0.8),
-            size: 28,
-          ),
+          child: useCustomImage
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    widget.portfolio.customIconUrl!,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Icon(
+                      widget.portfolio.icon,
+                      color: isHovered ? widget.portfolio.color : widget.portfolio.color.withOpacity(0.8),
+                      size: 28,
+                    ),
+                  ),
+                )
+              : Icon(
+                  widget.portfolio.icon,
+                  color: isHovered ? widget.portfolio.color : widget.portfolio.color.withOpacity(0.8),
+                  size: 28,
+                ),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

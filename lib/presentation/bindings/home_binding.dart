@@ -15,6 +15,7 @@ class HomeBinding extends Bindings {
         watchSocialLinksUseCase: Get.find<WatchSocialLinksUseCase>(),
         watchStatsUseCase: Get.find<WatchStatsUseCase>(),
         watchNavItemsUseCase: Get.find<WatchNavItemsUseCase>(),
+        watchHeroSectionUseCase: Get.find<WatchHeroSectionUseCase>(),
       ),
     );
   }

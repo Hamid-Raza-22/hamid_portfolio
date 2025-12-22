@@ -22,6 +22,7 @@ class AdminDashboardController extends GetxController {
   final WatchExpertiseUseCase _watchExpertiseUseCase;
   final WatchContactInfoUseCase _watchContactInfoUseCase;
   final WatchProjectDetailsUseCase _watchProjectDetailsUseCase;
+  final WatchHeroSectionUseCase _watchHeroSectionUseCase;
 
   // Admin CRUD use cases
   final AddServiceUseCase _addServiceUseCase;
@@ -71,6 +72,7 @@ class AdminDashboardController extends GetxController {
   final DeleteProjectDetailUseCase _deleteProjectDetailUseCase;
 
   final SeedInitialDataUseCase _seedInitialDataUseCase;
+  final UpdateHeroSectionUseCase _updateHeroSectionUseCase;
 
   AdminDashboardController({
     required WatchServicesUseCase watchServicesUseCase,
@@ -85,6 +87,7 @@ class AdminDashboardController extends GetxController {
     required WatchExpertiseUseCase watchExpertiseUseCase,
     required WatchContactInfoUseCase watchContactInfoUseCase,
     required WatchProjectDetailsUseCase watchProjectDetailsUseCase,
+    required WatchHeroSectionUseCase watchHeroSectionUseCase,
     required AddServiceUseCase addServiceUseCase,
     required UpdateServiceUseCase updateServiceUseCase,
     required DeleteServiceUseCase deleteServiceUseCase,
@@ -120,6 +123,7 @@ class AdminDashboardController extends GetxController {
     required UpdateProjectDetailUseCase updateProjectDetailUseCase,
     required DeleteProjectDetailUseCase deleteProjectDetailUseCase,
     required SeedInitialDataUseCase seedInitialDataUseCase,
+    required UpdateHeroSectionUseCase updateHeroSectionUseCase,
   })  : _watchServicesUseCase = watchServicesUseCase,
         _watchPortfolioItemsUseCase = watchPortfolioItemsUseCase,
         _watchExperiencesUseCase = watchExperiencesUseCase,
@@ -132,6 +136,7 @@ class AdminDashboardController extends GetxController {
         _watchExpertiseUseCase = watchExpertiseUseCase,
         _watchContactInfoUseCase = watchContactInfoUseCase,
         _watchProjectDetailsUseCase = watchProjectDetailsUseCase,
+        _watchHeroSectionUseCase = watchHeroSectionUseCase,
         _addServiceUseCase = addServiceUseCase,
         _updateServiceUseCase = updateServiceUseCase,
         _deleteServiceUseCase = deleteServiceUseCase,
@@ -166,7 +171,8 @@ class AdminDashboardController extends GetxController {
         _addProjectDetailUseCase = addProjectDetailUseCase,
         _updateProjectDetailUseCase = updateProjectDetailUseCase,
         _deleteProjectDetailUseCase = deleteProjectDetailUseCase,
-        _seedInitialDataUseCase = seedInitialDataUseCase;
+        _seedInitialDataUseCase = seedInitialDataUseCase,
+        _updateHeroSectionUseCase = updateHeroSectionUseCase;
 
   // UUID generator
   final _uuid = const Uuid();
@@ -189,12 +195,14 @@ class AdminDashboardController extends GetxController {
   final expertise = <ExpertiseEntity>[].obs;
   final contactInfo = <ContactInfoEntity>[].obs;
   final projectDetails = <ProjectDetailEntity>[].obs;
+  final heroSection = Rxn<HeroSectionEntity>();
 
   // Stream subscriptions
   final List<StreamSubscription> _subscriptions = [];
 
   // Categories for navigation
   final List<Map<String, dynamic>> categories = [
+    {'title': 'Hero Section', 'icon': Icons.home},
     {'title': 'Profile', 'icon': Icons.person},
     {'title': 'Services', 'icon': Icons.design_services},
     {'title': 'Portfolio', 'icon': Icons.work},
@@ -229,6 +237,7 @@ class AdminDashboardController extends GetxController {
       _watchExpertiseUseCase().listen((data) => expertise.value = data),
       _watchContactInfoUseCase().listen((data) => contactInfo.value = data),
       _watchProjectDetailsUseCase().listen((data) => projectDetails.value = data),
+      _watchHeroSectionUseCase().listen((data) => heroSection.value = data),
     ]);
   }
 
@@ -653,6 +662,19 @@ class AdminDashboardController extends GetxController {
       _showSuccess('Project deleted successfully');
     } catch (e) {
       _showError('Failed to delete project');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // ============ HERO SECTION UPDATE ============
+  Future<void> updateHeroSection(HeroSectionEntity hero) async {
+    try {
+      isLoading.value = true;
+      await _updateHeroSectionUseCase(hero);
+      _showSuccess('Hero section updated successfully');
+    } catch (e) {
+      _showError('Failed to update hero section');
     } finally {
       isLoading.value = false;
     }

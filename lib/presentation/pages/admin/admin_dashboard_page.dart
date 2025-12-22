@@ -204,28 +204,30 @@ class AdminDashboardPage extends GetView<AdminDashboardController> {
     return Obx(() {
       switch (controller.selectedCategory.value) {
         case 0:
-          return ProfileManagement(controller: controller);
+          return HeroSectionManagement(controller: controller);
         case 1:
-          return ServicesManagement(controller: controller);
+          return ProfileManagement(controller: controller);
         case 2:
-          return PortfolioManagement(controller: controller);
+          return ServicesManagement(controller: controller);
         case 3:
-          return ProjectsManagement(controller: controller);
+          return PortfolioManagement(controller: controller);
         case 4:
-          return ExperienceManagement(controller: controller);
+          return ProjectsManagement(controller: controller);
         case 5:
-          return EducationManagement(controller: controller);
+          return ExperienceManagement(controller: controller);
         case 6:
-          return CertificationsManagement(controller: controller);
+          return EducationManagement(controller: controller);
         case 7:
-          return ExpertiseManagement(controller: controller);
+          return CertificationsManagement(controller: controller);
         case 8:
-          return AchievementsManagement(controller: controller);
+          return ExpertiseManagement(controller: controller);
         case 9:
-          return ContactManagement(controller: controller);
+          return AchievementsManagement(controller: controller);
         case 10:
-          return SocialLinksManagement(controller: controller);
+          return ContactManagement(controller: controller);
         case 11:
+          return SocialLinksManagement(controller: controller);
+        case 12:
           return StatsManagement(controller: controller);
         default:
           return const Center(

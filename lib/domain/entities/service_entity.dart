@@ -8,6 +8,8 @@ class ServiceEntity {
   final String title;
   final String description;
   final Color color;
+  final String? customIconUrl;
+  final bool useCustomImage;
 
   const ServiceEntity({
     required this.id,
@@ -15,6 +17,8 @@ class ServiceEntity {
     required this.title,
     required this.description,
     required this.color,
+    this.customIconUrl,
+    this.useCustomImage = false,
   });
 
   @override

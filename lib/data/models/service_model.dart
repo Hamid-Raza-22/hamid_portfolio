@@ -11,6 +11,8 @@ class ServiceModel extends ServiceEntity {
     required super.title,
     required super.description,
     required super.color,
+    super.customIconUrl,
+    super.useCustomImage,
   });
 
   /// Create from Firestore document
@@ -21,6 +23,8 @@ class ServiceModel extends ServiceEntity {
       title: json['title'] as String? ?? '',
       description: json['description'] as String? ?? '',
       color: ColorMapper.fromString(json['color'] as String? ?? 'primary'),
+      customIconUrl: json['customIconUrl'] as String?,
+      useCustomImage: json['useCustomImage'] as bool? ?? false,
     );
   }
 
@@ -31,6 +35,8 @@ class ServiceModel extends ServiceEntity {
       'title': title,
       'description': description,
       'color': ColorMapper.colorToString(color),
+      'useCustomImage': useCustomImage,
+      if (customIconUrl != null) 'customIconUrl': customIconUrl,
     };
   }
 
@@ -42,6 +48,8 @@ class ServiceModel extends ServiceEntity {
       title: entity.title,
       description: entity.description,
       color: entity.color,
+      customIconUrl: entity.customIconUrl,
+      useCustomImage: entity.useCustomImage,
     );
   }
 
@@ -53,6 +61,8 @@ class ServiceModel extends ServiceEntity {
       title: title,
       description: description,
       color: color,
+      customIconUrl: customIconUrl,
+      useCustomImage: useCustomImage,
     );
   }
 
@@ -63,6 +73,8 @@ class ServiceModel extends ServiceEntity {
     String? title,
     String? description,
     Color? color,
+    String? customIconUrl,
+    bool? useCustomImage,
   }) {
     return ServiceModel(
       id: id ?? this.id,
@@ -70,6 +82,8 @@ class ServiceModel extends ServiceEntity {
       title: title ?? this.title,
       description: description ?? this.description,
       color: color ?? this.color,
+      customIconUrl: customIconUrl ?? this.customIconUrl,
+      useCustomImage: useCustomImage ?? this.useCustomImage,
     );
   }
 }

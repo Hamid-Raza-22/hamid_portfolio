@@ -11,6 +11,8 @@ class PortfolioEntity {
   final List<String> tags;
   final String? imageUrl;
   final String? projectUrl;
+  final String? customIconUrl;
+  final bool useCustomImage;
 
   const PortfolioEntity({
     required this.id,
@@ -22,6 +24,8 @@ class PortfolioEntity {
     required this.tags,
     this.imageUrl,
     this.projectUrl,
+    this.customIconUrl,
+    this.useCustomImage = false,
   });
 
   @override

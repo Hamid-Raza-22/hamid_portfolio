@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/responsive_constants.dart';
 import '../../../controllers/home/home_controller.dart';
@@ -181,7 +182,7 @@ class _StatItem extends StatelessWidget {
   }
 }
 
-class _VideoSection extends StatelessWidget {
+class _VideoSection extends StatefulWidget {
   final HomeController controller;
   final bool isColumnLayout;
 
@@ -189,6 +190,13 @@ class _VideoSection extends StatelessWidget {
     required this.controller,
     required this.isColumnLayout,
   });
+
+  @override
+  State<_VideoSection> createState() => _VideoSectionState();
+}
+
+class _VideoSectionState extends State<_VideoSection> {
+  bool _isPlaying = false;
 
   @override
   Widget build(BuildContext context) {
@@ -200,111 +208,226 @@ class _VideoSection extends StatelessWidget {
       desktop: 360,
     );
 
-    final videoContainerWidth = isColumnLayout
+    final videoContainerWidth = widget.isColumnLayout
         ? MediaQuery.of(context).size.width * 0.9
         : double.infinity;
 
-    final playButtonSize = ResponsiveValue.get<double>(context, mobile: 70, desktop: 80);
-    final playIconSize = ResponsiveValue.get<double>(context, mobile: 32, desktop: 36);
+    return Obx(() {
+      final hero = widget.controller.heroSection.value;
+      final videoUrl = hero?.videoUrl;
+      final hasVideo = videoUrl != null && videoUrl.isNotEmpty;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          width: videoContainerWidth,
-          height: videoContainerHeight,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.cardBg.withOpacity(0.8),
-                AppColors.cardBgLight.withOpacity(0.6),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: AppColors.glassBorder,
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.1),
-                blurRadius: 40,
-                offset: const Offset(0, 20),
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            width: videoContainerWidth,
+            height: videoContainerHeight,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.cardBg.withOpacity(0.8),
+                  AppColors.cardBgLight.withOpacity(0.6),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-            ],
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: AppColors.glassBorder,
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.1),
+                  blurRadius: 40,
+                  offset: const Offset(0, 20),
+                ),
+              ],
+            ),
+            child: hasVideo && _isPlaying
+                ? _buildVideoPlayer(videoUrl, videoContainerHeight)
+                : _buildVideoPlaceholder(hasVideo, videoContainerHeight),
           ),
-          child: Stack(
-            alignment: Alignment.center,
+        ),
+      );
+    });
+  }
+
+  Widget _buildVideoPlayer(String videoUrl, double height) {
+    // Check if it's a YouTube/Vimeo URL and get embed URL
+    final embedUrl = _getEmbedUrl(videoUrl);
+    
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          width: double.infinity,
+          height: height,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _GridPatternPainter(),
+              Icon(
+                embedUrl != null ? Icons.play_circle_fill : Icons.videocam,
+                size: 64,
+                color: AppColors.primary,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                embedUrl != null ? 'Video Ready' : 'External Video',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              Icon(
-                Icons.video_library_rounded,
-                size: ResponsiveValue.get<double>(context, mobile: 60, desktop: 80),
-                color: AppColors.textMuted.withOpacity(0.3),
-              ),
-              AnimatedBuilder(
-                animation: controller.pulseAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: controller.pulseAnimation.value,
-                    child: Container(
-                      width: playButtonSize,
-                      height: playButtonSize,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: AppColors.primaryGradient,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withOpacity(0.5),
-                            blurRadius: 25,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.play_arrow_rounded,
-                        color: Colors.white,
-                        size: playIconSize,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              Positioned(
-                bottom: 20,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.glassBg,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.glassBorder),
-                  ),
-                  child: const Text(
-                    'Video Coming Soon',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () => _launchVideoUrl(embedUrl ?? videoUrl),
+                icon: const Icon(Icons.play_arrow),
+                label: const Text('Watch Video'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
               ),
             ],
           ),
         ),
-      ),
+        Positioned(
+          top: 12,
+          right: 12,
+          child: IconButton(
+            onPressed: () => setState(() => _isPlaying = false),
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 20),
+            ),
+          ),
+        ),
+      ],
     );
+  }
+
+  Widget _buildVideoPlaceholder(bool hasVideo, double height) {
+    final playButtonSize = ResponsiveValue.get<double>(context, mobile: 70, desktop: 80);
+    final playIconSize = ResponsiveValue.get<double>(context, mobile: 32, desktop: 36);
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Positioned.fill(
+          child: CustomPaint(
+            painter: _GridPatternPainter(),
+          ),
+        ),
+        Icon(
+          Icons.video_library_rounded,
+          size: ResponsiveValue.get<double>(context, mobile: 60, desktop: 80),
+          color: AppColors.textMuted.withOpacity(0.3),
+        ),
+        GestureDetector(
+          onTap: hasVideo ? () => setState(() => _isPlaying = true) : null,
+          child: AnimatedBuilder(
+            animation: widget.controller.pulseAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: widget.controller.pulseAnimation.value,
+                child: Container(
+                  width: playButtonSize,
+                  height: playButtonSize,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: hasVideo
+                          ? AppColors.primaryGradient
+                          : [Colors.grey.shade600, Colors.grey.shade700],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: hasVideo
+                            ? AppColors.primary.withOpacity(0.5)
+                            : Colors.grey.withOpacity(0.3),
+                        blurRadius: 25,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: playIconSize,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        Positioned(
+          bottom: 20,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.glassBg,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.glassBorder),
+            ),
+            child: Text(
+              hasVideo ? 'Click to Play' : 'Video Coming Soon',
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String? _getEmbedUrl(String url) {
+    // YouTube URL patterns - detect if it's a YouTube video
+    final youtubeRegex = RegExp(
+      r'(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})',
+    );
+    if (youtubeRegex.hasMatch(url)) {
+      return url; // Return original URL for external launch
+    }
+
+    // Vimeo URL patterns
+    final vimeoRegex = RegExp(r'vimeo\.com\/(\d+)');
+    if (vimeoRegex.hasMatch(url)) {
+      return url; // Return original URL for external launch
+    }
+
+    return null;
+  }
+
+  Future<void> _launchVideoUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar(
+        'Error',
+        'Could not open video',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 }
 

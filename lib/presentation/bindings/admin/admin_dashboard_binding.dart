@@ -23,6 +23,7 @@ class AdminDashboardBinding extends Bindings {
         watchExpertiseUseCase: Get.find<WatchExpertiseUseCase>(),
         watchContactInfoUseCase: Get.find<WatchContactInfoUseCase>(),
         watchProjectDetailsUseCase: Get.find<WatchProjectDetailsUseCase>(),
+        watchHeroSectionUseCase: Get.find<WatchHeroSectionUseCase>(),
         // Service CRUD
         addServiceUseCase: Get.find<AddServiceUseCase>(),
         updateServiceUseCase: Get.find<UpdateServiceUseCase>(),
@@ -71,6 +72,8 @@ class AdminDashboardBinding extends Bindings {
         deleteProjectDetailUseCase: Get.find<DeleteProjectDetailUseCase>(),
         // Seed data
         seedInitialDataUseCase: Get.find<SeedInitialDataUseCase>(),
+        // Hero Section
+        updateHeroSectionUseCase: Get.find<UpdateHeroSectionUseCase>(),
       ),
     );
   }

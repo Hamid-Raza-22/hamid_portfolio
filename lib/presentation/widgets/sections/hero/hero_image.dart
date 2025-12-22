@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/constants/assets.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/responsive_constants.dart';
 import '../../../controllers/home/home_controller.dart';
 import 'hero_painters.dart';
@@ -105,12 +105,68 @@ class HeroImage extends GetView<HomeController> {
                                   borderRadius: BorderRadius.circular(
                                     borderRadius - 4,
                                   ),
-                                  child: Image.asset(
-                                    AppAssets.anotherImage,
-                                    width: imageWidth,
-                                    height: imageHeight,
-                                    fit: BoxFit.contain,
-                                  ),
+                                  child: Obx(() {
+                                    final hero = controller.heroSection.value;
+                                    final imageUrl = hero?.profileImageUrl;
+                                    final isLoading = controller.isLoading.value;
+                                    
+                                    // Show loading indicator while data is loading
+                                    if (isLoading && hero == null) {
+                                      return SizedBox(
+                                        width: imageWidth,
+                                        height: imageHeight,
+                                        child: Center(
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              CircularProgressIndicator(
+                                                color: AppColors.primary,
+                                              ),
+                                              const SizedBox(height: 16),
+                                              Text(
+                                                'Loading...',
+                                                style: TextStyle(
+                                                  color: AppColors.textSecondary.withOpacity(0.7),
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    
+                                    if (imageUrl != null && imageUrl.isNotEmpty) {
+                                      return Image.network(
+                                        imageUrl,
+                                        width: imageWidth,
+                                        height: imageHeight,
+                                        fit: BoxFit.contain,
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) return child;
+                                          return SizedBox(
+                                            width: imageWidth,
+                                            height: imageHeight,
+                                            child: Center(
+                                              child: CircularProgressIndicator(
+                                                color: AppColors.primary,
+                                                value: loadingProgress.expectedTotalBytes != null
+                                                    ? loadingProgress.cumulativeBytesLoaded /
+                                                        loadingProgress.expectedTotalBytes!
+                                                    : null,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        errorBuilder: (context, error, stackTrace) {
+                                          debugPrint('❌ HeroImage error: $error');
+                                          return _buildPlaceholder(imageWidth, imageHeight);
+                                        },
+                                      );
+                                    }
+                                    // No image URL - show placeholder prompting Firebase upload
+                                    return _buildPlaceholder(imageWidth, imageHeight);
+                                  }),
                                 ),
                               );
                             },
@@ -125,6 +181,51 @@ class HeroImage extends GetView<HomeController> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildPlaceholder(double width, double height) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary.withOpacity(0.1),
+            AppColors.accentPurple.withOpacity(0.1),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.person_rounded,
+            size: width * 0.25,
+            color: AppColors.primary.withOpacity(0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Upload Profile Image',
+            style: TextStyle(
+              color: AppColors.textSecondary.withOpacity(0.7),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'via Admin Panel',
+            style: TextStyle(
+              color: AppColors.textMuted.withOpacity(0.5),
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

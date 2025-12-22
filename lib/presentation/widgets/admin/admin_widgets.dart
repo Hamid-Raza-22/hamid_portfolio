@@ -1,9 +1,12 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker_web/image_picker_web.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/icon_mapper.dart';
 import '../../../core/utils/color_mapper.dart';
+import '../../../data/datasources/remote/storage_datasource.dart';
 import '../../../domain/entities/entities.dart';
 import '../../controllers/admin/admin_dashboard_controller.dart';
 
@@ -85,6 +88,8 @@ class AdminItemCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final List<Widget>? extraInfo;
+  final String? customIconUrl;
+  final bool useCustomImage;
 
   const AdminItemCard({
     super.key,
@@ -95,10 +100,16 @@ class AdminItemCard extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     this.extraInfo,
+    this.customIconUrl,
+    this.useCustomImage = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final shouldShowCustomImage = useCustomImage && 
+        customIconUrl != null && 
+        customIconUrl!.isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -109,7 +120,30 @@ class AdminItemCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          if (icon != null)
+          if (shouldShowCustomImage)
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: (color ?? AppColors.primary).withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.network(
+                  customIconUrl!,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Icon(
+                    icon ?? Icons.image,
+                    color: color ?? AppColors.primary,
+                    size: 24,
+                  ),
+                ),
+              ),
+            )
+          else if (icon != null)
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -118,18 +152,40 @@ class AdminItemCard extends StatelessWidget {
               ),
               child: Icon(icon, color: color ?? AppColors.primary, size: 24),
             ),
-          if (icon != null) const SizedBox(width: 16),
+          if (shouldShowCustomImage || icon != null) const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    if (useCustomImage)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'Custom Image',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 if (subtitle != null) ...[
                   const SizedBox(height: 4),
@@ -342,31 +398,47 @@ class AdminTextField extends StatelessWidget {
   }
 }
 
-// ============ ICON PICKER ============
+// ============ ICON OR IMAGE PICKER ============
 
-class IconPickerField extends StatelessWidget {
+class IconPickerField extends StatefulWidget {
   final String label;
   final String selectedIcon;
   final ValueChanged<String> onChanged;
+  final String? customIconUrl;
+  final Function(String)? onCustomIconUploaded;
+  final bool useCustomImage;
+  final Function(bool)? onUseCustomImageChanged;
 
   const IconPickerField({
     super.key,
     required this.label,
     required this.selectedIcon,
     required this.onChanged,
+    this.customIconUrl,
+    this.onCustomIconUploaded,
+    this.useCustomImage = false,
+    this.onUseCustomImageChanged,
   });
 
   @override
+  State<IconPickerField> createState() => _IconPickerFieldState();
+}
+
+class _IconPickerFieldState extends State<IconPickerField> {
+  bool _isUploading = false;
+
+  @override
   Widget build(BuildContext context) {
+    final isCustomImage = widget.useCustomImage && widget.customIconUrl != null;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+        Text(widget.label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
         const SizedBox(height: 8),
-        InkWell(
-          onTap: () => _showIconPicker(context),
-          child: Container(
-            padding: const EdgeInsets.all(12),
+        // Toggle between Icon and Custom Image
+        if (widget.onCustomIconUploaded != null) ...[
+          Container(
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.05),
               borderRadius: BorderRadius.circular(8),
@@ -374,18 +446,246 @@ class IconPickerField extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(IconMapper.fromString(selectedIcon), color: AppColors.primary),
-                const SizedBox(width: 12),
-                Text(selectedIcon, style: const TextStyle(color: Colors.white)),
-                const Spacer(),
-                const Icon(Icons.arrow_drop_down, color: Colors.white70),
+                Expanded(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        debugPrint('🔘 Default Icon tapped');
+                        widget.onUseCustomImageChanged?.call(false);
+                      },
+                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(7)),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: !widget.useCustomImage 
+                              ? AppColors.primary.withOpacity(0.2) 
+                              : Colors.transparent,
+                          borderRadius: const BorderRadius.horizontal(left: Radius.circular(7)),
+                          border: !widget.useCustomImage 
+                              ? Border.all(color: AppColors.primary) 
+                              : null,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.widgets_rounded,
+                              size: 18,
+                              color: !widget.useCustomImage ? AppColors.primary : Colors.white54,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Default Icon',
+                              style: TextStyle(
+                                color: !widget.useCustomImage ? AppColors.primary : Colors.white54,
+                                fontWeight: !widget.useCustomImage ? FontWeight.w600 : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        debugPrint('🔘 Custom Image tapped');
+                        widget.onUseCustomImageChanged?.call(true);
+                      },
+                      borderRadius: const BorderRadius.horizontal(right: Radius.circular(7)),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: widget.useCustomImage 
+                              ? AppColors.primary.withOpacity(0.2) 
+                              : Colors.transparent,
+                          borderRadius: const BorderRadius.horizontal(right: Radius.circular(7)),
+                          border: widget.useCustomImage 
+                              ? Border.all(color: AppColors.primary) 
+                              : null,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.image_rounded,
+                              size: 18,
+                              color: widget.useCustomImage ? AppColors.primary : Colors.white54,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Custom Image',
+                              style: TextStyle(
+                                color: widget.useCustomImage ? AppColors.primary : Colors.white54,
+                                fontWeight: widget.useCustomImage ? FontWeight.w600 : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
-        ),
+          const SizedBox(height: 12),
+        ],
+        // Show Icon picker or Image uploader based on selection
+        if (widget.useCustomImage)
+          _buildImageUploader()
+        else
+          _buildIconSelector(isCustomImage),
         const SizedBox(height: 16),
       ],
     );
+  }
+
+  Widget _buildImageUploader() {
+    debugPrint('🖼️ _buildImageUploader called, customIconUrl: ${widget.customIconUrl}');
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          // Image preview
+          if (widget.customIconUrl != null && widget.customIconUrl!.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(7),
+                child: Image.network(
+                  widget.customIconUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.broken_image,
+                    color: Colors.white30,
+                    size: 32,
+                  ),
+                ),
+              ),
+            ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _isUploading ? null : () {
+                debugPrint('📤 Upload button tapped');
+                _uploadCustomImage();
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_isUploading)
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    else
+                      const Icon(Icons.cloud_upload, color: AppColors.primary, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      _isUploading 
+                          ? 'Uploading...' 
+                          : (widget.customIconUrl != null ? 'Change Image' : 'Upload Image'),
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Recommended: Square image (64x64 to 200x200 px)',
+            style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIconSelector(bool isCustomImage) {
+    return InkWell(
+      onTap: () => _showIconPicker(context),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Row(
+          children: [
+            Icon(IconMapper.fromString(widget.selectedIcon), color: AppColors.primary),
+            const SizedBox(width: 12),
+            Text(
+              widget.selectedIcon,
+              style: const TextStyle(color: Colors.white),
+            ),
+            const Spacer(),
+            const Icon(Icons.arrow_drop_down, color: Colors.white70),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _uploadCustomImage() async {
+    if (widget.onCustomIconUploaded == null) return;
+    
+    try {
+      setState(() => _isUploading = true);
+      
+      final Uint8List? imageBytes = await ImagePickerWeb.getImageAsBytes();
+      if (imageBytes == null) {
+        setState(() => _isUploading = false);
+        return;
+      }
+
+      final storage = Get.find<StorageDataSource>();
+      final fileName = 'custom_image_${DateTime.now().millisecondsSinceEpoch}.png';
+      
+      final downloadUrl = await storage.uploadImage(
+        imageBytes: imageBytes,
+        path: 'custom_icons',
+        fileName: fileName,
+      );
+
+      widget.onCustomIconUploaded!(downloadUrl);
+      setState(() => _isUploading = false);
+      Get.snackbar('Success', 'Custom image uploaded!',
+          backgroundColor: AppColors.primary, colorText: Colors.white);
+    } catch (e) {
+      setState(() => _isUploading = false);
+      Get.snackbar('Error', 'Failed to upload image: $e',
+          backgroundColor: Colors.red, colorText: Colors.white);
+    }
   }
 
   void _showIconPicker(BuildContext context) {
@@ -393,8 +693,8 @@ class IconPickerField extends StatelessWidget {
       Dialog(
         backgroundColor: const Color(0xFF1E293B),
         child: SizedBox(
-          width: 400,
-          height: 400,
+          width: 450,
+          height: 450,
           child: Column(
             children: [
               const Padding(
@@ -415,21 +715,24 @@ class IconPickerField extends StatelessWidget {
                   itemCount: IconMapper.availableIcons.length,
                   itemBuilder: (context, index) {
                     final iconName = IconMapper.availableIcons[index];
-                    final isSelected = iconName == selectedIcon;
-                    return InkWell(
-                      onTap: () {
-                        onChanged(iconName);
-                        Get.back();
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isSelected ? AppColors.primary.withOpacity(0.2) : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                          border: isSelected ? Border.all(color: AppColors.primary) : null,
-                        ),
-                        child: Icon(
-                          IconMapper.fromString(iconName),
-                          color: isSelected ? AppColors.primary : Colors.white70,
+                    final isSelected = iconName == widget.selectedIcon;
+                    return Tooltip(
+                      message: iconName,
+                      child: InkWell(
+                        onTap: () {
+                          widget.onChanged(iconName);
+                          Get.back();
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppColors.primary.withOpacity(0.2) : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                            border: isSelected ? Border.all(color: AppColors.primary) : null,
+                          ),
+                          child: Icon(
+                            IconMapper.fromString(iconName),
+                            color: isSelected ? AppColors.primary : Colors.white70,
+                          ),
                         ),
                       ),
                     );
@@ -869,6 +1172,8 @@ class ServicesManagement extends StatelessWidget {
                 subtitle: service.description,
                 icon: service.icon,
                 color: service.color,
+                customIconUrl: service.customIconUrl,
+                useCustomImage: service.useCustomImage,
                 onEdit: () => _showServiceDialog(context, service: service),
                 onDelete: () => controller.deleteService(service.id),
               );
@@ -880,44 +1185,55 @@ class ServicesManagement extends StatelessWidget {
   void _showServiceDialog(BuildContext context, {ServiceEntity? service}) {
     final titleController = TextEditingController(text: service?.title ?? '');
     final descController = TextEditingController(text: service?.description ?? '');
-    String selectedIcon = service != null ? IconMapper.iconToString(service.icon) : 'code_rounded';
-    String selectedColor = service != null ? ColorMapper.colorToString(service.color) : 'primary';
+    
+    // GetX reactive state
+    final selectedIcon = (service != null ? IconMapper.iconToString(service.icon) : 'code_rounded').obs;
+    final selectedColor = (service != null ? ColorMapper.colorToString(service.color) : 'primary').obs;
+    final customIconUrl = Rxn<String>(service?.customIconUrl);
+    final useCustomImage = (service?.useCustomImage ?? false).obs;
 
     Get.dialog(
-      StatefulBuilder(
-        builder: (context, setState) => AdminFormDialog(
-          title: service == null ? 'Add Service' : 'Edit Service',
-          onSave: () {
-            final newService = ServiceEntity(
-              id: service?.id ?? controller.generateId(),
-              title: titleController.text,
-              description: descController.text,
-              icon: IconMapper.fromString(selectedIcon),
-              color: ColorMapper.fromString(selectedColor),
-            );
-            if (service == null) {
-              controller.addService(newService);
-            } else {
-              controller.updateService(newService);
-            }
-            Get.back();
-          },
-          children: [
-            AdminTextField(label: 'Title', controller: titleController),
-            AdminTextField(label: 'Description', controller: descController, maxLines: 3),
-            IconPickerField(
-              label: 'Icon',
-              selectedIcon: selectedIcon,
-              onChanged: (value) => setState(() => selectedIcon = value),
-            ),
-            ColorPickerField(
-              label: 'Color',
-              selectedColor: selectedColor,
-              onChanged: (value) => setState(() => selectedColor = value),
-            ),
-          ],
-        ),
-      ),
+      Obx(() => AdminFormDialog(
+        title: service == null ? 'Add Service' : 'Edit Service',
+        onSave: () {
+          final newService = ServiceEntity(
+            id: service?.id ?? controller.generateId(),
+            title: titleController.text,
+            description: descController.text,
+            icon: IconMapper.fromString(selectedIcon.value),
+            color: ColorMapper.fromString(selectedColor.value),
+            customIconUrl: useCustomImage.value ? customIconUrl.value : null,
+            useCustomImage: useCustomImage.value,
+          );
+          if (service == null) {
+            controller.addService(newService);
+          } else {
+            controller.updateService(newService);
+          }
+          Get.back();
+        },
+        children: [
+          AdminTextField(label: 'Title', controller: titleController),
+          AdminTextField(label: 'Description', controller: descController, maxLines: 3),
+          IconPickerField(
+            label: 'Icon / Image',
+            selectedIcon: selectedIcon.value,
+            onChanged: (value) => selectedIcon.value = value,
+            customIconUrl: customIconUrl.value,
+            onCustomIconUploaded: (url) => customIconUrl.value = url,
+            useCustomImage: useCustomImage.value,
+            onUseCustomImageChanged: (value) {
+              debugPrint('� GetX: useCustomImage changed to $value');
+              useCustomImage.value = value;
+            },
+          ),
+          ColorPickerField(
+            label: 'Color',
+            selectedColor: selectedColor.value,
+            onChanged: (value) => selectedColor.value = value,
+          ),
+        ],
+      )),
     );
   }
 }
@@ -943,6 +1259,8 @@ class PortfolioManagement extends StatelessWidget {
                 subtitle: item.description,
                 icon: item.icon,
                 color: item.color,
+                customIconUrl: item.customIconUrl,
+                useCustomImage: item.useCustomImage,
                 onEdit: () => _showPortfolioDialog(context, item: item),
                 onDelete: () => controller.deletePortfolioItem(item.id),
                 extraInfo: [
@@ -968,55 +1286,66 @@ class PortfolioManagement extends StatelessWidget {
     final categoryController = TextEditingController(text: item?.category ?? '');
     final descController = TextEditingController(text: item?.description ?? '');
     final urlController = TextEditingController(text: item?.projectUrl ?? '');
-    String selectedIcon = item != null ? IconMapper.iconToString(item.icon) : 'folder';
-    String selectedColor = item != null ? ColorMapper.colorToString(item.color) : 'primary';
-    List<String> tags = List<String>.from(item?.tags ?? []);
+    
+    // GetX reactive state
+    final selectedIcon = (item != null ? IconMapper.iconToString(item.icon) : 'folder').obs;
+    final selectedColor = (item != null ? ColorMapper.colorToString(item.color) : 'primary').obs;
+    final tags = RxList<String>(List<String>.from(item?.tags ?? []));
+    final customIconUrl = Rxn<String>(item?.customIconUrl);
+    final useCustomImage = (item?.useCustomImage ?? false).obs;
 
     Get.dialog(
-      StatefulBuilder(
-        builder: (context, setState) => AdminFormDialog(
-          title: item == null ? 'Add Portfolio Item' : 'Edit Portfolio Item',
-          onSave: () {
-            final newItem = PortfolioEntity(
-              id: item?.id ?? controller.generateId(),
-              title: titleController.text,
-              category: categoryController.text,
-              description: descController.text,
-              icon: IconMapper.fromString(selectedIcon),
-              color: ColorMapper.fromString(selectedColor),
-              tags: tags,
-              projectUrl: urlController.text.isEmpty ? null : urlController.text,
-            );
-            if (item == null) {
-              controller.addPortfolioItem(newItem);
-            } else {
-              controller.updatePortfolioItem(newItem);
-            }
-            Get.back();
-          },
-          children: [
-            AdminTextField(label: 'Title', controller: titleController),
-            AdminTextField(label: 'Category', controller: categoryController),
-            AdminTextField(label: 'Description', controller: descController, maxLines: 3),
-            AdminTextField(label: 'Project URL (optional)', controller: urlController),
-            IconPickerField(
-              label: 'Icon',
-              selectedIcon: selectedIcon,
-              onChanged: (value) => setState(() => selectedIcon = value),
-            ),
-            ColorPickerField(
-              label: 'Color',
-              selectedColor: selectedColor,
-              onChanged: (value) => setState(() => selectedColor = value),
-            ),
-            TagsEditorField(
-              label: 'Tags',
-              tags: tags,
-              onChanged: (value) => setState(() => tags = value),
-            ),
-          ],
-        ),
-      ),
+      Obx(() => AdminFormDialog(
+        title: item == null ? 'Add Portfolio Item' : 'Edit Portfolio Item',
+        onSave: () {
+          final newItem = PortfolioEntity(
+            id: item?.id ?? controller.generateId(),
+            title: titleController.text,
+            category: categoryController.text,
+            description: descController.text,
+            icon: IconMapper.fromString(selectedIcon.value),
+            color: ColorMapper.fromString(selectedColor.value),
+            tags: tags.toList(),
+            projectUrl: urlController.text.isEmpty ? null : urlController.text,
+            customIconUrl: useCustomImage.value ? customIconUrl.value : null,
+            useCustomImage: useCustomImage.value,
+          );
+          if (item == null) {
+            controller.addPortfolioItem(newItem);
+          } else {
+            controller.updatePortfolioItem(newItem);
+          }
+          Get.back();
+        },
+        children: [
+          AdminTextField(label: 'Title', controller: titleController),
+          AdminTextField(label: 'Category', controller: categoryController),
+          AdminTextField(label: 'Description', controller: descController, maxLines: 3),
+          AdminTextField(label: 'Project URL (optional)', controller: urlController),
+          IconPickerField(
+            label: 'Icon / Image',
+            selectedIcon: selectedIcon.value,
+            onChanged: (value) => selectedIcon.value = value,
+            customIconUrl: customIconUrl.value,
+            onCustomIconUploaded: (url) => customIconUrl.value = url,
+            useCustomImage: useCustomImage.value,
+            onUseCustomImageChanged: (value) {
+              debugPrint('🔄 GetX Portfolio: useCustomImage changed to $value');
+              useCustomImage.value = value;
+            },
+          ),
+          ColorPickerField(
+            label: 'Color',
+            selectedColor: selectedColor.value,
+            onChanged: (value) => selectedColor.value = value,
+          ),
+          TagsEditorField(
+            label: 'Tags',
+            tags: tags.toList(),
+            onChanged: (value) => tags.value = value,
+          ),
+        ],
+      )),
     );
   }
 }
@@ -1167,6 +1496,7 @@ class ProjectsManagement extends StatelessWidget {
               label: 'Icon',
               selectedIcon: selectedIcon,
               onChanged: (value) => setState(() => selectedIcon = value),
+              onCustomIconUploaded: (url) {},
             ),
             ColorPickerField(
               label: 'Color',
@@ -1379,6 +1709,7 @@ class ExpertiseManagement extends StatelessWidget {
               label: 'Icon',
               selectedIcon: selectedIcon,
               onChanged: (value) => setState(() => selectedIcon = value),
+              onCustomIconUploaded: (url) {},
             ),
             ColorPickerField(
               label: 'Color',
@@ -1451,6 +1782,7 @@ class AchievementsManagement extends StatelessWidget {
               label: 'Icon',
               selectedIcon: selectedIcon,
               onChanged: (value) => setState(() => selectedIcon = value),
+              onCustomIconUploaded: (url) {},
             ),
           ],
         ),
@@ -1523,6 +1855,7 @@ class ContactManagement extends StatelessWidget {
               label: 'Icon',
               selectedIcon: selectedIcon,
               onChanged: (value) => setState(() => selectedIcon = value),
+              onCustomIconUploaded: (url) {},
             ),
             ColorPickerField(
               label: 'Color',
@@ -1594,6 +1927,7 @@ class SocialLinksManagement extends StatelessWidget {
               label: 'Icon',
               selectedIcon: selectedIcon,
               onChanged: (value) => setState(() => selectedIcon = value),
+              onCustomIconUploaded: (url) {},
             ),
           ],
         ),
@@ -1653,6 +1987,463 @@ class StatsManagement extends StatelessWidget {
         children: [
           AdminTextField(label: 'Value', controller: valueController, hint: 'e.g., 50+'),
           AdminTextField(label: 'Label', controller: labelController, hint: 'e.g., Projects Completed'),
+        ],
+      ),
+    );
+  }
+}
+
+// ============ HERO SECTION MANAGEMENT ============
+
+class HeroSectionManagement extends StatefulWidget {
+  final AdminDashboardController controller;
+
+  const HeroSectionManagement({super.key, required this.controller});
+
+  @override
+  State<HeroSectionManagement> createState() => _HeroSectionManagementState();
+}
+
+class _HeroSectionManagementState extends State<HeroSectionManagement> {
+  final _greetingController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _subtitleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _ctaButtonTextController = TextEditingController();
+  final _ctaButtonLinkController = TextEditingController();
+  final _videoUrlController = TextEditingController();
+  
+  String? _profileImageUrl;
+  String? _backgroundImageUrl;
+  bool _isLoading = false;
+  bool _isUploading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHeroSection();
+  }
+
+  void _loadHeroSection() {
+    final hero = widget.controller.heroSection.value;
+    if (hero != null) {
+      _greetingController.text = hero.greeting;
+      _nameController.text = hero.name;
+      _titleController.text = hero.title;
+      _subtitleController.text = hero.subtitle;
+      _descriptionController.text = hero.description;
+      _ctaButtonTextController.text = hero.ctaButtonText;
+      _ctaButtonLinkController.text = hero.ctaButtonLink;
+      _videoUrlController.text = hero.videoUrl ?? '';
+      _profileImageUrl = hero.profileImageUrl;
+      _backgroundImageUrl = hero.backgroundImageUrl;
+    }
+  }
+
+  Future<void> _pickAndUploadImage(String type) async {
+    try {
+      setState(() => _isUploading = true);
+      
+      final Uint8List? imageBytes = await ImagePickerWeb.getImageAsBytes();
+      if (imageBytes == null) {
+        setState(() => _isUploading = false);
+        return;
+      }
+
+      final storage = Get.find<StorageDataSource>();
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_$type.png';
+      
+      final downloadUrl = await storage.uploadImage(
+        imageBytes: imageBytes,
+        path: 'hero',
+        fileName: fileName,
+      );
+
+      setState(() {
+        if (type == 'profile') {
+          _profileImageUrl = downloadUrl;
+        } else {
+          _backgroundImageUrl = downloadUrl;
+        }
+        _isUploading = false;
+      });
+
+      Get.snackbar('Success', 'Image uploaded successfully',
+          backgroundColor: Colors.green, colorText: Colors.white);
+    } catch (e) {
+      setState(() => _isUploading = false);
+      Get.snackbar('Error', 'Failed to upload image: $e',
+          backgroundColor: Colors.red, colorText: Colors.white);
+    }
+  }
+
+  Future<void> _saveHeroSection() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final heroSection = HeroSectionEntity(
+        id: 'main',
+        greeting: _greetingController.text,
+        name: _nameController.text,
+        title: _titleController.text,
+        subtitle: _subtitleController.text,
+        description: _descriptionController.text,
+        ctaButtonText: _ctaButtonTextController.text,
+        ctaButtonLink: _ctaButtonLinkController.text,
+        profileImageUrl: _profileImageUrl,
+        backgroundImageUrl: _backgroundImageUrl,
+        videoUrl: _videoUrlController.text.isNotEmpty ? _videoUrlController.text : null,
+      );
+
+      await widget.controller.updateHeroSection(heroSection);
+      Get.snackbar('Success', 'Hero section updated successfully',
+          backgroundColor: Colors.green, colorText: Colors.white);
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to update hero section: $e',
+          backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.home, color: AppColors.primary, size: 28),
+              const SizedBox(width: 12),
+              const Text(
+                'Hero Section (Home Screen)',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              ElevatedButton.icon(
+                onPressed: _isLoading ? null : _saveHeroSection,
+                icon: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.save),
+                label: Text(_isLoading ? 'Saving...' : 'Save Changes'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Expanded(
+            child: Obx(() {
+              final hero = widget.controller.heroSection.value;
+              if (hero != null && _greetingController.text.isEmpty) {
+                WidgetsBinding.instance.addPostFrameCallback((_) => _loadHeroSection());
+              }
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Text Fields Section
+                    _buildSectionTitle('Text Content'),
+                    const SizedBox(height: 16),
+                    _buildTextField('Greeting', _greetingController, "e.g., Hello, I'm"),
+                    _buildTextField('Name', _nameController, 'Your full name'),
+                    _buildTextField('Title', _titleController, 'e.g., Flutter Developer'),
+                    _buildTextField('Subtitle', _subtitleController, 'e.g., Mobile & Web Applications'),
+                    _buildTextField('Description', _descriptionController, 'Brief description', maxLines: 3),
+                    _buildTextField('CTA Button Text', _ctaButtonTextController, 'e.g., Get In Touch'),
+                    _buildTextField('CTA Button Link', _ctaButtonLinkController, 'e.g., /contact'),
+                    
+                    const SizedBox(height: 32),
+                    _buildSectionTitle('Media'),
+                    const SizedBox(height: 16),
+                    
+                    // Profile Image
+                    _buildImageUploadSection(
+                      'Profile Image',
+                      _profileImageUrl,
+                      () => _pickAndUploadImage('profile'),
+                      'Recommended: 400x400px',
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Background Image
+                    _buildImageUploadSection(
+                      'Background Image',
+                      _backgroundImageUrl,
+                      () => _pickAndUploadImage('background'),
+                      'Recommended: 1920x1080px',
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    _buildTextField('Video URL (Optional)', _videoUrlController, 'YouTube or video link'),
+                  ],
+                ),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        color: AppColors.primary,
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, String hint, {int maxLines = 1}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+          const SizedBox(height: 8),
+          TextField(
+            controller: controller,
+            maxLines: maxLines,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+              filled: true,
+              fillColor: const Color(0xFF1E293B),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: AppColors.primary),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImageUploadSection(String label, String? imageUrl, VoidCallback onUpload, String hint) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+        const SizedBox(height: 8),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image Preview
+            Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: imageUrl != null && imageUrl.isNotEmpty
+                    ? Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const Center(child: CircularProgressIndicator());
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Icon(Icons.broken_image, color: Colors.white54, size: 48),
+                          );
+                        },
+                      )
+                    : const Center(
+                        child: Icon(Icons.image, color: Colors.white30, size: 48),
+                      ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _isUploading ? null : onUpload,
+                  icon: _isUploading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.cloud_upload, size: 18),
+                  label: Text(_isUploading ? 'Uploading...' : 'Upload Image'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(hint, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _greetingController.dispose();
+    _nameController.dispose();
+    _titleController.dispose();
+    _subtitleController.dispose();
+    _descriptionController.dispose();
+    _ctaButtonTextController.dispose();
+    _ctaButtonLinkController.dispose();
+    _videoUrlController.dispose();
+    super.dispose();
+  }
+}
+
+// ============ IMAGE UPLOAD FIELD FOR FORMS ============
+
+class ImageUploadField extends StatefulWidget {
+  final String label;
+  final String? currentImageUrl;
+  final String storagePath;
+  final Function(String) onImageUploaded;
+  final String hint;
+
+  const ImageUploadField({
+    super.key,
+    required this.label,
+    this.currentImageUrl,
+    required this.storagePath,
+    required this.onImageUploaded,
+    this.hint = 'Upload an image',
+  });
+
+  @override
+  State<ImageUploadField> createState() => _ImageUploadFieldState();
+}
+
+class _ImageUploadFieldState extends State<ImageUploadField> {
+  bool _isUploading = false;
+  String? _imageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _imageUrl = widget.currentImageUrl;
+  }
+
+  @override
+  void didUpdateWidget(ImageUploadField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.currentImageUrl != oldWidget.currentImageUrl) {
+      _imageUrl = widget.currentImageUrl;
+    }
+  }
+
+  Future<void> _pickAndUpload() async {
+    try {
+      setState(() => _isUploading = true);
+      
+      final Uint8List? imageBytes = await ImagePickerWeb.getImageAsBytes();
+      if (imageBytes == null) {
+        setState(() => _isUploading = false);
+        return;
+      }
+
+      final storage = Get.find<StorageDataSource>();
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.png';
+      
+      final downloadUrl = await storage.uploadImage(
+        imageBytes: imageBytes,
+        path: widget.storagePath,
+        fileName: fileName,
+      );
+
+      setState(() {
+        _imageUrl = downloadUrl;
+        _isUploading = false;
+      });
+
+      widget.onImageUploaded(downloadUrl);
+    } catch (e) {
+      setState(() => _isUploading = false);
+      Get.snackbar('Error', 'Failed to upload: $e',
+          backgroundColor: Colors.red, colorText: Colors.white);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: _imageUrl != null && _imageUrl!.isNotEmpty
+                      ? Image.network(_imageUrl!, fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, color: Colors.white30))
+                      : const Icon(Icons.image, color: Colors.white30),
+                ),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton.icon(
+                onPressed: _isUploading ? null : _pickAndUpload,
+                icon: _isUploading
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.upload, size: 16),
+                label: Text(_isUploading ? 'Uploading...' : 'Upload'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+              ),
+            ],
+          ),
+          if (widget.hint.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(widget.hint, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 11)),
+            ),
         ],
       ),
     );

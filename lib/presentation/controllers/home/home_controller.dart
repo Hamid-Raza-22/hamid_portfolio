@@ -19,6 +19,7 @@ class HomeController extends GetxController
   final WatchSocialLinksUseCase _watchSocialLinksUseCase;
   final WatchStatsUseCase _watchStatsUseCase;
   final WatchNavItemsUseCase _watchNavItemsUseCase;
+  final WatchHeroSectionUseCase _watchHeroSectionUseCase;
 
   HomeController({
     required WatchServicesUseCase watchServicesUseCase,
@@ -26,11 +27,13 @@ class HomeController extends GetxController
     required WatchSocialLinksUseCase watchSocialLinksUseCase,
     required WatchStatsUseCase watchStatsUseCase,
     required WatchNavItemsUseCase watchNavItemsUseCase,
+    required WatchHeroSectionUseCase watchHeroSectionUseCase,
   })  : _watchServicesUseCase = watchServicesUseCase,
         _watchPortfolioItemsUseCase = watchPortfolioItemsUseCase,
         _watchSocialLinksUseCase = watchSocialLinksUseCase,
         _watchStatsUseCase = watchStatsUseCase,
-        _watchNavItemsUseCase = watchNavItemsUseCase;
+        _watchNavItemsUseCase = watchNavItemsUseCase,
+        _watchHeroSectionUseCase = watchHeroSectionUseCase;
 
   // Stream subscriptions
   final List<StreamSubscription> _subscriptions = [];
@@ -50,6 +53,7 @@ class HomeController extends GetxController
   final socialLinks = <SocialLinkEntity>[].obs;
   final stats = <StatEntity>[].obs;
   final navItems = <NavItemEntity>[].obs;
+  final heroSection = Rxn<HeroSectionEntity>();
 
   @override
   void onInit() {
@@ -98,6 +102,14 @@ class HomeController extends GetxController
           _checkLoadingComplete();
         },
         onError: (e) => debugPrint('Error watching nav items: $e'),
+      ),
+      _watchHeroSectionUseCase().listen(
+        (data) {
+          debugPrint('🔥 Hero Section Stream received: ${data.name}, imageUrl: ${data.profileImageUrl}');
+          heroSection.value = data;
+          _checkLoadingComplete();
+        },
+        onError: (e) => debugPrint('Error watching hero section: $e'),
       ),
     ]);
   }

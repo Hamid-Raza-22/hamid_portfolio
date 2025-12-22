@@ -107,6 +107,10 @@ class _ServiceCardState extends State<ServiceCard> {
   }
 
   Widget _buildIcon(double iconSize) {
+    final useCustomImage = widget.service.useCustomImage && 
+        widget.service.customIconUrl != null && 
+        widget.service.customIconUrl!.isNotEmpty;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       width: iconSize,
@@ -130,11 +134,26 @@ class _ServiceCardState extends State<ServiceCard> {
         builder: (context, child) {
           return Transform.translate(
             offset: Offset(0, controller.floatingAnimation.value * 0.08),
-            child: Icon(
-              widget.service.icon,
-              color: isHovered ? widget.service.color : widget.service.color.withOpacity(0.8),
-              size: iconSize * 0.5,
-            ),
+            child: useCustomImage
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      widget.service.customIconUrl!,
+                      width: iconSize * 0.6,
+                      height: iconSize * 0.6,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Icon(
+                        widget.service.icon,
+                        color: isHovered ? widget.service.color : widget.service.color.withOpacity(0.8),
+                        size: iconSize * 0.5,
+                      ),
+                    ),
+                  )
+                : Icon(
+                    widget.service.icon,
+                    color: isHovered ? widget.service.color : widget.service.color.withOpacity(0.8),
+                    size: iconSize * 0.5,
+                  ),
           );
         },
       ),
