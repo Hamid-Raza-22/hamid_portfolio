@@ -39,8 +39,8 @@ class LoginPage extends GetView<AuthController> {
                     _buildErrorMessage(),
                     const SizedBox(height: 24),
                     _buildSubmitButton(),
-                    const SizedBox(height: 16),
-                    _buildToggleMode(),
+                    // const SizedBox(height: 16),
+                    // _buildToggleMode(),
                     const SizedBox(height: 16),
                     _buildForgotPassword(),
                     const SizedBox(height: 32),
@@ -263,28 +263,28 @@ class LoginPage extends GetView<AuthController> {
         ));
   }
 
-  Widget _buildToggleMode() {
-    return Obx(() => TextButton(
-          onPressed: controller.toggleSignUpMode,
-          child: Text.rich(
-            TextSpan(
-              text: controller.isSignUpMode.value
-                  ? 'Already have an account? '
-                  : "Don't have an account? ",
-              style: TextStyle(color: Colors.white.withOpacity(0.7)),
-              children: [
-                TextSpan(
-                  text: controller.isSignUpMode.value ? 'Sign In' : 'Sign Up',
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ));
-  }
+  // Widget _buildToggleMode() {
+  //   return Obx(() => TextButton(
+  //         onPressed: controller.toggleSignUpMode,
+  //         child: Text.rich(
+  //           TextSpan(
+  //             text: controller.isSignUpMode.value
+  //                 ? 'Already have an account? '
+  //                 : "Don't have an account? ",
+  //             style: TextStyle(color: Colors.white.withOpacity(0.7)),
+  //             children: [
+  //               TextSpan(
+  //                 text: controller.isSignUpMode.value ? 'Sign In' : 'Sign Up',
+  //                 style: const TextStyle(
+  //                   color: AppColors.primary,
+  //                   fontWeight: FontWeight.w600,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ));
+  // }
 
   Widget _buildForgotPassword() {
     return Obx(() {
