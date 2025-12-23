@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/responsive_constants.dart';
 import '../../controllers/contact/contact_controller.dart';
 import '../../widgets/common/common_widgets.dart';
+import '../../widgets/common/shimmer_widgets.dart';
 
 /// Contact page - dedicated page for contact information.
 /// UI remains unchanged, logic moved to ContactController.
@@ -44,27 +45,33 @@ class ContactPage extends GetView<ContactController> {
             stops: [0.0, 0.35, 1.0],
           ),
         ),
-        child: SingleChildScrollView(
-          padding: ResponsivePadding.all(context, multiplier: 1.5),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1200),
-              child: Column(
-                children: [
-                  SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, tablet: 30, desktop: 40)),
-                  _buildHeader(context),
-                  SizedBox(height: ResponsiveValue.get<double>(context, mobile: 40, tablet: 50, desktop: 60)),
-                  _buildContactCards(context),
-                  SizedBox(height: ResponsiveValue.get<double>(context, mobile: 40, tablet: 50, desktop: 60)),
-                  _buildSocialLinks(context),
-                  SizedBox(height: ResponsiveValue.get<double>(context, mobile: 40, tablet: 50, desktop: 60)),
-                  _buildContactForm(context),
-                  SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, tablet: 30, desktop: 40)),
-                ],
+        child: Obx(() {
+          // Show skeleton while data is loading
+          if (controller.isLoading.value && controller.contactInfo.isEmpty) {
+            return const ContactPageSkeleton();
+          }
+          return SingleChildScrollView(
+            padding: ResponsivePadding.all(context, multiplier: 1.5),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: Column(
+                  children: [
+                    SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, tablet: 30, desktop: 40)),
+                    _buildHeader(context),
+                    SizedBox(height: ResponsiveValue.get<double>(context, mobile: 40, tablet: 50, desktop: 60)),
+                    _buildContactCards(context),
+                    SizedBox(height: ResponsiveValue.get<double>(context, mobile: 40, tablet: 50, desktop: 60)),
+                    _buildSocialLinks(context),
+                    SizedBox(height: ResponsiveValue.get<double>(context, mobile: 40, tablet: 50, desktop: 60)),
+                    _buildContactForm(context),
+                    SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, tablet: 30, desktop: 40)),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        }),
       ),
     );
   }
@@ -125,6 +132,8 @@ class ContactPage extends GetView<ContactController> {
         value: info.value,
         color: info.color,
         action: info.actionType,
+        customIconUrl: info.customIconUrl,
+        useCustomImage: info.useCustomImage,
       )).toList(),
     ));
   }
@@ -152,6 +161,8 @@ class ContactPage extends GetView<ContactController> {
             value: social.name,
             url: social.url,
             color: social.name == 'GitHub' ? Colors.white : const Color(0xFF0A66C2),
+            customIconUrl: social.customIconUrl,
+            useCustomImage: social.useCustomImage,
           )).toList(),
         ),
       ],
@@ -165,7 +176,11 @@ class ContactPage extends GetView<ContactController> {
     required String value,
     required String url,
     required Color color,
+    String? customIconUrl,
+    bool useCustomImage = false,
   }) {
+    final shouldShowCustomImage = useCustomImage && customIconUrl != null && customIconUrl.isNotEmpty;
+    
     return GestureDetector(
       onTap: () => controller.launchSocialUrl(url),
       child: ClipRRect(
@@ -184,12 +199,26 @@ class ContactPage extends GetView<ContactController> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(icon, color: color, size: 24),
+                  child: shouldShowCustomImage
+                      ? Center(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Image.network(
+                              customIconUrl!,
+                              width: 28,
+                              height: 28,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Icon(icon, color: color, size: 24),
+                            ),
+                          ),
+                        )
+                      : Center(child: Icon(icon, color: color, size: 24)),
                 ),
                 const SizedBox(width: 16),
                 Column(
@@ -227,7 +256,11 @@ class ContactPage extends GetView<ContactController> {
     required String value,
     required Color color,
     required String action,
+    String? customIconUrl,
+    bool useCustomImage = false,
   }) {
+    final shouldShowCustomImage = useCustomImage && customIconUrl != null && customIconUrl.isNotEmpty;
+    
     return GestureDetector(
       onTap: () => _handleContactAction(action, value),
       child: ClipRRect(
@@ -251,12 +284,26 @@ class ContactPage extends GetView<ContactController> {
             child: Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(icon, color: color, size: 32),
+                  child: shouldShowCustomImage
+                      ? Center(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                              customIconUrl!,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Icon(icon, color: color, size: 32),
+                            ),
+                          ),
+                        )
+                      : Center(child: Icon(icon, color: color, size: 32)),
                 ),
                 const SizedBox(height: 16),
                 Text(

@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/responsive_constants.dart';
 import '../../controllers/projects/projects_controller.dart';
 import '../../widgets/common/common_widgets.dart';
+import '../../widgets/common/shimmer_widgets.dart';
 
 /// Projects page - displays all projects from CV.
 /// UI remains unchanged, logic moved to ProjectsController.
@@ -44,23 +45,29 @@ class ProjectsPage extends GetView<ProjectsController> {
             stops: [0.0, 0.35, 1.0],
           ),
         ),
-        child: SingleChildScrollView(
-          padding: ResponsivePadding.all(context, multiplier: 1.5),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1000),
-              child: Column(
-                children: [
-                  SizedBox(height: ResponsiveValue.get<double>(context, mobile: 16, tablet: 20, desktop: 20)),
-                  _buildHeader(context),
-                  SizedBox(height: ResponsiveValue.get<double>(context, mobile: 28, tablet: 36, desktop: 40)),
-                  _buildProjectsList(context),
-                  SizedBox(height: ResponsiveValue.get<double>(context, mobile: 28, tablet: 36, desktop: 40)),
-                ],
+        child: Obx(() {
+          // Show skeleton while data is loading
+          if (controller.isLoading.value && controller.projects.isEmpty) {
+            return const ProjectsPageSkeleton();
+          }
+          return SingleChildScrollView(
+            padding: ResponsivePadding.all(context, multiplier: 1.5),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1000),
+                child: Column(
+                  children: [
+                    SizedBox(height: ResponsiveValue.get<double>(context, mobile: 16, tablet: 20, desktop: 20)),
+                    _buildHeader(context),
+                    SizedBox(height: ResponsiveValue.get<double>(context, mobile: 28, tablet: 36, desktop: 40)),
+                    _buildProjectsList(context),
+                    SizedBox(height: ResponsiveValue.get<double>(context, mobile: 28, tablet: 36, desktop: 40)),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        }),
       ),
     );
   }
@@ -121,6 +128,8 @@ class ProjectsPage extends GetView<ProjectsController> {
         description: project.description,
         highlights: project.highlights,
         tags: project.tags,
+        customIconUrl: project.customIconUrl,
+        useCustomImage: project.useCustomImage,
       )).toList(),
     ));
   }
@@ -135,7 +144,11 @@ class ProjectsPage extends GetView<ProjectsController> {
     required String description,
     required List<String> highlights,
     required List<String> tags,
+    String? customIconUrl,
+    bool useCustomImage = false,
   }) {
+    final shouldShowCustomImage = useCustomImage && customIconUrl != null && customIconUrl.isNotEmpty;
+    
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: ResponsiveValue.get<double>(context, mobile: 16, tablet: 20, desktop: 24)),
@@ -157,12 +170,26 @@ class ProjectsPage extends GetView<ProjectsController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      width: 64,
+                      height: 64,
                       decoration: BoxDecoration(
                         color: color.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Icon(icon, color: color, size: 32),
+                      child: shouldShowCustomImage
+                          ? Center(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.network(
+                                  customIconUrl!,
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) => Icon(icon, color: color, size: 32),
+                                ),
+                              ),
+                            )
+                          : Center(child: Icon(icon, color: color, size: 32)),
                     ),
                     const SizedBox(width: 16),
                     Expanded(

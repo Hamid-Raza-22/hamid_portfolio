@@ -7,6 +7,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../domain/entities/entities.dart';
 import '../../controllers/about/about_controller.dart';
 import '../../widgets/common/common_widgets.dart';
+import '../../widgets/common/shimmer_widgets.dart';
 
 /// About page - dedicated page for about information.
 /// UI remains unchanged, logic moved to AboutController.
@@ -46,15 +47,20 @@ class AboutPage extends GetView<AboutController> {
             stops: [0.0, 0.35, 1.0],
           ),
         ),
-        child: SingleChildScrollView(
-          padding: ResponsivePadding.all(context, multiplier: 1.5),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1200),
-              child: Column(
-                children: [
-                  SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, tablet: 30, desktop: 40)),
-                  _buildHeader(context),
+        child: Obx(() {
+          // Show skeleton while data is loading
+          if (controller.isLoading.value && controller.profile.value == null) {
+            return const AboutPageSkeleton();
+          }
+          return SingleChildScrollView(
+            padding: ResponsivePadding.all(context, multiplier: 1.5),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: Column(
+                  children: [
+                    SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, tablet: 30, desktop: 40)),
+                    _buildHeader(context),
                   SizedBox(height: ResponsiveValue.get<double>(context, mobile: 40, tablet: 50, desktop: 60)),
                   _buildAboutContent(context),
                   SizedBox(height: ResponsiveValue.get<double>(context, mobile: 40, tablet: 50, desktop: 60)),
@@ -67,12 +73,13 @@ class AboutPage extends GetView<AboutController> {
                   _buildAchievements(context),
                   SizedBox(height: ResponsiveValue.get<double>(context, mobile: 40, tablet: 50, desktop: 60)),
                   _buildCertifications(context),
-                  SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, tablet: 30, desktop: 40)),
-                ],
+                    SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, tablet: 30, desktop: 40)),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        }),
       ),
     );
   }
@@ -256,6 +263,8 @@ class AboutPage extends GetView<AboutController> {
             icon: exp.icon,
             color: exp.color,
             skills: exp.skills,
+            customIconUrl: exp.customIconUrl,
+            useCustomImage: exp.useCustomImage,
           )).toList(),
         ),
       ],
@@ -268,7 +277,11 @@ class AboutPage extends GetView<AboutController> {
     required IconData icon,
     required Color color,
     required List<String> skills,
+    String? customIconUrl,
+    bool useCustomImage = false,
   }) {
+    final shouldShowCustomImage = useCustomImage && customIconUrl != null && customIconUrl.isNotEmpty;
+    
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
@@ -294,12 +307,26 @@ class AboutPage extends GetView<AboutController> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: color.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(icon, color: color, size: 24),
+                    child: shouldShowCustomImage
+                        ? Center(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                customIconUrl!,
+                                width: 28,
+                                height: 28,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => Icon(icon, color: color, size: 24),
+                              ),
+                            ),
+                          )
+                        : Center(child: Icon(icon, color: color, size: 24)),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -618,44 +645,64 @@ class AboutPage extends GetView<AboutController> {
           spacing: 16,
           runSpacing: 16,
           alignment: WrapAlignment.center,
-          children: controller.achievements.map((achievement) => ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                width: ResponsiveValue.get<double>(context, mobile: double.infinity, desktop: 350),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.cardBg.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.accent.withOpacity(0.3)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(10),
+          children: controller.achievements.map((achievement) {
+            final shouldShowCustomImage = achievement.useCustomImage && 
+                achievement.customIconUrl != null && 
+                achievement.customIconUrl!.isNotEmpty;
+            
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  width: ResponsiveValue.get<double>(context, mobile: double.infinity, desktop: 350),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBg.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.accent.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: shouldShowCustomImage
+                            ? Center(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Image.network(
+                                    achievement.customIconUrl!,
+                                    width: 28,
+                                    height: 28,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (_, __, ___) => Icon(achievement.icon, color: AppColors.accent, size: 24),
+                                  ),
+                                ),
+                              )
+                            : Center(child: Icon(achievement.icon, color: AppColors.accent, size: 24)),
                       ),
-                      child: Icon(achievement.icon, color: AppColors.accent, size: 24),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        achievement.text,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          achievement.text,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          )).toList(),
+            );
+          }).toList(),
         ),
       ],
     ));

@@ -2,6 +2,7 @@
 /// Provides a single import for all common reusable widgets.
 export 'animated_button.dart';
 export 'bullet_list.dart';
+export 'custom_icon_widget.dart';
 export 'duration_badge.dart';
 export 'glass_card.dart';
 export 'glass_container.dart';

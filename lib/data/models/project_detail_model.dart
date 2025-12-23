@@ -16,6 +16,8 @@ class ProjectDetailModel extends ProjectDetailEntity {
     required super.highlights,
     required super.tags,
     super.url,
+    super.customIconUrl,
+    super.useCustomImage,
   });
 
   /// Create from Firestore document
@@ -31,6 +33,8 @@ class ProjectDetailModel extends ProjectDetailEntity {
       highlights: List<String>.from(json['highlights'] ?? []),
       tags: List<String>.from(json['tags'] ?? []),
       url: json['url'] as String?,
+      customIconUrl: json['customIconUrl'] as String?,
+      useCustomImage: json['useCustomImage'] as bool? ?? false,
     );
   }
 
@@ -46,6 +50,8 @@ class ProjectDetailModel extends ProjectDetailEntity {
       'highlights': highlights,
       'tags': tags,
       'url': url,
+      'useCustomImage': useCustomImage,
+      if (customIconUrl != null) 'customIconUrl': customIconUrl,
     };
   }
 
@@ -62,6 +68,8 @@ class ProjectDetailModel extends ProjectDetailEntity {
       highlights: entity.highlights,
       tags: entity.tags,
       url: entity.url,
+      customIconUrl: entity.customIconUrl,
+      useCustomImage: entity.useCustomImage,
     );
   }
 
@@ -78,6 +86,8 @@ class ProjectDetailModel extends ProjectDetailEntity {
       highlights: highlights,
       tags: tags,
       url: url,
+      customIconUrl: customIconUrl,
+      useCustomImage: useCustomImage,
     );
   }
 
@@ -93,6 +103,8 @@ class ProjectDetailModel extends ProjectDetailEntity {
     List<String>? highlights,
     List<String>? tags,
     String? url,
+    String? customIconUrl,
+    bool? useCustomImage,
   }) {
     return ProjectDetailModel(
       id: id ?? this.id,
@@ -105,6 +117,8 @@ class ProjectDetailModel extends ProjectDetailEntity {
       highlights: highlights ?? this.highlights,
       tags: tags ?? this.tags,
       url: url ?? this.url,
+      customIconUrl: customIconUrl ?? this.customIconUrl,
+      useCustomImage: useCustomImage ?? this.useCustomImage,
     );
   }
 }

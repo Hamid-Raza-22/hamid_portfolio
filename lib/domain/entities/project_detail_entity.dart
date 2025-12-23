@@ -12,6 +12,8 @@ class ProjectDetailEntity {
   final List<String> highlights;
   final List<String> tags;
   final String? url;
+  final String? customIconUrl;
+  final bool useCustomImage;
 
   const ProjectDetailEntity({
     required this.id,
@@ -24,6 +26,8 @@ class ProjectDetailEntity {
     required this.highlights,
     required this.tags,
     this.url,
+    this.customIconUrl,
+    this.useCustomImage = false,
   });
 
   @override

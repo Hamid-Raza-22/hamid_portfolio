@@ -12,6 +12,8 @@ class ContactInfoModel extends ContactInfoEntity {
     required super.value,
     required super.color,
     required super.actionType,
+    super.customIconUrl,
+    super.useCustomImage,
   });
 
   /// Create from Firestore document
@@ -23,6 +25,8 @@ class ContactInfoModel extends ContactInfoEntity {
       value: json['value'] as String? ?? '',
       color: ColorMapper.fromString(json['color'] as String? ?? 'primary'),
       actionType: json['actionType'] as String? ?? '',
+      customIconUrl: json['customIconUrl'] as String?,
+      useCustomImage: json['useCustomImage'] as bool? ?? false,
     );
   }
 
@@ -34,6 +38,8 @@ class ContactInfoModel extends ContactInfoEntity {
       'value': value,
       'color': ColorMapper.colorToString(color),
       'actionType': actionType,
+      'useCustomImage': useCustomImage,
+      if (customIconUrl != null) 'customIconUrl': customIconUrl,
     };
   }
 
@@ -46,6 +52,8 @@ class ContactInfoModel extends ContactInfoEntity {
       value: entity.value,
       color: entity.color,
       actionType: entity.actionType,
+      customIconUrl: entity.customIconUrl,
+      useCustomImage: entity.useCustomImage,
     );
   }
 
@@ -58,6 +66,8 @@ class ContactInfoModel extends ContactInfoEntity {
       value: value,
       color: color,
       actionType: actionType,
+      customIconUrl: customIconUrl,
+      useCustomImage: useCustomImage,
     );
   }
 
@@ -69,6 +79,8 @@ class ContactInfoModel extends ContactInfoEntity {
     String? value,
     Color? color,
     String? actionType,
+    String? customIconUrl,
+    bool? useCustomImage,
   }) {
     return ContactInfoModel(
       id: id ?? this.id,
@@ -77,6 +89,8 @@ class ContactInfoModel extends ContactInfoEntity {
       value: value ?? this.value,
       color: color ?? this.color,
       actionType: actionType ?? this.actionType,
+      customIconUrl: customIconUrl ?? this.customIconUrl,
+      useCustomImage: useCustomImage ?? this.useCustomImage,
     );
   }
 }

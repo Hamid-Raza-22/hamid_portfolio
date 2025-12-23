@@ -8,6 +8,8 @@ class ContactInfoEntity {
   final String value;
   final Color color;
   final String actionType;
+  final String? customIconUrl;
+  final bool useCustomImage;
 
   const ContactInfoEntity({
     required this.id,
@@ -16,6 +18,8 @@ class ContactInfoEntity {
     required this.value,
     required this.color,
     required this.actionType,
+    this.customIconUrl,
+    this.useCustomImage = false,
   });
 
   @override

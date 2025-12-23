@@ -8,6 +8,8 @@ class AchievementModel extends AchievementEntity {
     required super.id,
     required super.icon,
     required super.text,
+    super.customIconUrl,
+    super.useCustomImage,
   });
 
   /// Create from Firestore document
@@ -16,6 +18,8 @@ class AchievementModel extends AchievementEntity {
       id: docId,
       icon: IconMapper.fromString(json['icon'] as String? ?? 'star_rounded'),
       text: json['text'] as String? ?? '',
+      customIconUrl: json['customIconUrl'] as String?,
+      useCustomImage: json['useCustomImage'] as bool? ?? false,
     );
   }
 
@@ -24,6 +28,8 @@ class AchievementModel extends AchievementEntity {
     return {
       'icon': IconMapper.iconToString(icon),
       'text': text,
+      'useCustomImage': useCustomImage,
+      if (customIconUrl != null) 'customIconUrl': customIconUrl,
     };
   }
 
@@ -33,6 +39,8 @@ class AchievementModel extends AchievementEntity {
       id: entity.id,
       icon: entity.icon,
       text: entity.text,
+      customIconUrl: entity.customIconUrl,
+      useCustomImage: entity.useCustomImage,
     );
   }
 
@@ -42,6 +50,8 @@ class AchievementModel extends AchievementEntity {
       id: id,
       icon: icon,
       text: text,
+      customIconUrl: customIconUrl,
+      useCustomImage: useCustomImage,
     );
   }
 
@@ -50,11 +60,15 @@ class AchievementModel extends AchievementEntity {
     String? id,
     IconData? icon,
     String? text,
+    String? customIconUrl,
+    bool? useCustomImage,
   }) {
     return AchievementModel(
       id: id ?? this.id,
       icon: icon ?? this.icon,
       text: text ?? this.text,
+      customIconUrl: customIconUrl ?? this.customIconUrl,
+      useCustomImage: useCustomImage ?? this.useCustomImage,
     );
   }
 }

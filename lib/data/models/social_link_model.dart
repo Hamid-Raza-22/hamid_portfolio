@@ -9,6 +9,8 @@ class SocialLinkModel extends SocialLinkEntity {
     required super.name,
     required super.icon,
     required super.url,
+    super.customIconUrl,
+    super.useCustomImage,
   });
 
   /// Create from Firestore document
@@ -18,6 +20,8 @@ class SocialLinkModel extends SocialLinkEntity {
       name: json['name'] as String? ?? '',
       icon: IconMapper.fromString(json['icon'] as String? ?? 'link'),
       url: json['url'] as String? ?? '',
+      customIconUrl: json['customIconUrl'] as String?,
+      useCustomImage: json['useCustomImage'] as bool? ?? false,
     );
   }
 
@@ -27,6 +31,8 @@ class SocialLinkModel extends SocialLinkEntity {
       'name': name,
       'icon': IconMapper.iconToString(icon),
       'url': url,
+      'useCustomImage': useCustomImage,
+      if (customIconUrl != null) 'customIconUrl': customIconUrl,
     };
   }
 
@@ -37,6 +43,8 @@ class SocialLinkModel extends SocialLinkEntity {
       name: entity.name,
       icon: entity.icon,
       url: entity.url,
+      customIconUrl: entity.customIconUrl,
+      useCustomImage: entity.useCustomImage,
     );
   }
 
@@ -47,6 +55,8 @@ class SocialLinkModel extends SocialLinkEntity {
       name: name,
       icon: icon,
       url: url,
+      customIconUrl: customIconUrl,
+      useCustomImage: useCustomImage,
     );
   }
 
@@ -56,12 +66,16 @@ class SocialLinkModel extends SocialLinkEntity {
     String? name,
     IconData? icon,
     String? url,
+    String? customIconUrl,
+    bool? useCustomImage,
   }) {
     return SocialLinkModel(
       id: id ?? this.id,
       name: name ?? this.name,
       icon: icon ?? this.icon,
       url: url ?? this.url,
+      customIconUrl: customIconUrl ?? this.customIconUrl,
+      useCustomImage: useCustomImage ?? this.useCustomImage,
     );
   }
 }

@@ -11,6 +11,8 @@ class ExpertiseModel extends ExpertiseEntity {
     required super.icon,
     required super.color,
     required super.skills,
+    super.customIconUrl,
+    super.useCustomImage,
   });
 
   /// Create from Firestore document
@@ -21,6 +23,8 @@ class ExpertiseModel extends ExpertiseEntity {
       icon: IconMapper.fromString(json['icon'] as String? ?? 'code_rounded'),
       color: ColorMapper.fromString(json['color'] as String? ?? 'primary'),
       skills: List<String>.from(json['skills'] ?? []),
+      customIconUrl: json['customIconUrl'] as String?,
+      useCustomImage: json['useCustomImage'] as bool? ?? false,
     );
   }
 
@@ -31,6 +35,8 @@ class ExpertiseModel extends ExpertiseEntity {
       'icon': IconMapper.iconToString(icon),
       'color': ColorMapper.colorToString(color),
       'skills': skills,
+      'useCustomImage': useCustomImage,
+      if (customIconUrl != null) 'customIconUrl': customIconUrl,
     };
   }
 
@@ -42,6 +48,8 @@ class ExpertiseModel extends ExpertiseEntity {
       icon: entity.icon,
       color: entity.color,
       skills: entity.skills,
+      customIconUrl: entity.customIconUrl,
+      useCustomImage: entity.useCustomImage,
     );
   }
 
@@ -53,6 +61,8 @@ class ExpertiseModel extends ExpertiseEntity {
       icon: icon,
       color: color,
       skills: skills,
+      customIconUrl: customIconUrl,
+      useCustomImage: useCustomImage,
     );
   }
 
@@ -63,6 +73,8 @@ class ExpertiseModel extends ExpertiseEntity {
     IconData? icon,
     Color? color,
     List<String>? skills,
+    String? customIconUrl,
+    bool? useCustomImage,
   }) {
     return ExpertiseModel(
       id: id ?? this.id,
@@ -70,6 +82,8 @@ class ExpertiseModel extends ExpertiseEntity {
       icon: icon ?? this.icon,
       color: color ?? this.color,
       skills: skills ?? this.skills,
+      customIconUrl: customIconUrl ?? this.customIconUrl,
+      useCustomImage: useCustomImage ?? this.useCustomImage,
     );
   }
 }

@@ -324,12 +324,21 @@ class AdminFormDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
+    final viewInsets = MediaQuery.viewInsetsOf(context);
     final maxW = (size.width * 0.95).clamp(320.0, 520.0);
-    final maxH = (size.height * 0.9).clamp(400.0, 700.0);
+    // Account for keyboard height in max height calculation
+    final availableHeight = size.height - viewInsets.bottom;
+    final maxH = (availableHeight * 0.85).clamp(300.0, 700.0);
 
     return Dialog(
       backgroundColor: const Color(0xFF1E293B),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      insetPadding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 24,
+        bottom: viewInsets.bottom + 24,
+      ),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxW, maxHeight: maxH),
         child: Column(
@@ -1549,6 +1558,8 @@ class ProjectsManagement extends StatelessWidget {
                 subtitle: '${project.category} • ${project.year}',
                 icon: project.icon,
                 color: project.color,
+                customIconUrl: project.customIconUrl,
+                useCustomImage: project.useCustomImage,
                 onEdit: () => _showProjectDialog(context, project: project),
                 onDelete: () => controller.deleteProjectDetail(project.id),
               );
@@ -1563,65 +1574,70 @@ class ProjectsManagement extends StatelessWidget {
     final yearController = TextEditingController(text: project?.year ?? '');
     final descController = TextEditingController(text: project?.description ?? '');
     final urlController = TextEditingController(text: project?.url ?? '');
-    String selectedIcon = project != null ? IconMapper.iconToString(project.icon) : 'folder';
-    String selectedColor = project != null ? ColorMapper.colorToString(project.color) : 'primary';
-    List<String> highlights = List<String>.from(project?.highlights ?? []);
-    List<String> tags = List<String>.from(project?.tags ?? []);
+    final selectedIcon = (project != null ? IconMapper.iconToString(project.icon) : 'folder').obs;
+    final selectedColor = (project != null ? ColorMapper.colorToString(project.color) : 'primary').obs;
+    final highlights = List<String>.from(project?.highlights ?? []).obs;
+    final tags = List<String>.from(project?.tags ?? []).obs;
+    final customIconUrl = Rxn<String>(project?.customIconUrl);
+    final useCustomImage = (project?.useCustomImage ?? false).obs;
 
     Get.dialog(
-      StatefulBuilder(
-        builder: (context, setState) => AdminFormDialog(
-          title: project == null ? 'Add Project' : 'Edit Project',
-          onSave: () {
-            final newProject = ProjectDetailEntity(
-              id: project?.id ?? controller.generateId(),
-              title: titleController.text,
-              category: categoryController.text,
-              year: yearController.text,
-              description: descController.text,
-              icon: IconMapper.fromString(selectedIcon),
-              color: ColorMapper.fromString(selectedColor),
-              highlights: highlights,
-              tags: tags,
-              url: urlController.text.isEmpty ? null : urlController.text,
-            );
-            if (project == null) {
-              controller.addProjectDetail(newProject);
-            } else {
-              controller.updateProjectDetail(newProject);
-            }
-            Get.back();
-          },
-          children: [
-            AdminTextField(label: 'Title', controller: titleController),
-            AdminTextField(label: 'Category', controller: categoryController),
-            AdminTextField(label: 'Year', controller: yearController),
-            AdminTextField(label: 'Description', controller: descController, maxLines: 3),
-            AdminTextField(label: 'URL (optional)', controller: urlController),
-            IconPickerField(
-              label: 'Icon',
-              selectedIcon: selectedIcon,
-              onChanged: (value) => setState(() => selectedIcon = value),
-              onCustomIconUploaded: (url) {},
-            ),
-            ColorPickerField(
-              label: 'Color',
-              selectedColor: selectedColor,
-              onChanged: (value) => setState(() => selectedColor = value),
-            ),
-            ListEditorField(
-              label: 'Highlights',
-              items: highlights,
-              onChanged: (value) => setState(() => highlights = value),
-            ),
-            TagsEditorField(
-              label: 'Tags',
-              tags: tags,
-              onChanged: (value) => setState(() => tags = value),
-            ),
-          ],
-        ),
-      ),
+      Obx(() => AdminFormDialog(
+        title: project == null ? 'Add Project' : 'Edit Project',
+        onSave: () {
+          final newProject = ProjectDetailEntity(
+            id: project?.id ?? controller.generateId(),
+            title: titleController.text,
+            category: categoryController.text,
+            year: yearController.text,
+            description: descController.text,
+            icon: IconMapper.fromString(selectedIcon.value),
+            color: ColorMapper.fromString(selectedColor.value),
+            highlights: highlights,
+            tags: tags,
+            url: urlController.text.isEmpty ? null : urlController.text,
+            customIconUrl: useCustomImage.value ? customIconUrl.value : null,
+            useCustomImage: useCustomImage.value,
+          );
+          if (project == null) {
+            controller.addProjectDetail(newProject);
+          } else {
+            controller.updateProjectDetail(newProject);
+          }
+          Get.back();
+        },
+        children: [
+          AdminTextField(label: 'Title', controller: titleController),
+          AdminTextField(label: 'Category', controller: categoryController),
+          AdminTextField(label: 'Year', controller: yearController),
+          AdminTextField(label: 'Description', controller: descController, maxLines: 3),
+          AdminTextField(label: 'URL (optional)', controller: urlController),
+          IconPickerField(
+            label: 'Icon / Image',
+            selectedIcon: selectedIcon.value,
+            onChanged: (value) => selectedIcon.value = value,
+            customIconUrl: customIconUrl.value,
+            onCustomIconUploaded: (url) => customIconUrl.value = url,
+            useCustomImage: useCustomImage.value,
+            onUseCustomImageChanged: (value) => useCustomImage.value = value,
+          ),
+          ColorPickerField(
+            label: 'Color',
+            selectedColor: selectedColor.value,
+            onChanged: (value) => selectedColor.value = value,
+          ),
+          ListEditorField(
+            label: 'Highlights',
+            items: highlights,
+            onChanged: (value) => highlights.value = value,
+          ),
+          TagsEditorField(
+            label: 'Tags',
+            tags: tags,
+            onChanged: (value) => tags.value = value,
+          ),
+        ],
+      )),
     );
   }
 }
@@ -1776,6 +1792,8 @@ class ExpertiseManagement extends StatelessWidget {
                 subtitle: '${exp.skills.length} skills',
                 icon: exp.icon,
                 color: exp.color,
+                customIconUrl: exp.customIconUrl,
+                useCustomImage: exp.useCustomImage,
                 onEdit: () => _showExpertiseDialog(context, expertise: exp),
                 onDelete: () => controller.deleteExpertise(exp.id),
               );
@@ -1786,50 +1804,55 @@ class ExpertiseManagement extends StatelessWidget {
 
   void _showExpertiseDialog(BuildContext context, {ExpertiseEntity? expertise}) {
     final titleController = TextEditingController(text: expertise?.title ?? '');
-    String selectedIcon = expertise != null ? IconMapper.iconToString(expertise.icon) : 'code_rounded';
-    String selectedColor = expertise != null ? ColorMapper.colorToString(expertise.color) : 'primary';
-    List<String> skills = List<String>.from(expertise?.skills ?? []);
+    final selectedIcon = (expertise != null ? IconMapper.iconToString(expertise.icon) : 'code_rounded').obs;
+    final selectedColor = (expertise != null ? ColorMapper.colorToString(expertise.color) : 'primary').obs;
+    final skills = List<String>.from(expertise?.skills ?? []).obs;
+    final customIconUrl = Rxn<String>(expertise?.customIconUrl);
+    final useCustomImage = (expertise?.useCustomImage ?? false).obs;
 
     Get.dialog(
-      StatefulBuilder(
-        builder: (context, setState) => AdminFormDialog(
-          title: expertise == null ? 'Add Expertise' : 'Edit Expertise',
-          onSave: () {
-            final newExp = ExpertiseEntity(
-              id: expertise?.id ?? controller.generateId(),
-              title: titleController.text,
-              icon: IconMapper.fromString(selectedIcon),
-              color: ColorMapper.fromString(selectedColor),
-              skills: skills,
-            );
-            if (expertise == null) {
-              controller.addExpertise(newExp);
-            } else {
-              controller.updateExpertise(newExp);
-            }
-            Get.back();
-          },
-          children: [
-            AdminTextField(label: 'Title', controller: titleController),
-            IconPickerField(
-              label: 'Icon',
-              selectedIcon: selectedIcon,
-              onChanged: (value) => setState(() => selectedIcon = value),
-              onCustomIconUploaded: (url) {},
-            ),
-            ColorPickerField(
-              label: 'Color',
-              selectedColor: selectedColor,
-              onChanged: (value) => setState(() => selectedColor = value),
-            ),
-            ListEditorField(
-              label: 'Skills',
-              items: skills,
-              onChanged: (value) => setState(() => skills = value),
-            ),
-          ],
-        ),
-      ),
+      Obx(() => AdminFormDialog(
+        title: expertise == null ? 'Add Expertise' : 'Edit Expertise',
+        onSave: () {
+          final newExp = ExpertiseEntity(
+            id: expertise?.id ?? controller.generateId(),
+            title: titleController.text,
+            icon: IconMapper.fromString(selectedIcon.value),
+            color: ColorMapper.fromString(selectedColor.value),
+            skills: skills,
+            customIconUrl: useCustomImage.value ? customIconUrl.value : null,
+            useCustomImage: useCustomImage.value,
+          );
+          if (expertise == null) {
+            controller.addExpertise(newExp);
+          } else {
+            controller.updateExpertise(newExp);
+          }
+          Get.back();
+        },
+        children: [
+          AdminTextField(label: 'Title', controller: titleController),
+          IconPickerField(
+            label: 'Icon / Image',
+            selectedIcon: selectedIcon.value,
+            onChanged: (value) => selectedIcon.value = value,
+            customIconUrl: customIconUrl.value,
+            onCustomIconUploaded: (url) => customIconUrl.value = url,
+            useCustomImage: useCustomImage.value,
+            onUseCustomImageChanged: (value) => useCustomImage.value = value,
+          ),
+          ColorPickerField(
+            label: 'Color',
+            selectedColor: selectedColor.value,
+            onChanged: (value) => selectedColor.value = value,
+          ),
+          ListEditorField(
+            label: 'Skills',
+            items: skills,
+            onChanged: (value) => skills.value = value,
+          ),
+        ],
+      )),
     );
   }
 }
@@ -1853,6 +1876,8 @@ class AchievementsManagement extends StatelessWidget {
               return AdminItemCard(
                 title: ach.text,
                 icon: ach.icon,
+                customIconUrl: ach.customIconUrl,
+                useCustomImage: ach.useCustomImage,
                 onEdit: () => _showAchievementDialog(context, achievement: ach),
                 onDelete: () => controller.deleteAchievement(ach.id),
               );
@@ -1863,36 +1888,41 @@ class AchievementsManagement extends StatelessWidget {
 
   void _showAchievementDialog(BuildContext context, {AchievementEntity? achievement}) {
     final textController = TextEditingController(text: achievement?.text ?? '');
-    String selectedIcon = achievement != null ? IconMapper.iconToString(achievement.icon) : 'star_rounded';
+    final selectedIcon = (achievement != null ? IconMapper.iconToString(achievement.icon) : 'star_rounded').obs;
+    final customIconUrl = Rxn<String>(achievement?.customIconUrl);
+    final useCustomImage = (achievement?.useCustomImage ?? false).obs;
 
     Get.dialog(
-      StatefulBuilder(
-        builder: (context, setState) => AdminFormDialog(
-          title: achievement == null ? 'Add Achievement' : 'Edit Achievement',
-          onSave: () {
-            final newAch = AchievementEntity(
-              id: achievement?.id ?? controller.generateId(),
-              icon: IconMapper.fromString(selectedIcon),
-              text: textController.text,
-            );
-            if (achievement == null) {
-              controller.addAchievement(newAch);
-            } else {
-              controller.updateAchievement(newAch);
-            }
-            Get.back();
-          },
-          children: [
-            AdminTextField(label: 'Achievement Text', controller: textController, maxLines: 2),
-            IconPickerField(
-              label: 'Icon',
-              selectedIcon: selectedIcon,
-              onChanged: (value) => setState(() => selectedIcon = value),
-              onCustomIconUploaded: (url) {},
-            ),
-          ],
-        ),
-      ),
+      Obx(() => AdminFormDialog(
+        title: achievement == null ? 'Add Achievement' : 'Edit Achievement',
+        onSave: () {
+          final newAch = AchievementEntity(
+            id: achievement?.id ?? controller.generateId(),
+            icon: IconMapper.fromString(selectedIcon.value),
+            text: textController.text,
+            customIconUrl: useCustomImage.value ? customIconUrl.value : null,
+            useCustomImage: useCustomImage.value,
+          );
+          if (achievement == null) {
+            controller.addAchievement(newAch);
+          } else {
+            controller.updateAchievement(newAch);
+          }
+          Get.back();
+        },
+        children: [
+          AdminTextField(label: 'Achievement Text', controller: textController, maxLines: 2),
+          IconPickerField(
+            label: 'Icon / Image',
+            selectedIcon: selectedIcon.value,
+            onChanged: (value) => selectedIcon.value = value,
+            customIconUrl: customIconUrl.value,
+            onCustomIconUploaded: (url) => customIconUrl.value = url,
+            useCustomImage: useCustomImage.value,
+            onUseCustomImageChanged: (value) => useCustomImage.value = value,
+          ),
+        ],
+      )),
     );
   }
 }
@@ -1918,6 +1948,8 @@ class ContactManagement extends StatelessWidget {
                 subtitle: info.value,
                 icon: info.icon,
                 color: info.color,
+                customIconUrl: info.customIconUrl,
+                useCustomImage: info.useCustomImage,
                 onEdit: () => _showContactDialog(context, contact: info),
                 onDelete: () => controller.deleteContactInfo(info.id),
               );
@@ -1930,47 +1962,52 @@ class ContactManagement extends StatelessWidget {
     final titleController = TextEditingController(text: contact?.title ?? '');
     final valueController = TextEditingController(text: contact?.value ?? '');
     final actionTypeController = TextEditingController(text: contact?.actionType ?? '');
-    String selectedIcon = contact != null ? IconMapper.iconToString(contact.icon) : 'email_rounded';
-    String selectedColor = contact != null ? ColorMapper.colorToString(contact.color) : 'primary';
+    final selectedIcon = (contact != null ? IconMapper.iconToString(contact.icon) : 'email_rounded').obs;
+    final selectedColor = (contact != null ? ColorMapper.colorToString(contact.color) : 'primary').obs;
+    final customIconUrl = Rxn<String>(contact?.customIconUrl);
+    final useCustomImage = (contact?.useCustomImage ?? false).obs;
 
     Get.dialog(
-      StatefulBuilder(
-        builder: (context, setState) => AdminFormDialog(
-          title: contact == null ? 'Add Contact Info' : 'Edit Contact Info',
-          onSave: () {
-            final newContact = ContactInfoEntity(
-              id: contact?.id ?? controller.generateId(),
-              title: titleController.text,
-              value: valueController.text,
-              icon: IconMapper.fromString(selectedIcon),
-              color: ColorMapper.fromString(selectedColor),
-              actionType: actionTypeController.text,
-            );
-            if (contact == null) {
-              controller.addContactInfo(newContact);
-            } else {
-              controller.updateContactInfo(newContact);
-            }
-            Get.back();
-          },
-          children: [
-            AdminTextField(label: 'Title', controller: titleController, hint: 'e.g., Email, Phone'),
-            AdminTextField(label: 'Value', controller: valueController, hint: 'e.g., email@example.com'),
-            AdminTextField(label: 'Action Type', controller: actionTypeController, hint: 'e.g., email, phone, whatsapp'),
-            IconPickerField(
-              label: 'Icon',
-              selectedIcon: selectedIcon,
-              onChanged: (value) => setState(() => selectedIcon = value),
-              onCustomIconUploaded: (url) {},
-            ),
-            ColorPickerField(
-              label: 'Color',
-              selectedColor: selectedColor,
-              onChanged: (value) => setState(() => selectedColor = value),
-            ),
-          ],
-        ),
-      ),
+      Obx(() => AdminFormDialog(
+        title: contact == null ? 'Add Contact Info' : 'Edit Contact Info',
+        onSave: () {
+          final newContact = ContactInfoEntity(
+            id: contact?.id ?? controller.generateId(),
+            title: titleController.text,
+            value: valueController.text,
+            icon: IconMapper.fromString(selectedIcon.value),
+            color: ColorMapper.fromString(selectedColor.value),
+            actionType: actionTypeController.text,
+            customIconUrl: useCustomImage.value ? customIconUrl.value : null,
+            useCustomImage: useCustomImage.value,
+          );
+          if (contact == null) {
+            controller.addContactInfo(newContact);
+          } else {
+            controller.updateContactInfo(newContact);
+          }
+          Get.back();
+        },
+        children: [
+          AdminTextField(label: 'Title', controller: titleController, hint: 'e.g., Email, Phone'),
+          AdminTextField(label: 'Value', controller: valueController, hint: 'e.g., email@example.com'),
+          AdminTextField(label: 'Action Type', controller: actionTypeController, hint: 'e.g., email, phone, whatsapp'),
+          IconPickerField(
+            label: 'Icon / Image',
+            selectedIcon: selectedIcon.value,
+            onChanged: (value) => selectedIcon.value = value,
+            customIconUrl: customIconUrl.value,
+            onCustomIconUploaded: (url) => customIconUrl.value = url,
+            useCustomImage: useCustomImage.value,
+            onUseCustomImageChanged: (value) => useCustomImage.value = value,
+          ),
+          ColorPickerField(
+            label: 'Color',
+            selectedColor: selectedColor.value,
+            onChanged: (value) => selectedColor.value = value,
+          ),
+        ],
+      )),
     );
   }
 }
@@ -1995,6 +2032,8 @@ class SocialLinksManagement extends StatelessWidget {
                 title: link.name,
                 subtitle: link.url,
                 icon: link.icon,
+                customIconUrl: link.customIconUrl,
+                useCustomImage: link.useCustomImage,
                 onEdit: () => _showSocialLinkDialog(context, link: link),
                 onDelete: () => controller.deleteSocialLink(link.id),
               );
@@ -2006,38 +2045,43 @@ class SocialLinksManagement extends StatelessWidget {
   void _showSocialLinkDialog(BuildContext context, {SocialLinkEntity? link}) {
     final nameController = TextEditingController(text: link?.name ?? '');
     final urlController = TextEditingController(text: link?.url ?? '');
-    String selectedIcon = link != null ? IconMapper.iconToString(link.icon) : 'link';
+    final selectedIcon = (link != null ? IconMapper.iconToString(link.icon) : 'link').obs;
+    final customIconUrl = Rxn<String>(link?.customIconUrl);
+    final useCustomImage = (link?.useCustomImage ?? false).obs;
 
     Get.dialog(
-      StatefulBuilder(
-        builder: (context, setState) => AdminFormDialog(
-          title: link == null ? 'Add Social Link' : 'Edit Social Link',
-          onSave: () {
-            final newLink = SocialLinkEntity(
-              id: link?.id ?? controller.generateId(),
-              name: nameController.text,
-              url: urlController.text,
-              icon: IconMapper.fromString(selectedIcon),
-            );
-            if (link == null) {
-              controller.addSocialLink(newLink);
-            } else {
-              controller.updateSocialLink(newLink);
-            }
-            Get.back();
-          },
-          children: [
-            AdminTextField(label: 'Name', controller: nameController, hint: 'e.g., GitHub, LinkedIn'),
-            AdminTextField(label: 'URL', controller: urlController, hint: 'https://...'),
-            IconPickerField(
-              label: 'Icon',
-              selectedIcon: selectedIcon,
-              onChanged: (value) => setState(() => selectedIcon = value),
-              onCustomIconUploaded: (url) {},
-            ),
-          ],
-        ),
-      ),
+      Obx(() => AdminFormDialog(
+        title: link == null ? 'Add Social Link' : 'Edit Social Link',
+        onSave: () {
+          final newLink = SocialLinkEntity(
+            id: link?.id ?? controller.generateId(),
+            name: nameController.text,
+            url: urlController.text,
+            icon: IconMapper.fromString(selectedIcon.value),
+            customIconUrl: useCustomImage.value ? customIconUrl.value : null,
+            useCustomImage: useCustomImage.value,
+          );
+          if (link == null) {
+            controller.addSocialLink(newLink);
+          } else {
+            controller.updateSocialLink(newLink);
+          }
+          Get.back();
+        },
+        children: [
+          AdminTextField(label: 'Name', controller: nameController, hint: 'e.g., GitHub, LinkedIn'),
+          AdminTextField(label: 'URL', controller: urlController, hint: 'https://...'),
+          IconPickerField(
+            label: 'Icon / Image',
+            selectedIcon: selectedIcon.value,
+            onChanged: (value) => selectedIcon.value = value,
+            customIconUrl: customIconUrl.value,
+            onCustomIconUploaded: (url) => customIconUrl.value = url,
+            useCustomImage: useCustomImage.value,
+            onUseCustomImageChanged: (value) => useCustomImage.value = value,
+          ),
+        ],
+      )),
     );
   }
 }

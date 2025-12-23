@@ -7,6 +7,8 @@ class ExpertiseEntity {
   final IconData icon;
   final Color color;
   final List<String> skills;
+  final String? customIconUrl;
+  final bool useCustomImage;
 
   const ExpertiseEntity({
     required this.id,
@@ -14,6 +16,8 @@ class ExpertiseEntity {
     required this.icon,
     required this.color,
     required this.skills,
+    this.customIconUrl,
+    this.useCustomImage = false,
   });
 
   @override

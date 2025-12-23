@@ -6,12 +6,16 @@ class SocialLinkEntity {
   final String name;
   final IconData icon;
   final String url;
+  final String? customIconUrl;
+  final bool useCustomImage;
 
   const SocialLinkEntity({
     required this.id,
     required this.name,
     required this.icon,
     required this.url,
+    this.customIconUrl,
+    this.useCustomImage = false,
   });
 
   @override
