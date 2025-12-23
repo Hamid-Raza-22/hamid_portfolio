@@ -2,6 +2,7 @@
 export 'achievement_entity.dart';
 export 'certification_entity.dart';
 export 'contact_info_entity.dart';
+export 'cv_entity.dart';
 export 'education_entity.dart';
 export 'experience_entity.dart';
 export 'expertise_entity.dart';

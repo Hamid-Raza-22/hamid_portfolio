@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:video_player/video_player.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/responsive_constants.dart';
 import '../../../controllers/home/home_controller.dart';
@@ -196,7 +196,94 @@ class _VideoSection extends StatefulWidget {
 }
 
 class _VideoSectionState extends State<_VideoSection> {
-  bool _isPlaying = false;
+  VideoPlayerController? _videoController;
+  bool _isInitialized = false;
+  bool _hasError = false;
+  bool _isMuted = true;
+  String? _currentVideoUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeVideoFromController();
+  }
+
+  void _initializeVideoFromController() {
+    final hero = widget.controller.heroSection.value;
+    final videoUrl = hero?.videoUrl;
+    if (videoUrl != null && videoUrl.isNotEmpty) {
+      _initializeVideo(videoUrl);
+    }
+  }
+
+  Future<void> _initializeVideo(String videoUrl) async {
+    if (_currentVideoUrl == videoUrl && _isInitialized) return;
+    
+    // Dispose previous controller if exists
+    await _videoController?.dispose();
+    
+    _currentVideoUrl = videoUrl;
+    _hasError = false;
+    
+    try {
+      _videoController = VideoPlayerController.networkUrl(
+        Uri.parse(videoUrl),
+        videoPlayerOptions: VideoPlayerOptions(
+          mixWithOthers: true,
+          allowBackgroundPlayback: false,
+        ),
+      );
+
+      await _videoController!.initialize();
+      
+      // Set autoplay settings: muted, looping, and play
+      await _videoController!.setVolume(0.0); // Muted for autoplay
+      await _videoController!.setLooping(true);
+      await _videoController!.play();
+      
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+          _isMuted = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Video initialization error: $e');
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _isInitialized = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _videoController?.dispose();
+    super.dispose();
+  }
+
+  void _toggleMute() {
+    if (_videoController != null && _isInitialized) {
+      setState(() {
+        _isMuted = !_isMuted;
+        _videoController!.setVolume(_isMuted ? 0.0 : 1.0);
+      });
+    }
+  }
+
+  void _togglePlayPause() {
+    if (_videoController != null && _isInitialized) {
+      setState(() {
+        if (_videoController!.value.isPlaying) {
+          _videoController!.pause();
+        } else {
+          _videoController!.play();
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -216,6 +303,13 @@ class _VideoSectionState extends State<_VideoSection> {
       final hero = widget.controller.heroSection.value;
       final videoUrl = hero?.videoUrl;
       final hasVideo = videoUrl != null && videoUrl.isNotEmpty;
+
+      // Initialize video if URL changed
+      if (hasVideo && videoUrl != _currentVideoUrl) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _initializeVideo(videoUrl);
+        });
+      }
 
       return ClipRRect(
         borderRadius: BorderRadius.circular(24),
@@ -246,80 +340,237 @@ class _VideoSectionState extends State<_VideoSection> {
                 ),
               ],
             ),
-            child: hasVideo && _isPlaying
-                ? _buildVideoPlayer(videoUrl, videoContainerHeight)
-                : _buildVideoPlaceholder(hasVideo, videoContainerHeight),
+            child: _buildVideoContent(hasVideo, videoContainerHeight),
           ),
         ),
       );
     });
   }
 
-  Widget _buildVideoPlayer(String videoUrl, double height) {
-    // Check if it's a YouTube/Vimeo URL and get embed URL
-    final embedUrl = _getEmbedUrl(videoUrl);
-    
+  Widget _buildVideoContent(bool hasVideo, double height) {
+    if (!hasVideo) {
+      return _buildPlaceholder(height, 'Video Coming Soon');
+    }
+
+    if (_hasError) {
+      return _buildPlaceholder(height, 'Video unavailable');
+    }
+
+    if (!_isInitialized || _videoController == null) {
+      return _buildLoadingState(height);
+    }
+
+    return _buildVideoPlayer(height);
+  }
+
+  Widget _buildLoadingState(double height) {
     return Stack(
       alignment: Alignment.center,
       children: [
-        Container(
-          width: double.infinity,
-          height: height,
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                embedUrl != null ? Icons.play_circle_fill : Icons.videocam,
-                size: 64,
-                color: AppColors.primary,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                embedUrl != null ? 'Video Ready' : 'External Video',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () => _launchVideoUrl(embedUrl ?? videoUrl),
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Watch Video'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-              ),
-            ],
+        Positioned.fill(
+          child: CustomPaint(
+            painter: _GridPatternPainter(),
           ),
         ),
-        Positioned(
-          top: 12,
-          right: 12,
-          child: IconButton(
-            onPressed: () => setState(() => _isPlaying = false),
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
-                shape: BoxShape.circle,
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 50,
+              height: 50,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  AppColors.primary.withOpacity(0.8),
+                ),
               ),
-              child: const Icon(Icons.close, color: Colors.white, size: 20),
             ),
-          ),
+            const SizedBox(height: 16),
+            const Text(
+              'Loading video...',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildVideoPlaceholder(bool hasVideo, double height) {
+  Widget _buildVideoPlayer(double height) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Video player with aspect ratio handling
+        ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: SizedBox(
+            width: double.infinity,
+            height: height,
+            child: FittedBox(
+              fit: BoxFit.cover,
+              child: SizedBox(
+                width: _videoController!.value.size.width,
+                height: _videoController!.value.size.height,
+                child: VideoPlayer(_videoController!),
+              ),
+            ),
+          ),
+        ),
+        
+        // Gradient overlay for better control visibility
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.transparent,
+                  Colors.black.withOpacity(0.3),
+                ],
+                stops: const [0.0, 0.6, 1.0],
+              ),
+            ),
+          ),
+        ),
+        
+        // Play/Pause overlay (tap anywhere)
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: _togglePlayPause,
+            child: AnimatedOpacity(
+              opacity: _videoController!.value.isPlaying ? 0.0 : 1.0,
+              duration: const Duration(milliseconds: 200),
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+                child: Center(
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: AppColors.primaryGradient,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.5),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 36,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        
+        // Video controls
+        Positioned(
+          bottom: 16,
+          left: 16,
+          right: 16,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Progress indicator
+              Expanded(
+                child: VideoProgressIndicator(
+                  _videoController!,
+                  allowScrubbing: true,
+                  colors: VideoProgressColors(
+                    playedColor: AppColors.primary,
+                    bufferedColor: AppColors.primary.withOpacity(0.3),
+                    backgroundColor: Colors.white.withOpacity(0.2),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Mute/Unmute button
+              _buildControlButton(
+                icon: _isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                onTap: _toggleMute,
+                tooltip: _isMuted ? 'Unmute' : 'Mute',
+              ),
+            ],
+          ),
+        ),
+        
+        // Muted indicator (shows briefly when video starts)
+        if (_isMuted)
+          Positioned(
+            top: 16,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.volume_off_rounded, color: Colors.white, size: 16),
+                  SizedBox(width: 4),
+                  Text(
+                    'Muted',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildControlButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    required String tooltip,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.5),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Icon(icon, color: Colors.white, size: 20),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder(double height, String message) {
     final playButtonSize = ResponsiveValue.get<double>(context, mobile: 70, desktop: 80);
     final playIconSize = ResponsiveValue.get<double>(context, mobile: 32, desktop: 36);
 
@@ -336,44 +587,37 @@ class _VideoSectionState extends State<_VideoSection> {
           size: ResponsiveValue.get<double>(context, mobile: 60, desktop: 80),
           color: AppColors.textMuted.withOpacity(0.3),
         ),
-        GestureDetector(
-          onTap: hasVideo ? () => setState(() => _isPlaying = true) : null,
-          child: AnimatedBuilder(
-            animation: widget.controller.pulseAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: widget.controller.pulseAnimation.value,
-                child: Container(
-                  width: playButtonSize,
-                  height: playButtonSize,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: hasVideo
-                          ? AppColors.primaryGradient
-                          : [Colors.grey.shade600, Colors.grey.shade700],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+        AnimatedBuilder(
+          animation: widget.controller.pulseAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: widget.controller.pulseAnimation.value,
+              child: Container(
+                width: playButtonSize,
+                height: playButtonSize,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.grey, Colors.grey],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.3),
+                      blurRadius: 25,
+                      spreadRadius: 5,
                     ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: hasVideo
-                            ? AppColors.primary.withOpacity(0.5)
-                            : Colors.grey.withOpacity(0.3),
-                        blurRadius: 25,
-                        spreadRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.play_arrow_rounded,
-                    color: Colors.white,
-                    size: playIconSize,
-                  ),
+                  ],
                 ),
-              );
-            },
-          ),
+                child: Icon(
+                  Icons.play_arrow_rounded,
+                  color: Colors.white,
+                  size: playIconSize,
+                ),
+              ),
+            );
+          },
         ),
         Positioned(
           bottom: 20,
@@ -385,7 +629,7 @@ class _VideoSectionState extends State<_VideoSection> {
               border: Border.all(color: AppColors.glassBorder),
             ),
             child: Text(
-              hasVideo ? 'Click to Play' : 'Video Coming Soon',
+              message,
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 12,
@@ -396,38 +640,6 @@ class _VideoSectionState extends State<_VideoSection> {
         ),
       ],
     );
-  }
-
-  String? _getEmbedUrl(String url) {
-    // YouTube URL patterns - detect if it's a YouTube video
-    final youtubeRegex = RegExp(
-      r'(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})',
-    );
-    if (youtubeRegex.hasMatch(url)) {
-      return url; // Return original URL for external launch
-    }
-
-    // Vimeo URL patterns
-    final vimeoRegex = RegExp(r'vimeo\.com\/(\d+)');
-    if (vimeoRegex.hasMatch(url)) {
-      return url; // Return original URL for external launch
-    }
-
-    return null;
-  }
-
-  Future<void> _launchVideoUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      Get.snackbar(
-        'Error',
-        'Could not open video',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
   }
 }
 

@@ -1,4 +1,5 @@
 /// Barrel export for data models.
+export 'cv_model.dart';
 export 'service_model.dart';
 export 'portfolio_model.dart';
 export 'experience_model.dart';

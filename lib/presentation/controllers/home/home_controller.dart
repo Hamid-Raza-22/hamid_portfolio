@@ -20,6 +20,7 @@ class HomeController extends GetxController
   final WatchStatsUseCase _watchStatsUseCase;
   final WatchNavItemsUseCase _watchNavItemsUseCase;
   final WatchHeroSectionUseCase _watchHeroSectionUseCase;
+  final WatchCvUseCase _watchCvUseCase;
 
   HomeController({
     required WatchServicesUseCase watchServicesUseCase,
@@ -28,12 +29,14 @@ class HomeController extends GetxController
     required WatchStatsUseCase watchStatsUseCase,
     required WatchNavItemsUseCase watchNavItemsUseCase,
     required WatchHeroSectionUseCase watchHeroSectionUseCase,
+    required WatchCvUseCase watchCvUseCase,
   })  : _watchServicesUseCase = watchServicesUseCase,
         _watchPortfolioItemsUseCase = watchPortfolioItemsUseCase,
         _watchSocialLinksUseCase = watchSocialLinksUseCase,
         _watchStatsUseCase = watchStatsUseCase,
         _watchNavItemsUseCase = watchNavItemsUseCase,
-        _watchHeroSectionUseCase = watchHeroSectionUseCase;
+        _watchHeroSectionUseCase = watchHeroSectionUseCase,
+        _watchCvUseCase = watchCvUseCase;
 
   // Stream subscriptions
   final List<StreamSubscription> _subscriptions = [];
@@ -54,6 +57,7 @@ class HomeController extends GetxController
   final stats = <StatEntity>[].obs;
   final navItems = <NavItemEntity>[].obs;
   final heroSection = Rxn<HeroSectionEntity>();
+  final currentCv = Rxn<CvEntity>();
 
   @override
   void onInit() {
@@ -110,6 +114,12 @@ class HomeController extends GetxController
           _checkLoadingComplete();
         },
         onError: (e) => debugPrint('Error watching hero section: $e'),
+      ),
+      _watchCvUseCase().listen(
+        (data) {
+          currentCv.value = data;
+        },
+        onError: (e) => debugPrint('Error watching CV: $e'),
       ),
     ]);
   }

@@ -74,6 +74,10 @@ abstract class FirebaseDataSource {
 
   Future<void> updateHeroSection(HeroSectionEntity heroSection);
 
+  // CV methods
+  Stream<CvEntity?> watchCv();
+  Future<void> updateCv(CvEntity cv);
+
   // Seed data method
   Future<void> seedInitialData();
 }
@@ -97,6 +101,7 @@ class FirebaseDataSourceImpl implements FirebaseDataSource {
   static const String _contactInfoCollection = 'contactInfo';
   static const String _projectDetailsCollection = 'projectDetails';
   static const String _heroSectionCollection = 'heroSection';
+  static const String _cvCollection = 'cv';
 
   FirebaseDataSourceImpl({FirebaseFirestore? firestore})
       : _firestore = firestore ?? FirebaseFirestore.instance;
@@ -253,6 +258,20 @@ class FirebaseDataSourceImpl implements FirebaseDataSource {
         ctaButtonText: 'Get In Touch',
         ctaButtonLink: '/contact',
       );
+    });
+  }
+
+  @override
+  Stream<CvEntity?> watchCv() {
+    return _firestore
+        .collection(_cvCollection)
+        .doc('current')
+        .snapshots()
+        .map((doc) {
+      if (doc.exists && doc.data() != null) {
+        return CvModel.fromJson(doc.data()!, doc.id);
+      }
+      return null;
     });
   }
 
@@ -486,6 +505,13 @@ class FirebaseDataSourceImpl implements FirebaseDataSource {
   Future<void> updateHeroSection(HeroSectionEntity heroSection) async {
     final model = HeroSectionModel.fromEntity(heroSection);
     await _firestore.collection(_heroSectionCollection).doc('main').set(model.toJson());
+  }
+
+  // CV
+  @override
+  Future<void> updateCv(CvEntity cv) async {
+    final model = CvModel.fromEntity(cv);
+    await _firestore.collection(_cvCollection).doc('current').set(model.toJson());
   }
 
   // ============ SEED DATA METHOD ============

@@ -98,3 +98,10 @@ class WatchHeroSectionUseCase {
   WatchHeroSectionUseCase(this._repository);
   Stream<HeroSectionEntity> call() => _repository.watchHeroSection();
 }
+
+/// Use case for watching CV in real-time.
+class WatchCvUseCase {
+  final PortfolioRepositoryStream _repository;
+  WatchCvUseCase(this._repository);
+  Stream<CvEntity?> call() => _repository.watchCv();
+}

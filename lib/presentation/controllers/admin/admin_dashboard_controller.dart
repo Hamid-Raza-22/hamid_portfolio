@@ -24,6 +24,8 @@ class AdminDashboardController extends GetxController {
   final WatchProjectDetailsUseCase _watchProjectDetailsUseCase;
   final WatchHeroSectionUseCase _watchHeroSectionUseCase;
 
+  final WatchCvUseCase _watchCvUseCase;
+
   // Admin CRUD use cases
   final AddServiceUseCase _addServiceUseCase;
   final UpdateServiceUseCase _updateServiceUseCase;
@@ -73,6 +75,7 @@ class AdminDashboardController extends GetxController {
 
   final SeedInitialDataUseCase _seedInitialDataUseCase;
   final UpdateHeroSectionUseCase _updateHeroSectionUseCase;
+  final UpdateCvUseCase _updateCvUseCase;
 
   AdminDashboardController({
     required WatchServicesUseCase watchServicesUseCase,
@@ -88,6 +91,7 @@ class AdminDashboardController extends GetxController {
     required WatchContactInfoUseCase watchContactInfoUseCase,
     required WatchProjectDetailsUseCase watchProjectDetailsUseCase,
     required WatchHeroSectionUseCase watchHeroSectionUseCase,
+    required WatchCvUseCase watchCvUseCase,
     required AddServiceUseCase addServiceUseCase,
     required UpdateServiceUseCase updateServiceUseCase,
     required DeleteServiceUseCase deleteServiceUseCase,
@@ -124,6 +128,7 @@ class AdminDashboardController extends GetxController {
     required DeleteProjectDetailUseCase deleteProjectDetailUseCase,
     required SeedInitialDataUseCase seedInitialDataUseCase,
     required UpdateHeroSectionUseCase updateHeroSectionUseCase,
+    required UpdateCvUseCase updateCvUseCase,
   })  : _watchServicesUseCase = watchServicesUseCase,
         _watchPortfolioItemsUseCase = watchPortfolioItemsUseCase,
         _watchExperiencesUseCase = watchExperiencesUseCase,
@@ -137,6 +142,7 @@ class AdminDashboardController extends GetxController {
         _watchContactInfoUseCase = watchContactInfoUseCase,
         _watchProjectDetailsUseCase = watchProjectDetailsUseCase,
         _watchHeroSectionUseCase = watchHeroSectionUseCase,
+        _watchCvUseCase = watchCvUseCase,
         _addServiceUseCase = addServiceUseCase,
         _updateServiceUseCase = updateServiceUseCase,
         _deleteServiceUseCase = deleteServiceUseCase,
@@ -172,7 +178,8 @@ class AdminDashboardController extends GetxController {
         _updateProjectDetailUseCase = updateProjectDetailUseCase,
         _deleteProjectDetailUseCase = deleteProjectDetailUseCase,
         _seedInitialDataUseCase = seedInitialDataUseCase,
-        _updateHeroSectionUseCase = updateHeroSectionUseCase;
+        _updateHeroSectionUseCase = updateHeroSectionUseCase,
+        _updateCvUseCase = updateCvUseCase;
 
   // UUID generator
   final _uuid = const Uuid();
@@ -196,10 +203,21 @@ class AdminDashboardController extends GetxController {
   final contactInfo = <ContactInfoEntity>[].obs;
   final projectDetails = <ProjectDetailEntity>[].obs;
   final heroSection = Rxn<HeroSectionEntity>();
-
+  final currentCv = Rxn<CvEntity>();
   // Stream subscriptions
   final List<StreamSubscription> _subscriptions = [];
-
+// ============ CV ============
+  Future<void> updateCv(CvEntity cv) async {
+    try {
+      isLoading.value = true;
+      await _updateCvUseCase(cv);
+      _showSuccess('CV updated successfully');
+    } catch (e) {
+      _showError('Failed to update CV: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
   // Categories for navigation
   final List<Map<String, dynamic>> categories = [
     {'title': 'Hero Section', 'icon': Icons.home},
@@ -215,6 +233,7 @@ class AdminDashboardController extends GetxController {
     {'title': 'Contact', 'icon': Icons.contact_mail},
     {'title': 'Social Links', 'icon': Icons.share},
     {'title': 'Stats', 'icon': Icons.analytics},
+    {'title': 'CV/Resume', 'icon': Icons.description},
   ];
 
   @override
@@ -238,6 +257,7 @@ class AdminDashboardController extends GetxController {
       _watchContactInfoUseCase().listen((data) => contactInfo.value = data),
       _watchProjectDetailsUseCase().listen((data) => projectDetails.value = data),
       _watchHeroSectionUseCase().listen((data) => heroSection.value = data),
+      _watchCvUseCase().listen((data) => currentCv.value = data),
     ]);
   }
 

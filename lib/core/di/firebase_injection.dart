@@ -88,6 +88,8 @@ class FirebaseInjection {
     Get.lazyPut(() => WatchContactInfoUseCase(repository), fenix: true);
     Get.lazyPut(() => WatchProjectDetailsUseCase(repository), fenix: true);
     Get.lazyPut(() => WatchHeroSectionUseCase(repository), fenix: true);
+    Get.lazyPut(() => WatchCvUseCase(repository), fenix: true);
+
   }
 
   static void _registerAdminUseCases() {
@@ -158,6 +160,8 @@ class FirebaseInjection {
 
     // Hero Section
     Get.lazyPut(() => UpdateHeroSectionUseCase(repository), fenix: true);
+    // CV
+    Get.lazyPut(() => UpdateCvUseCase(repository), fenix: true);
 
     // Seed data
     Get.lazyPut(() => SeedInitialDataUseCase(repository), fenix: true);

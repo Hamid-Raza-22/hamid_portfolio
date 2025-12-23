@@ -264,3 +264,11 @@ class UpdateHeroSectionUseCase {
   UpdateHeroSectionUseCase(this._repository);
   Future<void> call(HeroSectionEntity heroSection) => _repository.updateHeroSection(heroSection);
 }
+
+// ============ CV USE CASE ============
+
+class UpdateCvUseCase {
+  final PortfolioRepositoryStream _repository;
+  UpdateCvUseCase(this._repository);
+  Future<void> call(CvEntity cv) => _repository.updateCv(cv);
+}

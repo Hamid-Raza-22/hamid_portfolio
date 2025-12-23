@@ -128,7 +128,7 @@ class _DesktopHeader extends StatelessWidget {
   Widget _buildNavigation() {
     return Row(
       children: [
-        ...['Home', 'Services', 'Projects', 'About', 'Contact'].asMap().entries.map(
+        ...['Home', 'Services', 'Projects', 'About'].asMap().entries.map(
           (entry) => AnimatedBuilder(
             animation: controller.heroFadeAnimation,
             builder: (context, child) {
@@ -304,7 +304,6 @@ class _MobileMenuSheetState extends State<_MobileMenuSheet>
     {'text': 'Services', 'key': 'services', 'icon': Icons.design_services_rounded, 'isPage': false},
     {'text': 'Projects', 'key': 'portfolio', 'icon': Icons.work_rounded, 'isPage': false},
     {'text': 'About', 'key': 'about', 'icon': Icons.person_rounded, 'isPage': true},
-    {'text': 'Contact', 'key': 'contact', 'icon': Icons.mail_rounded, 'isPage': true},
   ];
 
   @override

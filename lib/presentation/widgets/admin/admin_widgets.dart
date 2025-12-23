@@ -1,9 +1,13 @@
 import 'dart:typed_data';
+import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker_web/image_picker_web.dart';
-
+import 'package:url_launcher/url_launcher_string.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/responsive_constants.dart';
 import '../../../core/utils/icon_mapper.dart';
 import '../../../core/utils/color_mapper.dart';
 import '../../../data/datasources/remote/storage_datasource.dart';
@@ -2647,6 +2651,309 @@ class _ImageUploadFieldState extends State<ImageUploadField> {
             ),
         ],
       ),
+    );
+  }
+}
+
+// ============ CV MANAGEMENT ============
+
+class CvManagement extends StatelessWidget {
+  final AdminDashboardController controller;
+
+  const CvManagement({super.key, required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: ResponsivePadding.all(context, multiplier: 1.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.description, color: AppColors.primary, size: 28),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'CV / Resume',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Expanded(
+            child: Obx(() => _buildCvContent(context)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCvContent(BuildContext context) {
+    final cv = controller.currentCv.value;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppColors.cardBg.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Current CV',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (cv != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.picture_as_pdf, color: AppColors.primary, size: 32),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              cv.filename,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Uploaded: ${_formatDate(cv.uploadedAt)}',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.6),
+                                fontSize: 12,
+                              ),
+                            ),
+                            if (cv.fileSize != null)
+                              Text(
+                                'Size: ${_formatFileSize(cv.fileSize!)}',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.6),
+                                  fontSize: 12,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => _openCvUrl(cv.url),
+                        icon: const Icon(Icons.open_in_new, color: AppColors.primary),
+                        tooltip: 'Open CV',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ] else ...[
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.upload_file, color: Colors.white.withOpacity(0.3), size: 48),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No CV uploaded yet',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.5),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+              const Text(
+                'Upload New CV',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Upload a PDF file of your CV/Resume. This will be available for download on the website.',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _CvUploadButton(
+                onCvUploaded: (url, filename, fileSize) {
+                  final newCv = CvEntity(
+                    id: 'current',
+                    url: url,
+                    filename: filename,
+                    uploadedAt: DateTime.now(),
+                    fileSize: fileSize,
+                  );
+                  controller.updateCv(newCv);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year} at ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+
+  void _openCvUrl(String url) {
+    launchUrlString(url);
+  }
+}
+
+class _CvUploadButton extends StatefulWidget {
+  final Function(String url, String filename, int fileSize) onCvUploaded;
+
+  const _CvUploadButton({required this.onCvUploaded});
+
+  @override
+  State<_CvUploadButton> createState() => _CvUploadButtonState();
+}
+
+class _CvUploadButtonState extends State<_CvUploadButton> {
+  bool _isUploading = false;
+  String? _selectedFileName;
+
+  Future<void> _pickAndUploadCv() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        withData: true,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      
+      if (file.bytes == null) {
+        Get.snackbar('Error', 'Could not read file',
+            backgroundColor: Colors.red, colorText: Colors.white);
+        return;
+      }
+
+      if (file.extension?.toLowerCase() != 'pdf') {
+        Get.snackbar('Error', 'Only PDF files are allowed',
+            backgroundColor: Colors.red, colorText: Colors.white);
+        return;
+      }
+
+      setState(() {
+        _isUploading = true;
+        _selectedFileName = file.name;
+      });
+
+      final storage = Get.find<StorageDataSource>();
+      final fileName = 'Engr_Hamid_Raza_cv_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      
+      final downloadUrl = await storage.uploadFile(
+        fileBytes: file.bytes!,
+        path: 'cv',
+        fileName: fileName,
+        contentType: 'application/pdf',
+      );
+
+      setState(() => _isUploading = false);
+
+      widget.onCvUploaded(downloadUrl, file.name, file.size);
+    } catch (e) {
+      setState(() => _isUploading = false);
+      Get.snackbar('Error', 'Failed to upload CV: $e',
+          backgroundColor: Colors.red, colorText: Colors.white);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ElevatedButton.icon(
+          onPressed: _isUploading ? null : _pickAndUploadCv,
+          icon: _isUploading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                )
+              : const Icon(Icons.upload_file),
+          label: Text(_isUploading ? 'Uploading...' : 'Select PDF File'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+        if (_selectedFileName != null && _isUploading)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              'Uploading: $_selectedFileName',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.6),
+                fontSize: 12,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

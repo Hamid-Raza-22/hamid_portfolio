@@ -11,6 +11,13 @@ abstract class StorageDataSource {
     required String fileName,
     String? contentType,
   });
+  /// Upload file (PDF, etc.) and return download URL
+  Future<String> uploadFile({
+    required Uint8List fileBytes,
+    required String path,
+    required String fileName,
+    required String contentType,
+  });
 
   /// Delete image from storage
   Future<void> deleteImage(String imageUrl);
@@ -62,6 +69,41 @@ class StorageDataSourceImpl implements StorageDataSource {
       return downloadUrl;
     } catch (e) {
       debugPrint('Error uploading image: $e');
+      rethrow;
+    }
+  }
+
+  Future<String> uploadFile({
+    required Uint8List fileBytes,
+    required String path,
+    required String fileName,
+    required String contentType,
+  }) async {
+    try {
+      final ref = _storage.ref().child(path).child(fileName);
+
+      final metadata = SettableMetadata(
+        contentType: contentType,
+        cacheControl: 'public, max-age=31536000',
+        customMetadata: {
+          'uploadedAt': DateTime.now().toIso8601String(),
+        },
+      );
+
+      final uploadTask = ref.putData(fileBytes, metadata);
+
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        final progress = snapshot.bytesTransferred / snapshot.totalBytes;
+        debugPrint('Upload progress: ${(progress * 100).toStringAsFixed(1)}%');
+      });
+
+      final snapshot = await uploadTask;
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+      debugPrint('File uploaded successfully: $downloadUrl');
+
+      return downloadUrl;
+    } catch (e) {
+      debugPrint('Error uploading file: $e');
       rethrow;
     }
   }

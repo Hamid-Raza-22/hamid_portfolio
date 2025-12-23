@@ -266,6 +266,8 @@ class AdminDashboardPage extends GetView<AdminDashboardController> {
           return SocialLinksManagement(controller: controller);
         case 12:
           return StatsManagement(controller: controller);
+        case 13:
+          return CvManagement(controller: controller);
         default:
           return const Center(
             child: Text(

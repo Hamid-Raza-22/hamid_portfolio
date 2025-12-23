@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/responsive_constants.dart';
 import '../../../controllers/home/home_controller.dart';
@@ -267,8 +268,8 @@ class _HeroButtons extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final hero = controller.heroSection.value;
-      final ctaText = hero?.ctaButtonText ?? 'Get In Touch';
+      final cv = controller.currentCv.value;
+      final hasCv = cv != null && cv.url.isNotEmpty;
       
       return Wrap(
         alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
@@ -281,15 +282,20 @@ class _HeroButtons extends GetView<HomeController> {
             isPrimary: true,
             onTap: () => controller.scrollToSection('portfolio'),
           ),
-          AnimatedButton(
-            text: ctaText,
-            icon: Icons.mail_outline_rounded,
-            isPrimary: false,
-            onTap: () => controller.scrollToSection('contact'),
-          ),
+          if (hasCv)
+            AnimatedButton(
+              text: 'Download CV',
+              icon: Icons.download_rounded,
+              isPrimary: false,
+              onTap: () => _downloadCv(cv.url),
+            ),
         ],
       );
     });
+  }
+
+  void _downloadCv(String url) {
+    launchUrlString(url, mode: LaunchMode.externalApplication);
   }
 }
 
