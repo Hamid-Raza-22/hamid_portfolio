@@ -204,31 +204,73 @@ class FooterSection extends GetView<HomeController> {
   }
 
   Widget _buildCopyright() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text(
-          ' 2023 Hamid Raza. Made with ',
-          style: TextStyle(
-            fontSize: 13,
-            color: AppColors.textMuted,
-          ),
-        ),
-        const Icon(
-          Icons.favorite,
-          size: 14,
-          color: AppColors.accentPink,
-        ),
-        const Text(
-          ' using Flutter',
-          style: TextStyle(
-            fontSize: 13,
-            color: AppColors.textMuted,
-          ),
-        ),
-        const SizedBox(width: 16),
-        _buildAdminButton(),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 400;
+        
+        if (isNarrow) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    '© 2023 Hamid Raza.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.favorite,
+                    size: 12,
+                    color: AppColors.accentPink,
+                  ),
+                  const SizedBox(width: 4),
+                  const Text(
+                    'Flutter',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _buildAdminButton(),
+            ],
+          );
+        }
+        
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              '© 2023 Hamid Raza. Made with ',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textMuted,
+              ),
+            ),
+            const Icon(
+              Icons.favorite,
+              size: 14,
+              color: AppColors.accentPink,
+            ),
+            const Text(
+              ' using Flutter',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textMuted,
+              ),
+            ),
+            const SizedBox(width: 16),
+            _buildAdminButton(),
+          ],
+        );
+      },
     );
   }
 

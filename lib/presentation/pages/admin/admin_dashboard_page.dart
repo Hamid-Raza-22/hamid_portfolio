@@ -6,24 +6,39 @@ import '../../controllers/admin/admin_dashboard_controller.dart';
 import '../../controllers/admin/auth_controller.dart';
 import '../../widgets/admin/admin_widgets.dart';
 
+/// Responsive breakpoints for Admin Portal.
+class _Breakpoints {
+  static const double tablet = 600;
+  static const double desktop = 900;
+}
+
 /// Admin Dashboard Page with category-based content management.
 class AdminDashboardPage extends GetView<AdminDashboardController> {
   const AdminDashboardPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final isWideScreen = MediaQuery.of(context).size.width > 800;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final isDesktop = width >= _Breakpoints.desktop;
+        final isTablet = width >= _Breakpoints.tablet;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
-      appBar: _buildAppBar(),
-      drawer: isWideScreen ? null : _buildDrawer(),
-      body: Row(
-        children: [
-          if (isWideScreen) _buildSidebar(),
-          Expanded(child: _buildContent()),
-        ],
-      ),
+        return Scaffold(
+          backgroundColor: const Color(0xFF0F172A),
+          appBar: _buildAppBar(),
+          drawer: isTablet ? null : _buildDrawer(),
+          body: Row(
+            children: [
+              if (isDesktop)
+                _buildSidebar()
+              else if (isTablet)
+                _buildNavigationRail(),
+              Expanded(child: _buildContent()),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -124,19 +139,43 @@ class AdminDashboardPage extends GetView<AdminDashboardController> {
   Widget _buildDrawer() {
     return Drawer(
       backgroundColor: const Color(0xFF1E293B),
-      child: _buildCategoryList(),
+      child: _buildCategoryList(closeOnSelect: true),
     );
   }
 
   Widget _buildSidebar() {
     return Container(
-      width: 250,
+      width: 240,
       color: const Color(0xFF1E293B),
       child: _buildCategoryList(),
     );
   }
 
-  Widget _buildCategoryList() {
+  Widget _buildNavigationRail() {
+    return Obx(() {
+      final selectedIndex = controller.selectedCategory.value;
+      return NavigationRail(
+        backgroundColor: const Color(0xFF1E293B),
+        selectedIndex: selectedIndex,
+        extended: false,
+        minWidth: 72,
+        labelType: NavigationRailLabelType.selected,
+        selectedIconTheme: const IconThemeData(color: AppColors.primary, size: 24),
+        unselectedIconTheme: const IconThemeData(color: Colors.white70, size: 22),
+        selectedLabelTextStyle: const TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.w600),
+        unselectedLabelTextStyle: const TextStyle(color: Colors.white70, fontSize: 10),
+        onDestinationSelected: controller.selectCategory,
+        destinations: controller.categories
+            .map((cat) => NavigationRailDestination(
+                  icon: Icon(cat['icon'] as IconData),
+                  label: Text(cat['title'] as String),
+                ))
+            .toList(growable: false),
+      );
+    });
+  }
+
+  Widget _buildCategoryList({bool closeOnSelect = false}) {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
@@ -154,13 +193,13 @@ class AdminDashboardPage extends GetView<AdminDashboardController> {
         ),
         ...List.generate(
           controller.categories.length,
-          (index) => Obx(() => _buildCategoryTile(index)),
+          (index) => Obx(() => _buildCategoryTile(index, closeOnSelect)),
         ),
       ],
     );
   }
 
-  Widget _buildCategoryTile(int index) {
+  Widget _buildCategoryTile(int index, bool closeOnSelect) {
     final category = controller.categories[index];
     final isSelected = controller.selectedCategory.value == index;
 
@@ -188,9 +227,7 @@ class AdminDashboardPage extends GetView<AdminDashboardController> {
         ),
         onTap: () {
           controller.selectCategory(index);
-          if (MediaQuery.of(Get.context!).size.width <= 800) {
-            Get.back();
-          }
+          if (closeOnSelect) Get.back();
         },
         dense: true,
         shape: RoundedRectangleBorder(

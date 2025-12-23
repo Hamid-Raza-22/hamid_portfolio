@@ -12,5 +12,6 @@ export 'info_row.dart';
 export 'nav_item.dart';
 export 'page_header.dart';
 export 'section_badge.dart';
+export 'shimmer_widgets.dart';
 export 'social_icon_button.dart';
 export 'tag_chip.dart';

@@ -275,42 +275,281 @@ class _MobileHeader extends StatelessWidget {
 
   void _showMobileMenu() {
     Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildMobileNavItem('Home', 'home', isPage: false),
-            _buildMobileNavItem('Services', 'services', isPage: false),
-            _buildMobileNavItem('Projects', 'portfolio', isPage: false),
-            _buildMobileNavItem('About', 'about', isPage: true),
-            _buildMobileNavItem('Contact', 'contact', isPage: true),
-            const SizedBox(height: 20),
-          ],
+      _MobileMenuSheet(controller: controller),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      enterBottomSheetDuration: const Duration(milliseconds: 300),
+      exitBottomSheetDuration: const Duration(milliseconds: 200),
+    );
+  }
+}
+
+/// Modern mobile menu bottom sheet with animations
+class _MobileMenuSheet extends StatefulWidget {
+  final HomeController controller;
+
+  const _MobileMenuSheet({required this.controller});
+
+  @override
+  State<_MobileMenuSheet> createState() => _MobileMenuSheetState();
+}
+
+class _MobileMenuSheetState extends State<_MobileMenuSheet>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late List<Animation<double>> _itemAnimations;
+
+  static const _menuItems = [
+    {'text': 'Home', 'key': 'home', 'icon': Icons.home_rounded, 'isPage': false},
+    {'text': 'Services', 'key': 'services', 'icon': Icons.design_services_rounded, 'isPage': false},
+    {'text': 'Projects', 'key': 'portfolio', 'icon': Icons.work_rounded, 'isPage': false},
+    {'text': 'About', 'key': 'about', 'icon': Icons.person_rounded, 'isPage': true},
+    {'text': 'Contact', 'key': 'contact', 'icon': Icons.mail_rounded, 'isPage': true},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+
+    _itemAnimations = List.generate(_menuItems.length, (index) {
+      final start = index * 0.1;
+      final end = start + 0.6;
+      return CurvedAnimation(
+        parent: _animController,
+        curve: Interval(start.clamp(0.0, 1.0), end.clamp(0.0, 1.0), curve: Curves.easeOutCubic),
+      );
+    });
+
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  void _handleNavTap(String sectionKey, bool isPage) {
+    Get.back();
+    if (isPage) {
+      if (sectionKey == 'contact') {
+        widget.controller.goToContactPage();
+      } else if (sectionKey == 'about') {
+        widget.controller.goToAboutPage();
+      }
+    } else {
+      widget.controller.scrollToSection(sectionKey);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color(0xFF1A1A2E).withOpacity(0.95),
+                const Color(0xFF0F0F1A).withOpacity(0.98),
+              ],
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border.all(
+              color: AppColors.primary.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Drag handle
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+
+                  // Menu items
+                  ...List.generate(_menuItems.length, (index) {
+                    final item = _menuItems[index];
+                    return AnimatedBuilder(
+                      animation: _itemAnimations[index],
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(0, 20 * (1 - _itemAnimations[index].value)),
+                          child: Opacity(
+                            opacity: _itemAnimations[index].value,
+                            child: _buildMenuItem(
+                              text: item['text'] as String,
+                              icon: item['icon'] as IconData,
+                              onTap: () => _handleNavTap(
+                                item['key'] as String,
+                                item['isPage'] as bool,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }),
+
+                  const SizedBox(height: 16),
+
+                  // CTA Button
+                  AnimatedBuilder(
+                    animation: _animController,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _animController.value,
+                        child: Opacity(
+                          opacity: _animController.value,
+                          child: _buildContactCTA(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildMobileNavItem(String text, String sectionKey, {bool isPage = false}) {
-    return ListTile(
-      title: Text(text, style: const TextStyle(color: Colors.white)),
-      onTap: () {
-        Get.back();
-        if (isPage) {
-          if (sectionKey == 'contact') {
-            controller.goToContactPage();
-          } else if (sectionKey == 'about') {
-            controller.goToAboutPage();
-          }
-        } else {
-          controller.scrollToSection(sectionKey);
-        }
-      },
+  Widget _buildMenuItem({
+    required String text,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          splashColor: AppColors.primary.withOpacity(0.1),
+          highlightColor: AppColors.primary.withOpacity(0.05),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.05),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary.withOpacity(0.15),
+                        AppColors.accentPurple.withOpacity(0.1),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: AppColors.primaryLight,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  text,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white.withOpacity(0.3),
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactCTA() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Get.back();
+          widget.controller.goToContactPage();
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: AppColors.primaryGradient,
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Get In Touch',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              SizedBox(width: 8),
+              Icon(
+                Icons.arrow_forward_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

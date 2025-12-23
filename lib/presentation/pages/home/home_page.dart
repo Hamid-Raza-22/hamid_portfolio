@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../controllers/home/home_controller.dart';
+import '../../widgets/common/shimmer_widgets.dart';
 import '../../widgets/sections/sections.dart';
 
 /// Home page following MVVM pattern with GetView.
@@ -110,27 +111,45 @@ class HomePage extends GetView<HomeController> {
       child: Column(
         children: [
           const HeaderSection(),
-          AnimatedBuilder(
-            animation: Listenable.merge([
-              controller.heroFadeAnimation,
-              controller.heroSlideAnimation,
-            ]),
-            builder: (context, _) {
-              return HeroSection(
-                fadeAnimationValue: controller.heroFadeAnimation.value,
-                slideAnimationValue: controller.heroSlideAnimation.value,
-              );
-            },
-          ),
+          Obx(() {
+            // Show skeleton while hero data is loading
+            if (controller.heroSection.value == null) {
+              return const HeroSkeleton();
+            }
+            return AnimatedBuilder(
+              animation: Listenable.merge([
+                controller.heroFadeAnimation,
+                controller.heroSlideAnimation,
+              ]),
+              builder: (context, _) {
+                return HeroSection(
+                  fadeAnimationValue: controller.heroFadeAnimation.value,
+                  slideAnimationValue: controller.heroSlideAnimation.value,
+                );
+              },
+            );
+          }),
           const WhySection(),
-          Obx(() => ServicesSection(
-            scaleValue: controller.servicesScaleAnimation.value,
-            isVisible: controller.isServicesVisible.value,
-          )),
-          Obx(() => PortfolioSection(
-            rotationValue: controller.portfolioRotationAnimation.value,
-            isVisible: controller.isPortfolioVisible.value,
-          )),
+          Obx(() {
+            // Show skeleton while services are loading
+            if (controller.services.isEmpty) {
+              return const ServicesSkeleton(itemCount: 4);
+            }
+            return ServicesSection(
+              scaleValue: controller.servicesScaleAnimation.value,
+              isVisible: controller.isServicesVisible.value,
+            );
+          }),
+          Obx(() {
+            // Show skeleton while portfolio items are loading
+            if (controller.portfolioItems.isEmpty) {
+              return const PortfolioSkeleton(itemCount: 3);
+            }
+            return PortfolioSection(
+              rotationValue: controller.portfolioRotationAnimation.value,
+              isVisible: controller.isPortfolioVisible.value,
+            );
+          }),
           const ContactSection(),
           const FooterSection(),
         ],

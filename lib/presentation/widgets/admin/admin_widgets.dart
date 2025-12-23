@@ -30,49 +30,101 @@ class BaseManagementWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 500;
+        final padding = isNarrow ? 16.0 : 24.0;
+
+        return Container(
+          padding: EdgeInsets.all(padding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Icon(icon, color: AppColors.primary, size: 28),
-                  const SizedBox(width: 12),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+              if (isNarrow)
+                _buildNarrowHeader()
+              else
+                _buildWideHeader(),
+              const SizedBox(height: 24),
+              if (isLoading)
+                const Center(child: CircularProgressIndicator())
+              else
+                Expanded(child: child),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildWideHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: AppColors.primary, size: 28),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
-              ),
-              ElevatedButton.icon(
-                onPressed: onAdd,
-                icon: const Icon(Icons.add, size: 20),
-                label: const Text('Add New'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          if (isLoading)
-            const Center(child: CircularProgressIndicator())
-          else
-            Expanded(child: child),
-        ],
+        ),
+        const SizedBox(width: 16),
+        _buildAddButton(),
+      ],
+    );
+  }
+
+  Widget _buildNarrowHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: AppColors.primary, size: 24),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(width: double.infinity, child: _buildAddButton()),
+      ],
+    );
+  }
+
+  Widget _buildAddButton() {
+    return ElevatedButton.icon(
+      onPressed: onAdd,
+      icon: const Icon(Icons.add, size: 20),
+      label: const Text('Add New'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
       ),
     );
   }
@@ -110,7 +162,8 @@ class AdminItemCard extends StatelessWidget {
         customIconUrl != null && 
         customIconUrl!.isNotEmpty;
 
-    return Container(
+    return RepaintBoundary(
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -128,17 +181,21 @@ class AdminItemCard extends StatelessWidget {
                 color: (color ?? AppColors.primary).withOpacity(0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: Image.network(
-                  customIconUrl!,
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Icon(
-                    icon ?? Icons.image,
-                    color: color ?? AppColors.primary,
-                    size: 24,
+              child: Center(
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.network(
+                      customIconUrl!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Icon(
+                        icon ?? Icons.image,
+                        color: color ?? AppColors.primary,
+                        size: 24,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -216,6 +273,7 @@ class AdminItemCard extends StatelessWidget {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -265,11 +323,15 @@ class AdminFormDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final maxW = (size.width * 0.95).clamp(320.0, 520.0);
+    final maxH = (size.height * 0.9).clamp(400.0, 700.0);
+
     return Dialog(
       backgroundColor: const Color(0xFF1E293B),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
+        constraints: BoxConstraints(maxWidth: maxW, maxHeight: maxH),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -450,10 +512,7 @@ class _IconPickerFieldState extends State<IconPickerField> {
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () {
-                        debugPrint('🔘 Default Icon tapped');
-                        widget.onUseCustomImageChanged?.call(false);
-                      },
+                      onTap: () => widget.onUseCustomImageChanged?.call(false),
                       borderRadius: const BorderRadius.horizontal(left: Radius.circular(7)),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -492,10 +551,7 @@ class _IconPickerFieldState extends State<IconPickerField> {
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () {
-                        debugPrint('🔘 Custom Image tapped');
-                        widget.onUseCustomImageChanged?.call(true);
-                      },
+                      onTap: () => widget.onUseCustomImageChanged?.call(true),
                       borderRadius: const BorderRadius.horizontal(right: Radius.circular(7)),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -546,7 +602,6 @@ class _IconPickerFieldState extends State<IconPickerField> {
   }
 
   Widget _buildImageUploader() {
-    debugPrint('🖼️ _buildImageUploader called, customIconUrl: ${widget.customIconUrl}');
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -563,18 +618,25 @@ class _IconPickerFieldState extends State<IconPickerField> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: AppColors.primary.withOpacity(0.3)),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(7),
-                child: Image.network(
-                  widget.customIconUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(
-                    Icons.broken_image,
-                    color: Colors.white30,
-                    size: 32,
+              child: Center(
+                child: SizedBox(
+                  width: 64,
+                  height: 64,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.network(
+                      widget.customIconUrl!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.broken_image,
+                        color: Colors.white30,
+                        size: 32,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -582,10 +644,7 @@ class _IconPickerFieldState extends State<IconPickerField> {
           Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: _isUploading ? null : () {
-                debugPrint('📤 Upload button tapped');
-                _uploadCustomImage();
-              },
+              onTap: _isUploading ? null : _uploadCustomImage,
               borderRadius: BorderRadius.circular(8),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -689,12 +748,17 @@ class _IconPickerFieldState extends State<IconPickerField> {
   }
 
   void _showIconPicker(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final w = (size.width * 0.9).clamp(300.0, 480.0);
+    final h = (size.height * 0.8).clamp(350.0, 500.0);
+    final cols = (w / 60).floor().clamp(4, 8);
+
     Get.dialog(
       Dialog(
         backgroundColor: const Color(0xFF1E293B),
         child: SizedBox(
-          width: 450,
-          height: 450,
+          width: w,
+          height: h,
           child: Column(
             children: [
               const Padding(
@@ -707,8 +771,8 @@ class _IconPickerFieldState extends State<IconPickerField> {
               Expanded(
                 child: GridView.builder(
                   padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 6,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: cols,
                     mainAxisSpacing: 8,
                     crossAxisSpacing: 8,
                   ),
@@ -801,12 +865,17 @@ class ColorPickerField extends StatelessWidget {
   }
 
   void _showColorPicker(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final w = (size.width * 0.9).clamp(280.0, 420.0);
+    final h = (size.height * 0.8).clamp(320.0, 450.0);
+    final cols = (w / 56).floor().clamp(4, 7);
+
     Get.dialog(
       Dialog(
         backgroundColor: const Color(0xFF1E293B),
         child: SizedBox(
-          width: 400,
-          height: 400,
+          width: w,
+          height: h,
           child: Column(
             children: [
               const Padding(
@@ -819,8 +888,8 @@ class ColorPickerField extends StatelessWidget {
               Expanded(
                 child: GridView.builder(
                   padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 6,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: cols,
                     mainAxisSpacing: 8,
                     crossAxisSpacing: 8,
                   ),
@@ -1075,25 +1144,68 @@ class _ProfileManagementState extends State<ProfileManagement> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.person, color: AppColors.primary, size: 28),
-              const SizedBox(width: 12),
-              const Text(
-                'Profile Management',
-                style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const Spacer(),
-              Obx(() => ElevatedButton.icon(
-                    onPressed: widget.controller.isLoading.value ? null : _saveProfile,
-                    icon: const Icon(Icons.save),
-                    label: const Text('Save Profile'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 500;
+              
+              if (isNarrow) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.person, color: AppColors.primary, size: 24),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'Profile Management',
+                            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
-                  )),
-            ],
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Obx(() => ElevatedButton.icon(
+                            onPressed: widget.controller.isLoading.value ? null : _saveProfile,
+                            icon: const Icon(Icons.save),
+                            label: const Text('Save Profile'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            ),
+                          )),
+                    ),
+                  ],
+                );
+              }
+              
+              return Row(
+                children: [
+                  const Icon(Icons.person, color: AppColors.primary, size: 28),
+                  const SizedBox(width: 12),
+                  const Flexible(
+                    child: Text(
+                      'Profile Management',
+                      style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Obx(() => ElevatedButton.icon(
+                        onPressed: widget.controller.isLoading.value ? null : _saveProfile,
+                        icon: const Icon(Icons.save),
+                        label: const Text('Save Profile'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        ),
+                      )),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 24),
           Obx(() {
@@ -1222,10 +1334,7 @@ class ServicesManagement extends StatelessWidget {
             customIconUrl: customIconUrl.value,
             onCustomIconUploaded: (url) => customIconUrl.value = url,
             useCustomImage: useCustomImage.value,
-            onUseCustomImageChanged: (value) {
-              debugPrint('� GetX: useCustomImage changed to $value');
-              useCustomImage.value = value;
-            },
+            onUseCustomImageChanged: (value) => useCustomImage.value = value,
           ),
           ColorPickerField(
             label: 'Color',
@@ -1329,10 +1438,7 @@ class PortfolioManagement extends StatelessWidget {
             customIconUrl: customIconUrl.value,
             onCustomIconUploaded: (url) => customIconUrl.value = url,
             useCustomImage: useCustomImage.value,
-            onUseCustomImageChanged: (value) {
-              debugPrint('🔄 GetX Portfolio: useCustomImage changed to $value');
-              useCustomImage.value = value;
-            },
+            onUseCustomImageChanged: (value) => useCustomImage.value = value,
           ),
           ColorPickerField(
             label: 'Color',
@@ -2114,35 +2220,86 @@ class _HeroSectionManagementState extends State<HeroSectionManagement> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.home, color: AppColors.primary, size: 28),
-              const SizedBox(width: 12),
-              const Text(
-                'Hero Section (Home Screen)',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Spacer(),
-              ElevatedButton.icon(
-                onPressed: _isLoading ? null : _saveHeroSection,
-                icon: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.save),
-                label: Text(_isLoading ? 'Saving...' : 'Save Changes'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 500;
+              
+              if (isNarrow) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.home, color: AppColors.primary, size: 24),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'Hero Section',
+                            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isLoading ? null : _saveHeroSection,
+                        icon: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.save),
+                        label: Text(_isLoading ? 'Saving...' : 'Save Changes'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+              
+              return Row(
+                children: [
+                  const Icon(Icons.home, color: AppColors.primary, size: 28),
+                  const SizedBox(width: 12),
+                  const Flexible(
+                    child: Text(
+                      'Hero Section (Home Screen)',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _saveHeroSection,
+                    icon: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.save),
+                    label: Text(_isLoading ? 'Saving...' : 'Save Changes'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 24),
           Expanded(
