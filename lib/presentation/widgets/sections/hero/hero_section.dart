@@ -214,7 +214,7 @@ class _HeroTextContent extends GetView<HomeController> {
                 mobile: 38,
                 smallTablet: 46,
                 tablet: 54,
-                desktop: 82,
+                desktop: 62,
               ),
               fontWeight: FontWeight.w800,
               height: 1.05,
@@ -240,21 +240,25 @@ class _HeroDescription extends GetView<HomeController> {
       final description = hero?.description ?? 
         'Passionate about building beautiful, performant mobile and web applications.\nTransforming ideas into elegant solutions with Flutter and modern technologies.';
       
-      return Text(
-        description,
-        style: ResponsiveTextStyle.body(context).copyWith(
-          fontSize: ResponsiveValue.get<double>(
-            context,
-            mobile: 15,
-            smallTablet: 16,
-            tablet: 17,
-            desktop: 18,
+      return Padding(
+        padding: const EdgeInsets.only(right: 40.0),
+        child: Text(
+          description,
+          style: ResponsiveTextStyle.body(context).copyWith(
+            fontSize: ResponsiveValue.get<double>(
+              context,
+              mobile: 15,
+              smallTablet: 16,
+              tablet: 17,
+              desktop: 25,
+            ),
+            height: 1.7,
+            color: AppColors.textSecondary,
+            letterSpacing: 0.2,
+            wordSpacing: 0.5,
           ),
-          height: 1.7,
-          color: AppColors.textSecondary,
-          letterSpacing: 0.2,
+          textAlign: textAlign,
         ),
-        textAlign: textAlign,
       );
     });
   }
