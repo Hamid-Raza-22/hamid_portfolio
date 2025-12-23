@@ -1,7 +1,8 @@
 import 'dart:ui';
+import 'dart:html' as html;
+import 'dart:ui_web' as ui_web;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:video_player/video_player.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/responsive_constants.dart';
 import '../../../controllers/home/home_controller.dart';
@@ -196,16 +197,20 @@ class _VideoSection extends StatefulWidget {
 }
 
 class _VideoSectionState extends State<_VideoSection> {
-  VideoPlayerController? _videoController;
-  bool _isInitialized = false;
-  bool _hasError = false;
-  bool _isMuted = true;
+  // Static registry to track registered view types (prevents duplicate registration)
+  static final Set<String> _registeredViewTypes = {};
+  
   String? _currentVideoUrl;
+  String? _iframeViewType;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeVideoFromController();
+    // Delay initialization to avoid issues during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeVideoFromController();
+    });
   }
 
   void _initializeVideoFromController() {
@@ -216,73 +221,96 @@ class _VideoSectionState extends State<_VideoSection> {
     }
   }
 
-  Future<void> _initializeVideo(String videoUrl) async {
+  void _initializeVideo(String videoUrl) {
     if (_currentVideoUrl == videoUrl && _isInitialized) return;
     
-    // Dispose previous controller if exists
-    await _videoController?.dispose();
-    
     _currentVideoUrl = videoUrl;
-    _hasError = false;
     
-    try {
-      _videoController = VideoPlayerController.networkUrl(
-        Uri.parse(videoUrl),
-        videoPlayerOptions: VideoPlayerOptions(
-          mixWithOthers: true,
-          allowBackgroundPlayback: false,
-        ),
-      );
-
-      await _videoController!.initialize();
+    // Create stable view type based on URL hash
+    final viewType = 'video-embed-${videoUrl.hashCode.abs()}';
+    
+    // Only register if not already registered
+    if (!_registeredViewTypes.contains(viewType)) {
+      final embedUrl = _getEmbedUrl(videoUrl);
+      if (embedUrl == null) return;
       
-      // Set autoplay settings: muted, looping, and play
-      await _videoController!.setVolume(0.0); // Muted for autoplay
-      await _videoController!.setLooping(true);
-      await _videoController!.play();
+      _registeredViewTypes.add(viewType);
       
-      if (mounted) {
-        setState(() {
-          _isInitialized = true;
-          _isMuted = true;
-        });
-      }
-    } catch (e) {
-      debugPrint('Video initialization error: $e');
-      if (mounted) {
-        setState(() {
-          _hasError = true;
-          _isInitialized = false;
-        });
+      // Check if it's a direct video file
+      if (videoUrl.contains('.mp4') || videoUrl.contains('.webm') || videoUrl.contains('.ogg')) {
+        ui_web.platformViewRegistry.registerViewFactory(
+          viewType,
+          (int viewId) => html.VideoElement()
+            ..src = videoUrl
+            ..autoplay = true
+            ..muted = true
+            ..loop = true
+            ..controls = true
+            ..style.width = '100%'
+            ..style.height = '100%'
+            ..style.objectFit = 'cover'
+            ..style.borderRadius = '24px',
+        );
+      } else {
+        // YouTube/Vimeo iframe
+        ui_web.platformViewRegistry.registerViewFactory(
+          viewType,
+          (int viewId) => html.IFrameElement()
+            ..src = embedUrl
+            ..style.border = 'none'
+            ..style.width = '100%'
+            ..style.height = '100%'
+            ..allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+            ..allowFullscreen = true,
+        );
       }
     }
+    
+    _iframeViewType = viewType;
+    
+    if (mounted) {
+      setState(() {
+        _isInitialized = true;
+      });
+    }
+  }
+
+  String? _getEmbedUrl(String url) {
+    // YouTube URL patterns
+    final youtubeRegex = RegExp(
+      r'(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})',
+    );
+    final youtubeMatch = youtubeRegex.firstMatch(url);
+    if (youtubeMatch != null) {
+      final videoId = youtubeMatch.group(1);
+      // Autoplay, muted, loop, and controls
+      return 'https://www.youtube.com/embed/$videoId?autoplay=1&mute=1&loop=1&playlist=$videoId&controls=1&rel=0&modestbranding=1';
+    }
+
+    // Vimeo URL patterns
+    final vimeoRegex = RegExp(r'vimeo\.com\/(\d+)');
+    final vimeoMatch = vimeoRegex.firstMatch(url);
+    if (vimeoMatch != null) {
+      final videoId = vimeoMatch.group(1);
+      return 'https://player.vimeo.com/video/$videoId?autoplay=1&muted=1&loop=1&background=0';
+    }
+
+    // Direct video URL (MP4, WebM) - return as-is
+    if (url.contains('.mp4') || url.contains('.webm') || url.contains('.ogg')) {
+      return url;
+    }
+
+    // Try as YouTube video ID directly
+    if (url.length == 11 && !url.contains('/') && !url.contains('.')) {
+      return 'https://www.youtube.com/embed/$url?autoplay=1&mute=1&loop=1&playlist=$url&controls=1&rel=0&modestbranding=1';
+    }
+
+    return null;
   }
 
   @override
   void dispose() {
-    _videoController?.dispose();
     super.dispose();
-  }
-
-  void _toggleMute() {
-    if (_videoController != null && _isInitialized) {
-      setState(() {
-        _isMuted = !_isMuted;
-        _videoController!.setVolume(_isMuted ? 0.0 : 1.0);
-      });
-    }
-  }
-
-  void _togglePlayPause() {
-    if (_videoController != null && _isInitialized) {
-      setState(() {
-        if (_videoController!.value.isPlaying) {
-          _videoController!.pause();
-        } else {
-          _videoController!.play();
-        }
-      });
-    }
   }
 
   @override
@@ -352,11 +380,7 @@ class _VideoSectionState extends State<_VideoSection> {
       return _buildPlaceholder(height, 'Video Coming Soon');
     }
 
-    if (_hasError) {
-      return _buildPlaceholder(height, 'Video unavailable');
-    }
-
-    if (!_isInitialized || _videoController == null) {
+    if (!_isInitialized || _iframeViewType == null) {
       return _buildLoadingState(height);
     }
 
@@ -401,171 +425,12 @@ class _VideoSectionState extends State<_VideoSection> {
   }
 
   Widget _buildVideoPlayer(double height) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // Video player with aspect ratio handling
-        ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: SizedBox(
-            width: double.infinity,
-            height: height,
-            child: FittedBox(
-              fit: BoxFit.cover,
-              child: SizedBox(
-                width: _videoController!.value.size.width,
-                height: _videoController!.value.size.height,
-                child: VideoPlayer(_videoController!),
-              ),
-            ),
-          ),
-        ),
-        
-        // Gradient overlay for better control visibility
-        Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.transparent,
-                  Colors.black.withOpacity(0.3),
-                ],
-                stops: const [0.0, 0.6, 1.0],
-              ),
-            ),
-          ),
-        ),
-        
-        // Play/Pause overlay (tap anywhere)
-        Positioned.fill(
-          child: GestureDetector(
-            onTap: _togglePlayPause,
-            child: AnimatedOpacity(
-              opacity: _videoController!.value.isPlaying ? 0.0 : 1.0,
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                color: Colors.black.withOpacity(0.3),
-                child: Center(
-                  child: Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: AppColors.primaryGradient,
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.5),
-                          blurRadius: 20,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.play_arrow_rounded,
-                      color: Colors.white,
-                      size: 36,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        
-        // Video controls
-        Positioned(
-          bottom: 16,
-          left: 16,
-          right: 16,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Progress indicator
-              Expanded(
-                child: VideoProgressIndicator(
-                  _videoController!,
-                  allowScrubbing: true,
-                  colors: VideoProgressColors(
-                    playedColor: AppColors.primary,
-                    bufferedColor: AppColors.primary.withOpacity(0.3),
-                    backgroundColor: Colors.white.withOpacity(0.2),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Mute/Unmute button
-              _buildControlButton(
-                icon: _isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                onTap: _toggleMute,
-                tooltip: _isMuted ? 'Unmute' : 'Mute',
-              ),
-            ],
-          ),
-        ),
-        
-        // Muted indicator (shows briefly when video starts)
-        if (_isMuted)
-          Positioned(
-            top: 16,
-            right: 16,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.volume_off_rounded, color: Colors.white, size: 16),
-                  SizedBox(width: 4),
-                  Text(
-                    'Muted',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildControlButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    required String tooltip,
-  }) {
-    return Tooltip(
-      message: tooltip,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.5),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1,
-            ),
-          ),
-          child: Icon(icon, color: Colors.white, size: 20),
-        ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: SizedBox(
+        width: double.infinity,
+        height: height,
+        child: HtmlElementView(viewType: _iframeViewType!),
       ),
     );
   }
