@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import '../../core/utils/icon_mapper.dart';
+import '../../core/utils/color_mapper.dart';
 import '../../domain/entities/education_entity.dart';
 
 /// Data model for Education with JSON serialization.
@@ -10,6 +13,11 @@ class EducationModel extends EducationEntity {
     super.cgpa,
     super.specialization,
     super.project,
+    super.icon,
+    super.color,
+    super.customIconUrl,
+    super.useCustomImage,
+    super.order,
   });
 
   /// Create from Firestore document
@@ -22,6 +30,11 @@ class EducationModel extends EducationEntity {
       cgpa: json['cgpa'] as String?,
       specialization: json['specialization'] as String?,
       project: json['project'] as String?,
+      icon: json['icon'] != null ? IconMapper.fromString(json['icon'] as String) : Icons.school_rounded,
+      color: json['color'] != null ? ColorMapper.fromString(json['color'] as String) : Colors.blue,
+      customIconUrl: json['customIconUrl'] as String?,
+      useCustomImage: json['useCustomImage'] as bool? ?? false,
+      order: json['order'] as int? ?? 0,
     );
   }
 
@@ -34,6 +47,11 @@ class EducationModel extends EducationEntity {
       'cgpa': cgpa,
       'specialization': specialization,
       'project': project,
+      'icon': icon != null ? IconMapper.iconToString(icon!) : 'school_rounded',
+      'color': color != null ? ColorMapper.colorToString(color!) : 'blue',
+      'customIconUrl': customIconUrl,
+      'useCustomImage': useCustomImage,
+      'order': order,
     };
   }
 
@@ -47,6 +65,11 @@ class EducationModel extends EducationEntity {
       cgpa: entity.cgpa,
       specialization: entity.specialization,
       project: entity.project,
+      icon: entity.icon,
+      color: entity.color,
+      customIconUrl: entity.customIconUrl,
+      useCustomImage: entity.useCustomImage,
+      order: entity.order,
     );
   }
 
@@ -60,6 +83,11 @@ class EducationModel extends EducationEntity {
       cgpa: cgpa,
       specialization: specialization,
       project: project,
+      icon: icon,
+      color: color,
+      customIconUrl: customIconUrl,
+      useCustomImage: useCustomImage,
+      order: order,
     );
   }
 
@@ -72,6 +100,11 @@ class EducationModel extends EducationEntity {
     String? cgpa,
     String? specialization,
     String? project,
+    IconData? icon,
+    Color? color,
+    String? customIconUrl,
+    bool? useCustomImage,
+    int? order,
   }) {
     return EducationModel(
       id: id ?? this.id,
@@ -81,6 +114,11 @@ class EducationModel extends EducationEntity {
       cgpa: cgpa ?? this.cgpa,
       specialization: specialization ?? this.specialization,
       project: project ?? this.project,
+      icon: icon ?? this.icon,
+      color: color ?? this.color,
+      customIconUrl: customIconUrl ?? this.customIconUrl,
+      useCustomImage: useCustomImage ?? this.useCustomImage,
+      order: order ?? this.order,
     );
   }
 }

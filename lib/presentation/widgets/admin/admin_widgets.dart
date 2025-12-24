@@ -1011,6 +1011,215 @@ class _TagsEditorFieldState extends State<TagsEditorField> {
   }
 }
 
+// ============ SKILLS EDITOR (for skills with icons) ============
+
+class SkillsEditorField extends StatefulWidget {
+  final String label;
+  final List<SkillEntity> skillEntities;
+  final ValueChanged<List<SkillEntity>> onChanged;
+
+  const SkillsEditorField({
+    super.key,
+    required this.label,
+    required this.skillEntities,
+    required this.onChanged,
+  });
+
+  @override
+  State<SkillsEditorField> createState() => _SkillsEditorFieldState();
+}
+
+class _SkillsEditorFieldState extends State<SkillsEditorField> {
+  final _nameController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(widget.label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+        const SizedBox(height: 8),
+        ...widget.skillEntities.asMap().entries.map((entry) => _buildSkillItem(entry.key, entry.value)),
+        _buildAddSkillRow(),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildSkillItem(int index, SkillEntity skill) {
+    final hasCustomIcon = skill.useCustomImage && skill.customIconUrl != null;
+    final hasIcon = skill.icon != null || hasCustomIcon;
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: hasIcon ? AppColors.primary.withOpacity(0.3) : Colors.transparent),
+      ),
+      child: Row(
+        children: [
+          // Icon indicator
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: hasIcon ? AppColors.primary.withOpacity(0.15) : Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: hasCustomIcon
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Image.network(
+                      skill.customIconUrl!,
+                      width: 20,
+                      height: 20,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Icon(
+                        skill.icon ?? Icons.code,
+                        color: AppColors.primary,
+                        size: 16,
+                      ),
+                    ),
+                  )
+                : Icon(
+                    skill.icon ?? Icons.circle,
+                    color: hasIcon ? AppColors.primary : Colors.white30,
+                    size: hasIcon ? 16 : 6,
+                  ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              skill.name,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+          // Edit icon button
+          IconButton(
+            icon: const Icon(Icons.edit, size: 16, color: AppColors.primary),
+            onPressed: () => _showEditSkillDialog(index, skill),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            tooltip: 'Edit skill icon',
+          ),
+          const SizedBox(width: 8),
+          // Delete button
+          IconButton(
+            icon: const Icon(Icons.close, size: 18, color: Colors.white70),
+            onPressed: () {
+              final newItems = List<SkillEntity>.from(widget.skillEntities)..removeAt(index);
+              widget.onChanged(newItems);
+            },
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddSkillRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _nameController,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'Add skill name...',
+              hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.05),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              isDense: true,
+            ),
+            onSubmitted: (_) => _addSkill(),
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton(
+          onPressed: _addSkill,
+          icon: const Icon(Icons.add_circle, color: AppColors.primary),
+          tooltip: 'Add skill',
+        ),
+      ],
+    );
+  }
+
+  void _addSkill() {
+    if (_nameController.text.isNotEmpty) {
+      final newItems = List<SkillEntity>.from(widget.skillEntities)
+        ..add(SkillEntity(name: _nameController.text));
+      widget.onChanged(newItems);
+      _nameController.clear();
+    }
+  }
+
+  void _showEditSkillDialog(int index, SkillEntity skill) {
+    final nameController = TextEditingController(text: skill.name);
+    final selectedIcon = (skill.icon != null ? IconMapper.iconToString(skill.icon!) : 'code').obs;
+    final customIconUrl = Rxn<String>(skill.customIconUrl);
+    final useCustomImage = (skill.useCustomImage).obs;
+
+    Get.dialog(
+      Obx(() => AlertDialog(
+        backgroundColor: AppColors.cardBg,
+        title: const Text('Edit Skill', style: TextStyle(color: Colors.white)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AdminTextField(label: 'Skill Name', controller: nameController),
+              IconPickerField(
+                label: 'Skill Icon / Image (optional)',
+                selectedIcon: selectedIcon.value,
+                onChanged: (value) => selectedIcon.value = value,
+                customIconUrl: customIconUrl.value,
+                onCustomIconUploaded: (url) => customIconUrl.value = url,
+                useCustomImage: useCustomImage.value,
+                onUseCustomImageChanged: (value) => useCustomImage.value = value,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final updatedSkill = SkillEntity(
+                name: nameController.text,
+                icon: useCustomImage.value ? null : IconMapper.fromString(selectedIcon.value),
+                customIconUrl: useCustomImage.value ? customIconUrl.value : null,
+                useCustomImage: useCustomImage.value,
+              );
+              final newItems = List<SkillEntity>.from(widget.skillEntities);
+              newItems[index] = updatedSkill;
+              widget.onChanged(newItems);
+              Get.back();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: const Text('Save'),
+          ),
+        ],
+      )),
+    );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+}
+
 // ============ LIST EDITOR (for highlights, skills, etc.) ============
 
 class ListEditorField extends StatefulWidget {
@@ -1360,7 +1569,7 @@ class ServicesManagement extends StatelessWidget {
   }
 }
 
-// Portfolio Management
+// Portfolio Management with Drag-and-Drop Reordering
 class PortfolioManagement extends StatelessWidget {
   final AdminDashboardController controller;
 
@@ -1372,35 +1581,88 @@ class PortfolioManagement extends StatelessWidget {
       title: 'Portfolio',
       icon: Icons.work,
       onAdd: () => _showPortfolioDialog(context),
-      child: Obx(() => ListView.builder(
-            itemCount: controller.portfolioItems.length,
-            itemBuilder: (context, index) {
-              final item = controller.portfolioItems[index];
-              return AdminItemCard(
-                title: item.title,
-                subtitle: item.description,
-                icon: item.icon,
-                color: item.color,
-                customIconUrl: item.customIconUrl,
-                useCustomImage: item.useCustomImage,
-                onEdit: () => _showPortfolioDialog(context, item: item),
-                onDelete: () => controller.deletePortfolioItem(item.id),
-                extraInfo: [
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 4,
-                    children: item.tags.take(3).map((tag) => Chip(
-                          label: Text(tag, style: const TextStyle(fontSize: 10, color: Colors.white)),
-                          backgroundColor: item.color.withOpacity(0.3),
-                          padding: EdgeInsets.zero,
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        )).toList(),
+      child: Obx(() {
+        // Sort portfolio items by order
+        final sortedItems = List<PortfolioEntity>.from(controller.portfolioItems)
+          ..sort((a, b) => a.order.compareTo(b.order));
+        
+        return ReorderableListView.builder(
+          itemCount: sortedItems.length,
+          buildDefaultDragHandles: false,
+          onReorder: (oldIndex, newIndex) => _onReorder(sortedItems, oldIndex, newIndex),
+          proxyDecorator: (child, index, animation) {
+            return AnimatedBuilder(
+              animation: animation,
+              builder: (context, child) {
+                final double elevation = lerpDouble(0, 6, Curves.easeInOut.transform(animation.value))!;
+                final double scale = lerpDouble(1.0, 1.02, Curves.easeInOut.transform(animation.value))!;
+                return Transform.scale(
+                  scale: scale,
+                  child: Material(
+                    elevation: elevation,
+                    color: Colors.transparent,
+                    shadowColor: AppColors.primary.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                    child: child,
                   ),
-                ],
-              );
-            },
-          )),
+                );
+              },
+              child: child,
+            );
+          },
+          itemBuilder: (context, index) {
+            final item = sortedItems[index];
+            return ReorderableDelayedDragStartListener(
+              key: ValueKey(item.id),
+              index: index,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: AdminItemCard(
+                  title: item.title,
+                  subtitle: item.description,
+                  icon: item.icon,
+                  color: item.color,
+                  customIconUrl: item.customIconUrl,
+                  useCustomImage: item.useCustomImage,
+                  onEdit: () => _showPortfolioDialog(context, item: item),
+                  onDelete: () => controller.deletePortfolioItem(item.id),
+                  extraInfo: [
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 4,
+                      children: item.tags.take(3).map((tag) => Chip(
+                            label: Text(tag, style: const TextStyle(fontSize: 10, color: Colors.white)),
+                            backgroundColor: item.color.withOpacity(0.3),
+                            padding: EdgeInsets.zero,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          )).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      }),
     );
+  }
+
+  void _onReorder(List<PortfolioEntity> sortedItems, int oldIndex, int newIndex) {
+    if (newIndex > oldIndex) newIndex--;
+    
+    // Create new list with updated orders
+    final reorderedItems = List<PortfolioEntity>.from(sortedItems);
+    final movedItem = reorderedItems.removeAt(oldIndex);
+    reorderedItems.insert(newIndex, movedItem);
+    
+    // Update orders in database
+    for (int i = 0; i < reorderedItems.length; i++) {
+      final item = reorderedItems[i];
+      if (item.order != i) {
+        final updatedItem = item.copyWith(order: i);
+        controller.updatePortfolioItem(updatedItem);
+      }
+    }
   }
 
   void _showPortfolioDialog(BuildContext context, {PortfolioEntity? item}) {
@@ -1408,6 +1670,7 @@ class PortfolioManagement extends StatelessWidget {
     final categoryController = TextEditingController(text: item?.category ?? '');
     final descController = TextEditingController(text: item?.description ?? '');
     final urlController = TextEditingController(text: item?.projectUrl ?? '');
+    final orderController = TextEditingController(text: item?.order.toString() ?? '0');
     
     // GetX reactive state
     final selectedIcon = (item != null ? IconMapper.iconToString(item.icon) : 'folder').obs;
@@ -1431,6 +1694,7 @@ class PortfolioManagement extends StatelessWidget {
             projectUrl: urlController.text.isEmpty ? null : urlController.text,
             customIconUrl: useCustomImage.value ? customIconUrl.value : null,
             useCustomImage: useCustomImage.value,
+            order: int.tryParse(orderController.text) ?? 0,
           );
           if (item == null) {
             controller.addPortfolioItem(newItem);
@@ -1444,6 +1708,7 @@ class PortfolioManagement extends StatelessWidget {
           AdminTextField(label: 'Category', controller: categoryController),
           AdminTextField(label: 'Description', controller: descController, maxLines: 3),
           AdminTextField(label: 'Project URL (optional)', controller: urlController),
+          AdminTextField(label: 'Display Order', controller: orderController, keyboardType: TextInputType.number, hint: 'Lower number = higher priority'),
           IconPickerField(
             label: 'Icon / Image',
             selectedIcon: selectedIcon.value,
@@ -1481,19 +1746,26 @@ class ExperienceManagement extends StatelessWidget {
       title: 'Experience',
       icon: Icons.business,
       onAdd: () => _showExperienceDialog(context),
-      child: Obx(() => ListView.builder(
-            itemCount: controller.experiences.length,
-            itemBuilder: (context, index) {
-              final exp = controller.experiences[index];
-              return AdminItemCard(
-                title: exp.title,
-                subtitle: '${exp.company} • ${exp.duration}',
-                icon: Icons.work,
-                onEdit: () => _showExperienceDialog(context, experience: exp),
-                onDelete: () => controller.deleteExperience(exp.id),
-              );
-            },
-          )),
+      child: Obx(() {
+        final sortedExperiences = List<ExperienceEntity>.from(controller.experiences)
+          ..sort((a, b) => a.order.compareTo(b.order));
+        return ListView.builder(
+          itemCount: sortedExperiences.length,
+          itemBuilder: (context, index) {
+            final exp = sortedExperiences[index];
+            return AdminItemCard(
+              title: exp.title,
+              subtitle: '${exp.company} • ${exp.duration}',
+              icon: exp.icon ?? Icons.work_rounded,
+              color: exp.color,
+              customIconUrl: exp.customIconUrl,
+              useCustomImage: exp.useCustomImage,
+              onEdit: () => _showExperienceDialog(context, experience: exp),
+              onDelete: () => controller.deleteExperience(exp.id),
+            );
+          },
+        );
+      }),
     );
   }
 
@@ -1502,46 +1774,69 @@ class ExperienceManagement extends StatelessWidget {
     final companyController = TextEditingController(text: experience?.company ?? '');
     final locationController = TextEditingController(text: experience?.location ?? '');
     final durationController = TextEditingController(text: experience?.duration ?? '');
-    List<String> highlights = List<String>.from(experience?.highlights ?? []);
+    final orderController = TextEditingController(text: experience?.order.toString() ?? '0');
+    final highlights = List<String>.from(experience?.highlights ?? []).obs;
+    final selectedIcon = (experience?.icon != null ? IconMapper.iconToString(experience!.icon!) : 'work_rounded').obs;
+    final selectedColor = (experience?.color != null ? ColorMapper.colorToString(experience!.color!) : 'blue').obs;
+    final customIconUrl = Rxn<String>(experience?.customIconUrl);
+    final useCustomImage = (experience?.useCustomImage ?? false).obs;
 
     Get.dialog(
-      StatefulBuilder(
-        builder: (context, setState) => AdminFormDialog(
-          title: experience == null ? 'Add Experience' : 'Edit Experience',
-          onSave: () {
-            final newExp = ExperienceEntity(
-              id: experience?.id ?? controller.generateId(),
-              title: titleController.text,
-              company: companyController.text,
-              location: locationController.text,
-              duration: durationController.text,
-              highlights: highlights,
-            );
-            if (experience == null) {
-              controller.addExperience(newExp);
-            } else {
-              controller.updateExperience(newExp);
-            }
-            Get.back();
-          },
-          children: [
-            AdminTextField(label: 'Job Title', controller: titleController),
-            AdminTextField(label: 'Company', controller: companyController),
-            AdminTextField(label: 'Location', controller: locationController),
-            AdminTextField(label: 'Duration', controller: durationController),
-            ListEditorField(
-              label: 'Highlights',
-              items: highlights,
-              onChanged: (value) => setState(() => highlights = value),
-            ),
-          ],
-        ),
-      ),
+      Obx(() => AdminFormDialog(
+        title: experience == null ? 'Add Experience' : 'Edit Experience',
+        onSave: () {
+          final newExp = ExperienceEntity(
+            id: experience?.id ?? controller.generateId(),
+            title: titleController.text,
+            company: companyController.text,
+            location: locationController.text,
+            duration: durationController.text,
+            highlights: highlights,
+            icon: IconMapper.fromString(selectedIcon.value),
+            color: ColorMapper.fromString(selectedColor.value),
+            customIconUrl: useCustomImage.value ? customIconUrl.value : null,
+            useCustomImage: useCustomImage.value,
+            order: int.tryParse(orderController.text) ?? 0,
+          );
+          if (experience == null) {
+            controller.addExperience(newExp);
+          } else {
+            controller.updateExperience(newExp);
+          }
+          Get.back();
+        },
+        children: [
+          AdminTextField(label: 'Job Title', controller: titleController),
+          AdminTextField(label: 'Company', controller: companyController),
+          AdminTextField(label: 'Location', controller: locationController),
+          AdminTextField(label: 'Duration', controller: durationController),
+          AdminTextField(label: 'Display Order', controller: orderController, keyboardType: TextInputType.number),
+          IconPickerField(
+            label: 'Icon / Image',
+            selectedIcon: selectedIcon.value,
+            onChanged: (value) => selectedIcon.value = value,
+            customIconUrl: customIconUrl.value,
+            onCustomIconUploaded: (url) => customIconUrl.value = url,
+            useCustomImage: useCustomImage.value,
+            onUseCustomImageChanged: (value) => useCustomImage.value = value,
+          ),
+          ColorPickerField(
+            label: 'Color',
+            selectedColor: selectedColor.value,
+            onChanged: (value) => selectedColor.value = value,
+          ),
+          ListEditorField(
+            label: 'Highlights',
+            items: highlights,
+            onChanged: (value) => highlights.value = value,
+          ),
+        ],
+      )),
     );
   }
 }
 
-// Projects Management
+// Projects Management with Drag-and-Drop Reordering
 class ProjectsManagement extends StatelessWidget {
   final AdminDashboardController controller;
 
@@ -1553,23 +1848,76 @@ class ProjectsManagement extends StatelessWidget {
       title: 'Projects',
       icon: Icons.folder,
       onAdd: () => _showProjectDialog(context),
-      child: Obx(() => ListView.builder(
-            itemCount: controller.projectDetails.length,
-            itemBuilder: (context, index) {
-              final project = controller.projectDetails[index];
-              return AdminItemCard(
-                title: project.title,
-                subtitle: '${project.category} • ${project.year}',
-                icon: project.icon,
-                color: project.color,
-                customIconUrl: project.customIconUrl,
-                useCustomImage: project.useCustomImage,
-                onEdit: () => _showProjectDialog(context, project: project),
-                onDelete: () => controller.deleteProjectDetail(project.id),
-              );
-            },
-          )),
+      child: Obx(() {
+        // Sort projects by order
+        final sortedProjects = List<ProjectDetailEntity>.from(controller.projectDetails)
+          ..sort((a, b) => a.order.compareTo(b.order));
+        
+        return ReorderableListView.builder(
+          itemCount: sortedProjects.length,
+          buildDefaultDragHandles: false,
+          onReorder: (oldIndex, newIndex) => _onReorder(sortedProjects, oldIndex, newIndex),
+          proxyDecorator: (child, index, animation) {
+            return AnimatedBuilder(
+              animation: animation,
+              builder: (context, child) {
+                final double elevation = lerpDouble(0, 6, Curves.easeInOut.transform(animation.value))!;
+                final double scale = lerpDouble(1.0, 1.02, Curves.easeInOut.transform(animation.value))!;
+                return Transform.scale(
+                  scale: scale,
+                  child: Material(
+                    elevation: elevation,
+                    color: Colors.transparent,
+                    shadowColor: AppColors.primary.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                    child: child,
+                  ),
+                );
+              },
+              child: child,
+            );
+          },
+          itemBuilder: (context, index) {
+            final project = sortedProjects[index];
+            return ReorderableDelayedDragStartListener(
+              key: ValueKey(project.id),
+              index: index,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: AdminItemCard(
+                  title: project.title,
+                  subtitle: '${project.category} • ${project.year}',
+                  icon: project.icon,
+                  color: project.color,
+                  customIconUrl: project.customIconUrl,
+                  useCustomImage: project.useCustomImage,
+                  onEdit: () => _showProjectDialog(context, project: project),
+                  onDelete: () => controller.deleteProjectDetail(project.id),
+                ),
+              ),
+            );
+          },
+        );
+      }),
     );
+  }
+
+  void _onReorder(List<ProjectDetailEntity> sortedProjects, int oldIndex, int newIndex) {
+    if (newIndex > oldIndex) newIndex--;
+    
+    // Create new list with updated orders
+    final reorderedItems = List<ProjectDetailEntity>.from(sortedProjects);
+    final movedItem = reorderedItems.removeAt(oldIndex);
+    reorderedItems.insert(newIndex, movedItem);
+    
+    // Update orders in database
+    for (int i = 0; i < reorderedItems.length; i++) {
+      final item = reorderedItems[i];
+      if (item.order != i) {
+        final updatedItem = item.copyWith(order: i);
+        controller.updateProjectDetail(updatedItem);
+      }
+    }
   }
 
   void _showProjectDialog(BuildContext context, {ProjectDetailEntity? project}) {
@@ -1658,19 +2006,26 @@ class EducationManagement extends StatelessWidget {
       title: 'Education',
       icon: Icons.school,
       onAdd: () => _showEducationDialog(context),
-      child: Obx(() => ListView.builder(
-            itemCount: controller.education.length,
-            itemBuilder: (context, index) {
-              final edu = controller.education[index];
-              return AdminItemCard(
-                title: edu.degree,
-                subtitle: '${edu.institution} • ${edu.duration}',
-                icon: Icons.school,
-                onEdit: () => _showEducationDialog(context, education: edu),
-                onDelete: () => controller.deleteEducation(edu.id),
-              );
-            },
-          )),
+      child: Obx(() {
+        final sortedEducation = List<EducationEntity>.from(controller.education)
+          ..sort((a, b) => a.order.compareTo(b.order));
+        return ListView.builder(
+          itemCount: sortedEducation.length,
+          itemBuilder: (context, index) {
+            final edu = sortedEducation[index];
+            return AdminItemCard(
+              title: edu.degree,
+              subtitle: '${edu.institution} • ${edu.duration}',
+              icon: edu.icon ?? Icons.school_rounded,
+              color: edu.color,
+              customIconUrl: edu.customIconUrl,
+              useCustomImage: edu.useCustomImage,
+              onEdit: () => _showEducationDialog(context, education: edu),
+              onDelete: () => controller.deleteEducation(edu.id),
+            );
+          },
+        );
+      }),
     );
   }
 
@@ -1681,9 +2036,14 @@ class EducationManagement extends StatelessWidget {
     final cgpaController = TextEditingController(text: education?.cgpa ?? '');
     final specializationController = TextEditingController(text: education?.specialization ?? '');
     final projectController = TextEditingController(text: education?.project ?? '');
+    final orderController = TextEditingController(text: education?.order.toString() ?? '0');
+    final selectedIcon = (education?.icon != null ? IconMapper.iconToString(education!.icon!) : 'school_rounded').obs;
+    final selectedColor = (education?.color != null ? ColorMapper.colorToString(education!.color!) : 'blue').obs;
+    final customIconUrl = Rxn<String>(education?.customIconUrl);
+    final useCustomImage = (education?.useCustomImage ?? false).obs;
 
     Get.dialog(
-      AdminFormDialog(
+      Obx(() => AdminFormDialog(
         title: education == null ? 'Add Education' : 'Edit Education',
         onSave: () {
           final newEdu = EducationEntity(
@@ -1691,9 +2051,14 @@ class EducationManagement extends StatelessWidget {
             degree: degreeController.text,
             institution: institutionController.text,
             duration: durationController.text,
-            cgpa: cgpaController.text,
-            specialization: specializationController.text,
-            project: projectController.text,
+            cgpa: cgpaController.text.isNotEmpty ? cgpaController.text : null,
+            specialization: specializationController.text.isNotEmpty ? specializationController.text : null,
+            project: projectController.text.isNotEmpty ? projectController.text : null,
+            icon: IconMapper.fromString(selectedIcon.value),
+            color: ColorMapper.fromString(selectedColor.value),
+            customIconUrl: useCustomImage.value ? customIconUrl.value : null,
+            useCustomImage: useCustomImage.value,
+            order: int.tryParse(orderController.text) ?? 0,
           );
           if (education == null) {
             controller.addEducation(newEdu);
@@ -1706,11 +2071,26 @@ class EducationManagement extends StatelessWidget {
           AdminTextField(label: 'Degree', controller: degreeController),
           AdminTextField(label: 'Institution', controller: institutionController),
           AdminTextField(label: 'Duration', controller: durationController),
-          AdminTextField(label: 'CGPA', controller: cgpaController),
-          AdminTextField(label: 'Specialization', controller: specializationController),
-          AdminTextField(label: 'Project', controller: projectController),
+          AdminTextField(label: 'CGPA (optional)', controller: cgpaController),
+          AdminTextField(label: 'Specialization (optional)', controller: specializationController),
+          AdminTextField(label: 'Project (optional)', controller: projectController),
+          AdminTextField(label: 'Display Order', controller: orderController, keyboardType: TextInputType.number),
+          IconPickerField(
+            label: 'Icon / Image',
+            selectedIcon: selectedIcon.value,
+            onChanged: (value) => selectedIcon.value = value,
+            customIconUrl: customIconUrl.value,
+            onCustomIconUploaded: (url) => customIconUrl.value = url,
+            useCustomImage: useCustomImage.value,
+            onUseCustomImageChanged: (value) => useCustomImage.value = value,
+          ),
+          ColorPickerField(
+            label: 'Color',
+            selectedColor: selectedColor.value,
+            onChanged: (value) => selectedColor.value = value,
+          ),
         ],
-      ),
+      )),
     );
   }
 }
@@ -1810,7 +2190,7 @@ class ExpertiseManagement extends StatelessWidget {
     final titleController = TextEditingController(text: expertise?.title ?? '');
     final selectedIcon = (expertise != null ? IconMapper.iconToString(expertise.icon) : 'code_rounded').obs;
     final selectedColor = (expertise != null ? ColorMapper.colorToString(expertise.color) : 'primary').obs;
-    final skills = List<String>.from(expertise?.skills ?? []).obs;
+    final skillEntities = RxList<SkillEntity>(List<SkillEntity>.from(expertise?.skillEntities ?? []));
     final customIconUrl = Rxn<String>(expertise?.customIconUrl);
     final useCustomImage = (expertise?.useCustomImage ?? false).obs;
 
@@ -1818,12 +2198,16 @@ class ExpertiseManagement extends StatelessWidget {
       Obx(() => AdminFormDialog(
         title: expertise == null ? 'Add Expertise' : 'Edit Expertise',
         onSave: () {
+          // Sync skills list with skillEntities names
+          final syncedSkills = skillEntities.map((s) => s.name).toList();
+          
           final newExp = ExpertiseEntity(
             id: expertise?.id ?? controller.generateId(),
             title: titleController.text,
             icon: IconMapper.fromString(selectedIcon.value),
             color: ColorMapper.fromString(selectedColor.value),
-            skills: skills,
+            skills: syncedSkills,
+            skillEntities: skillEntities.toList(),
             customIconUrl: useCustomImage.value ? customIconUrl.value : null,
             useCustomImage: useCustomImage.value,
           );
@@ -1837,7 +2221,7 @@ class ExpertiseManagement extends StatelessWidget {
         children: [
           AdminTextField(label: 'Title', controller: titleController),
           IconPickerField(
-            label: 'Icon / Image',
+            label: 'Category Icon / Image',
             selectedIcon: selectedIcon.value,
             onChanged: (value) => selectedIcon.value = value,
             customIconUrl: customIconUrl.value,
@@ -1850,10 +2234,10 @@ class ExpertiseManagement extends StatelessWidget {
             selectedColor: selectedColor.value,
             onChanged: (value) => selectedColor.value = value,
           ),
-          ListEditorField(
-            label: 'Skills',
-            items: skills,
-            onChanged: (value) => skills.value = value,
+          SkillsEditorField(
+            label: 'Skills (with optional icons)',
+            skillEntities: skillEntities.toList(),
+            onChanged: (value) => skillEntities.value = value,
           ),
         ],
       )),

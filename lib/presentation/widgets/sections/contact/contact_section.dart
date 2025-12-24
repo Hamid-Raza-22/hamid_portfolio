@@ -143,6 +143,7 @@ class ContactSection extends GetView<HomeController> {
               child: SocialIconLarge(
                 icon: social.icon,
                 label: social.name,
+                onTap: () => controller.launchSocialUrl(social.url),
               ),
             );
           }).toList(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'skill_entity.dart';
 
 /// Domain entity representing a technical expertise category.
 class ExpertiseEntity {
@@ -7,6 +8,7 @@ class ExpertiseEntity {
   final IconData icon;
   final Color color;
   final List<String> skills;
+  final List<SkillEntity> skillEntities;
   final String? customIconUrl;
   final bool useCustomImage;
 
@@ -16,6 +18,7 @@ class ExpertiseEntity {
     required this.icon,
     required this.color,
     required this.skills,
+    this.skillEntities = const [],
     this.customIconUrl,
     this.useCustomImage = false,
   });

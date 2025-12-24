@@ -51,7 +51,7 @@ class ServicesSection extends StatelessWidget {
           child: Column(
             children: [
               _buildSectionHeader(context, controller),
-              SizedBox(height: ResponsiveValue.get<double>(context, mobile: 40, desktop: 60)),
+              SizedBox(height: ResponsiveValue.get<double>(context, mobile: 32, desktop: 48)),
               Obx(() => GridView.count(
                 crossAxisCount: crossAxisCount,
                 shrinkWrap: true,

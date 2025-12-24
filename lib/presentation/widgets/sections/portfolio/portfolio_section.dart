@@ -33,9 +33,9 @@ class PortfolioSection extends StatelessWidget {
           child: Column(
             children: [
               _buildSectionHeader(context, controller, isMobile),
-              SizedBox(height: ResponsiveValue.get<double>(context, mobile: 40, desktop: 60)),
+              SizedBox(height: ResponsiveValue.get<double>(context, mobile: 32, desktop: 48)),
               _buildPortfolioGrid(context, controller),
-              SizedBox(height: ResponsiveValue.get<double>(context, mobile: 40, desktop: 50)),
+              SizedBox(height: ResponsiveValue.get<double>(context, mobile: 32, desktop: 40)),
               const _ViewAllButton(),
             ],
           ),
@@ -120,12 +120,16 @@ class PortfolioSection extends StatelessWidget {
         final isSmallTablet = constraints.maxWidth < ResponsiveBreakpoints.desktop;
 
         return Obx(() {
+          // Sort portfolio items by order
+          final sortedItems = List.from(controller.portfolioItems)
+            ..sort((a, b) => a.order.compareTo(b.order));
+          
           if (isMobileLayout) {
             return Column(
-              children: controller.portfolioItems.asMap().entries.map((entry) {
+              children: sortedItems.asMap().entries.map((entry) {
                 return Padding(
                   padding: EdgeInsets.only(
-                    bottom: entry.key < controller.portfolioItems.length - 1 ? 24 : 0,
+                    bottom: entry.key < sortedItems.length - 1 ? 24 : 0,
                   ),
                   child: SizedBox(
                     height: 380,
@@ -144,11 +148,11 @@ class PortfolioSection extends StatelessWidget {
           final itemsPerRow = isSmallTablet ? 2 : 3;
           final rows = <Widget>[];
           
-          for (var i = 0; i < controller.portfolioItems.length; i += itemsPerRow) {
-            final rowItems = controller.portfolioItems.skip(i).take(itemsPerRow).toList();
+          for (var i = 0; i < sortedItems.length; i += itemsPerRow) {
+            final rowItems = sortedItems.skip(i).take(itemsPerRow).toList();
             rows.add(
               Padding(
-                padding: EdgeInsets.only(bottom: i + itemsPerRow < controller.portfolioItems.length ? 24 : 0),
+                padding: EdgeInsets.only(bottom: i + itemsPerRow < sortedItems.length ? 24 : 0),
                 child: Row(
                   children: rowItems.asMap().entries.map((entry) {
                     final actualIndex = i + entry.key;

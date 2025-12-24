@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// Domain entity representing a work experience entry.
 class ExperienceEntity {
   final String id;
@@ -6,6 +8,11 @@ class ExperienceEntity {
   final String location;
   final String duration;
   final List<String> highlights;
+  final IconData? icon;
+  final Color? color;
+  final String? customIconUrl;
+  final bool useCustomImage;
+  final int order;
 
   const ExperienceEntity({
     required this.id,
@@ -14,6 +21,11 @@ class ExperienceEntity {
     required this.location,
     required this.duration,
     required this.highlights,
+    this.icon,
+    this.color,
+    this.customIconUrl,
+    this.useCustomImage = false,
+    this.order = 0,
   });
 
   @override

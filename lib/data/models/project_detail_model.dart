@@ -18,6 +18,7 @@ class ProjectDetailModel extends ProjectDetailEntity {
     super.url,
     super.customIconUrl,
     super.useCustomImage,
+    super.order,
   });
 
   /// Create from Firestore document
@@ -35,6 +36,7 @@ class ProjectDetailModel extends ProjectDetailEntity {
       url: json['url'] as String?,
       customIconUrl: json['customIconUrl'] as String?,
       useCustomImage: json['useCustomImage'] as bool? ?? false,
+      order: json['order'] as int? ?? 0,
     );
   }
 
@@ -51,6 +53,7 @@ class ProjectDetailModel extends ProjectDetailEntity {
       'tags': tags,
       'url': url,
       'useCustomImage': useCustomImage,
+      'order': order,
       if (customIconUrl != null) 'customIconUrl': customIconUrl,
     };
   }
@@ -70,6 +73,7 @@ class ProjectDetailModel extends ProjectDetailEntity {
       url: entity.url,
       customIconUrl: entity.customIconUrl,
       useCustomImage: entity.useCustomImage,
+      order: entity.order,
     );
   }
 
@@ -88,10 +92,12 @@ class ProjectDetailModel extends ProjectDetailEntity {
       url: url,
       customIconUrl: customIconUrl,
       useCustomImage: useCustomImage,
+      order: order,
     );
   }
 
   /// Create a copy with modified fields
+  @override
   ProjectDetailModel copyWith({
     String? id,
     String? title,
@@ -105,6 +111,7 @@ class ProjectDetailModel extends ProjectDetailEntity {
     String? url,
     String? customIconUrl,
     bool? useCustomImage,
+    int? order,
   }) {
     return ProjectDetailModel(
       id: id ?? this.id,
@@ -119,6 +126,7 @@ class ProjectDetailModel extends ProjectDetailEntity {
       url: url ?? this.url,
       customIconUrl: customIconUrl ?? this.customIconUrl,
       useCustomImage: useCustomImage ?? this.useCustomImage,
+      order: order ?? this.order,
     );
   }
 }

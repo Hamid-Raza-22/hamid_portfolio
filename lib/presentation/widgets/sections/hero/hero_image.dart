@@ -8,41 +8,50 @@ import 'hero_painters.dart';
 /// Animated hero image with floating effect and decorations.
 class HeroImage extends GetView<HomeController> {
   final bool isMobileLayout;
+  final bool isSmallDesktop;
 
-  const HeroImage({super.key, required this.isMobileLayout});
+  const HeroImage({super.key, required this.isMobileLayout, this.isSmallDesktop = false});
 
   @override
   Widget build(BuildContext context) {
-    final containerBaseWidth = ResponsiveValue.get<double>(
-      context,
-      mobile: 300,
-      smallTablet: 370,
-      tablet: 440,
-      desktop: 500,
-    );
-    final containerBaseHeight = ResponsiveValue.get<double>(
-      context,
-      mobile: 380,
-      smallTablet: 460,
-      tablet: 550,
-      desktop: 620,
-    );
+    final containerBaseWidth = isSmallDesktop 
+        ? 360.0 
+        : ResponsiveValue.get<double>(
+            context,
+            mobile: 300,
+            smallTablet: 370,
+            tablet: 440,
+            desktop: 500,
+          );
+    final containerBaseHeight = isSmallDesktop 
+        ? 450.0 
+        : ResponsiveValue.get<double>(
+            context,
+            mobile: 380,
+            smallTablet: 460,
+            tablet: 550,
+            desktop: 620,
+          );
 
     const imageGap = 2.0;
-    final imageWidth = ResponsiveValue.get<double>(
-      context,
-      mobile: 296 - (2 * imageGap),
-      smallTablet: 366 - (2 * imageGap),
-      tablet: 436 - (2 * imageGap),
-      desktop: 496 - (2 * imageGap),
-    );
-    final imageHeight = ResponsiveValue.get<double>(
-      context,
-      mobile: 376 - (2 * imageGap),
-      smallTablet: 456 - (2 * imageGap),
-      tablet: 546 - (2 * imageGap),
-      desktop: 616 - (2 * imageGap),
-    );
+    final imageWidth = isSmallDesktop 
+        ? 356.0 - (2 * imageGap)
+        : ResponsiveValue.get<double>(
+            context,
+            mobile: 296 - (2 * imageGap),
+            smallTablet: 366 - (2 * imageGap),
+            tablet: 436 - (2 * imageGap),
+            desktop: 496 - (2 * imageGap),
+          );
+    final imageHeight = isSmallDesktop 
+        ? 446.0 - (2 * imageGap)
+        : ResponsiveValue.get<double>(
+            context,
+            mobile: 376 - (2 * imageGap),
+            smallTablet: 456 - (2 * imageGap),
+            tablet: 546 - (2 * imageGap),
+            desktop: 616 - (2 * imageGap),
+          );
 
     final borderRadius = ResponsiveValue.get<double>(
       context,

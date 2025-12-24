@@ -14,6 +14,7 @@ class ProjectDetailEntity {
   final String? url;
   final String? customIconUrl;
   final bool useCustomImage;
+  final int order;
 
   const ProjectDetailEntity({
     required this.id,
@@ -28,7 +29,40 @@ class ProjectDetailEntity {
     this.url,
     this.customIconUrl,
     this.useCustomImage = false,
+    this.order = 0,
   });
+
+  ProjectDetailEntity copyWith({
+    String? id,
+    String? title,
+    String? category,
+    String? year,
+    Color? color,
+    IconData? icon,
+    String? description,
+    List<String>? highlights,
+    List<String>? tags,
+    String? url,
+    String? customIconUrl,
+    bool? useCustomImage,
+    int? order,
+  }) {
+    return ProjectDetailEntity(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      category: category ?? this.category,
+      year: year ?? this.year,
+      color: color ?? this.color,
+      icon: icon ?? this.icon,
+      description: description ?? this.description,
+      highlights: highlights ?? this.highlights,
+      tags: tags ?? this.tags,
+      url: url ?? this.url,
+      customIconUrl: customIconUrl ?? this.customIconUrl,
+      useCustomImage: useCustomImage ?? this.useCustomImage,
+      order: order ?? this.order,
+    );
+  }
 
   @override
   bool operator ==(Object other) =>

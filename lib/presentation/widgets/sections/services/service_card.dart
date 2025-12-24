@@ -90,9 +90,7 @@ class _ServiceCardState extends State<ServiceCard> {
                           const SizedBox(height: 20),
                           _buildTitle(context),
                           const SizedBox(height: 10),
-                          _buildDescription(context),
-                          const Spacer(),
-                          _buildLearnMore(),
+                          Expanded(child: _buildDescription(context)),
                         ],
                       ),
                     ),
@@ -201,29 +199,4 @@ class _ServiceCardState extends State<ServiceCard> {
     );
   }
 
-  Widget _buildLearnMore() {
-    return AnimatedOpacity(
-      duration: const Duration(milliseconds: 200),
-      opacity: isHovered ? 1.0 : 0.0,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Learn More',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: widget.service.color,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Icon(
-            Icons.arrow_forward_rounded,
-            size: 16,
-            color: widget.service.color,
-          ),
-        ],
-      ),
-    );
-  }
 }

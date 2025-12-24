@@ -30,7 +30,7 @@ class WhySection extends GetView<HomeController> {
           child: Opacity(
             opacity: controller.heroFadeAnimation.value,
             child: Container(
-              padding: ResponsivePadding.all(context, multiplier: 1.5),
+              padding: ResponsivePadding.all(context, multiplier: 1.2),
               child: useColumnLayout
                   ? _buildColumnLayout(context)
                   : _buildRowLayout(context),

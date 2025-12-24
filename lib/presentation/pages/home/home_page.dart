@@ -110,7 +110,11 @@ class HomePage extends GetView<HomeController> {
       controller: controller.scrollController,
       child: Column(
         children: [
-          const HeaderSection(),
+          // Home/Header Section with key for smooth scrolling
+          Container(
+            key: controller.homeKey,
+            child: const HeaderSection(),
+          ),
           Obx(() {
             // Show skeleton while hero data is loading
             if (controller.heroSection.value == null) {
@@ -130,27 +134,39 @@ class HomePage extends GetView<HomeController> {
             );
           }),
           const WhySection(),
-          Obx(() {
-            // Show skeleton while services are loading
-            if (controller.services.isEmpty) {
-              return const ServicesSkeleton(itemCount: 4);
-            }
-            return ServicesSection(
-              scaleValue: controller.servicesScaleAnimation.value,
-              isVisible: controller.isServicesVisible.value,
-            );
-          }),
-          Obx(() {
-            // Show skeleton while portfolio items are loading
-            if (controller.portfolioItems.isEmpty) {
-              return const PortfolioSkeleton(itemCount: 3);
-            }
-            return PortfolioSection(
-              rotationValue: controller.portfolioRotationAnimation.value,
-              isVisible: controller.isPortfolioVisible.value,
-            );
-          }),
-          const ContactSection(),
+          // Services Section with key for smooth scrolling
+          Container(
+            key: controller.servicesKey,
+            child: Obx(() {
+              // Show skeleton while services are loading
+              if (controller.services.isEmpty) {
+                return const ServicesSkeleton(itemCount: 4);
+              }
+              return ServicesSection(
+                scaleValue: controller.servicesScaleAnimation.value,
+                isVisible: controller.isServicesVisible.value,
+              );
+            }),
+          ),
+          // Portfolio Section with key for smooth scrolling
+          Container(
+            key: controller.portfolioKey,
+            child: Obx(() {
+              // Show skeleton while portfolio items are loading
+              if (controller.portfolioItems.isEmpty) {
+                return const PortfolioSkeleton(itemCount: 3);
+              }
+              return PortfolioSection(
+                rotationValue: controller.portfolioRotationAnimation.value,
+                isVisible: controller.isPortfolioVisible.value,
+              );
+            }),
+          ),
+          // Contact Section with key for smooth scrolling
+          Container(
+            key: controller.contactKey,
+            child: const ContactSection(),
+          ),
           const FooterSection(),
         ],
       ),

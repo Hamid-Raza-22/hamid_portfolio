@@ -20,11 +20,23 @@ class HeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    
+    // Small desktop breakpoint (between tablet and large desktop)
+    final isSmallDesktop = screenWidth >= ResponsiveBreakpoints.tablet && 
+                           screenWidth < ResponsiveBreakpoints.desktop;
+    
     return ResponsiveLayout(
       mobile: _MobileHero(
         fadeAnimationValue: fadeAnimationValue,
         slideAnimationValue: slideAnimationValue,
       ),
+      tablet: isSmallDesktop 
+          ? _SmallDesktopHero(
+              fadeAnimationValue: fadeAnimationValue,
+              slideAnimationValue: slideAnimationValue,
+            )
+          : null,
       desktop: _DesktopHero(
         fadeAnimationValue: fadeAnimationValue,
         slideAnimationValue: slideAnimationValue,
@@ -64,12 +76,7 @@ class _DesktopHero extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                flex: ResponsiveValue.get<int>(
-                  context,
-                  mobile: 1,
-                  tablet: 2,
-                  desktop: 2,
-                ),
+                flex: 2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -82,23 +89,62 @@ class _DesktopHero extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(
-                width: ResponsiveValue.get<double>(
-                  context,
-                  mobile: 0,
-                  desktop: 5,
-                ),
-              ),
+              const SizedBox(width: 20),
               Expanded(
-                flex: ResponsiveValue.get<int>(
-                  context,
-                  mobile: 1,
-                  tablet: 1,
-                  desktop: 1,
-                ),
+                flex: 1,
                 child: Transform.translate(
                   offset: const Offset(-50, -80),
                   child: const HeroImage(isMobileLayout: false),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Small Desktop Hero - optimized for screens between tablet and large desktop
+class _SmallDesktopHero extends StatelessWidget {
+  final double fadeAnimationValue;
+  final Offset slideAnimationValue;
+
+  const _SmallDesktopHero({
+    required this.fadeAnimationValue,
+    required this.slideAnimationValue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.translate(
+      offset: slideAnimationValue,
+      child: Opacity(
+        opacity: fadeAnimationValue,
+        child: Container(
+          padding: ResponsivePadding.all(context, multiplier: 1.0),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const _HeroTextContent(isMobile: false, isSmallDesktop: true),
+                    const SizedBox(height: 16),
+                    const _HeroDescription(textAlign: TextAlign.left, isSmallDesktop: true),
+                    const SizedBox(height: 24),
+                    const _HeroButtons(isMobile: false),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 2,
+                child: Transform.translate(
+                  offset: const Offset(-20, -40),
+                  child: const HeroImage(isMobileLayout: false, isSmallDesktop: true),
                 ),
               ),
             ],
@@ -156,8 +202,9 @@ class _MobileHero extends StatelessWidget {
 
 class _HeroTextContent extends GetView<HomeController> {
   final bool isMobile;
+  final bool isSmallDesktop;
 
-  const _HeroTextContent({required this.isMobile});
+  const _HeroTextContent({required this.isMobile, this.isSmallDesktop = false});
 
   @override
   Widget build(BuildContext context) {
@@ -203,19 +250,21 @@ class _HeroTextContent extends GetView<HomeController> {
               ],
             ),
           ),
-          SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, desktop: 28)),
+          SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, desktop: isSmallDesktop ? 20 : 28)),
           GradientText(
             text: title,
             colors: const [Colors.white, AppColors.primaryLight, AppColors.accent],
             stops: const [0.0, 0.5, 1.0],
             style: ResponsiveTextStyle.headline(context).copyWith(
-              fontSize: ResponsiveValue.get<double>(
-                context,
-                mobile: 38,
-                smallTablet: 46,
-                tablet: 54,
-                desktop: 62,
-              ),
+              fontSize: isSmallDesktop 
+                  ? 42 
+                  : ResponsiveValue.get<double>(
+                      context,
+                      mobile: 38,
+                      smallTablet: 46,
+                      tablet: 54,
+                      desktop: 62,
+                    ),
               fontWeight: FontWeight.w800,
               height: 1.05,
               letterSpacing: -1.5,
@@ -230,8 +279,9 @@ class _HeroTextContent extends GetView<HomeController> {
 
 class _HeroDescription extends GetView<HomeController> {
   final TextAlign textAlign;
+  final bool isSmallDesktop;
 
-  const _HeroDescription({required this.textAlign});
+  const _HeroDescription({required this.textAlign, this.isSmallDesktop = false});
 
   @override
   Widget build(BuildContext context) {
@@ -241,17 +291,19 @@ class _HeroDescription extends GetView<HomeController> {
         'Passionate about building beautiful, performant mobile and web applications.\nTransforming ideas into elegant solutions with Flutter and modern technologies.';
       
       return Padding(
-        padding: const EdgeInsets.only(right: 30.0),
+        padding: EdgeInsets.only(right: isSmallDesktop ? 16.0 : 30.0),
         child: Text(
           description,
           style: ResponsiveTextStyle.body(context).copyWith(
-            fontSize: ResponsiveValue.get<double>(
-              context,
-              mobile: 15,
-              smallTablet: 16,
-              tablet: 17,
-              desktop: 25,
-            ),
+            fontSize: isSmallDesktop 
+                ? 16 
+                : ResponsiveValue.get<double>(
+                    context,
+                    mobile: 15,
+                    smallTablet: 16,
+                    tablet: 17,
+                    desktop: 25,
+                  ),
             height: 1.7,
             color: AppColors.textSecondary,
             letterSpacing: 0.2,

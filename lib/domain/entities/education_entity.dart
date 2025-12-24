@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// Domain entity representing an education entry.
 class EducationEntity {
   final String id;
@@ -7,6 +9,11 @@ class EducationEntity {
   final String? cgpa;
   final String? specialization;
   final String? project;
+  final IconData? icon;
+  final Color? color;
+  final String? customIconUrl;
+  final bool useCustomImage;
+  final int order;
 
   const EducationEntity({
     required this.id,
@@ -16,6 +23,11 @@ class EducationEntity {
     this.cgpa,
     this.specialization,
     this.project,
+    this.icon,
+    this.color,
+    this.customIconUrl,
+    this.useCustomImage = false,
+    this.order = 0,
   });
 
   @override

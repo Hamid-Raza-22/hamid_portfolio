@@ -326,6 +326,7 @@ class FooterSection extends GetView<HomeController> {
           child: SocialIconButton(
             icon: social.icon,
             label: social.name,
+            onTap: () => controller.launchSocialUrl(social.url),
           ),
         );
       }).toList(),

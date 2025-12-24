@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import '../../core/utils/icon_mapper.dart';
+import '../../core/utils/color_mapper.dart';
 import '../../domain/entities/experience_entity.dart';
 
 /// Data model for Experience with JSON serialization.
@@ -9,6 +12,11 @@ class ExperienceModel extends ExperienceEntity {
     required super.location,
     required super.duration,
     required super.highlights,
+    super.icon,
+    super.color,
+    super.customIconUrl,
+    super.useCustomImage,
+    super.order,
   });
 
   /// Create from Firestore document
@@ -20,6 +28,11 @@ class ExperienceModel extends ExperienceEntity {
       location: json['location'] as String? ?? '',
       duration: json['duration'] as String? ?? '',
       highlights: List<String>.from(json['highlights'] ?? []),
+      icon: json['icon'] != null ? IconMapper.fromString(json['icon'] as String) : Icons.work_rounded,
+      color: json['color'] != null ? ColorMapper.fromString(json['color'] as String) : Colors.blue,
+      customIconUrl: json['customIconUrl'] as String?,
+      useCustomImage: json['useCustomImage'] as bool? ?? false,
+      order: json['order'] as int? ?? 0,
     );
   }
 
@@ -31,6 +44,11 @@ class ExperienceModel extends ExperienceEntity {
       'location': location,
       'duration': duration,
       'highlights': highlights,
+      'icon': icon != null ? IconMapper.iconToString(icon!) : 'work_rounded',
+      'color': color != null ? ColorMapper.colorToString(color!) : 'blue',
+      'customIconUrl': customIconUrl,
+      'useCustomImage': useCustomImage,
+      'order': order,
     };
   }
 
@@ -43,6 +61,11 @@ class ExperienceModel extends ExperienceEntity {
       location: entity.location,
       duration: entity.duration,
       highlights: entity.highlights,
+      icon: entity.icon,
+      color: entity.color,
+      customIconUrl: entity.customIconUrl,
+      useCustomImage: entity.useCustomImage,
+      order: entity.order,
     );
   }
 
@@ -55,6 +78,11 @@ class ExperienceModel extends ExperienceEntity {
       location: location,
       duration: duration,
       highlights: highlights,
+      icon: icon,
+      color: color,
+      customIconUrl: customIconUrl,
+      useCustomImage: useCustomImage,
+      order: order,
     );
   }
 
@@ -66,6 +94,11 @@ class ExperienceModel extends ExperienceEntity {
     String? location,
     String? duration,
     List<String>? highlights,
+    IconData? icon,
+    Color? color,
+    String? customIconUrl,
+    bool? useCustomImage,
+    int? order,
   }) {
     return ExperienceModel(
       id: id ?? this.id,
@@ -74,6 +107,11 @@ class ExperienceModel extends ExperienceEntity {
       location: location ?? this.location,
       duration: duration ?? this.duration,
       highlights: highlights ?? this.highlights,
+      icon: icon ?? this.icon,
+      color: color ?? this.color,
+      customIconUrl: customIconUrl ?? this.customIconUrl,
+      useCustomImage: useCustomImage ?? this.useCustomImage,
+      order: order ?? this.order,
     );
   }
 }

@@ -12,5 +12,6 @@ export 'portfolio_entity.dart';
 export 'profile_entity.dart';
 export 'project_detail_entity.dart';
 export 'service_entity.dart';
+export 'skill_entity.dart';
 export 'social_link_entity.dart';
 export 'stat_entity.dart';

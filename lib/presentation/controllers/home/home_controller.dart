@@ -162,32 +162,66 @@ class HomeController extends GetxController
     return hoveredPortfolioIndex.value == index;
   }
 
-  // Navigation methods
+  // Section keys for smooth scrolling
+  final GlobalKey homeKey = GlobalKey();
+  final GlobalKey servicesKey = GlobalKey();
+  final GlobalKey portfolioKey = GlobalKey();
+  final GlobalKey contactKey = GlobalKey();
+
+  // Navigation methods - smooth animated scroll to sections
   void scrollToSection(String sectionKey) {
-    double targetOffset = 0;
-    final screenHeight = Get.height;
+    GlobalKey? targetKey;
     
-    switch (sectionKey) {
+    switch (sectionKey.toLowerCase()) {
       case 'home':
-        targetOffset = 0;
+        targetKey = homeKey;
         break;
       case 'services':
-        targetOffset = screenHeight * 0.9;
+        targetKey = servicesKey;
         break;
       case 'portfolio':
       case 'projects':
-        targetOffset = screenHeight * 1.8;
+        targetKey = portfolioKey;
         break;
       case 'contact':
-        targetOffset = scrollController.position.maxScrollExtent;
+        targetKey = contactKey;
         break;
     }
     
-    scrollController.animateTo(
-      targetOffset,
-      duration: const Duration(milliseconds: 800),
-      curve: Curves.easeInOutCubic,
-    );
+    if (targetKey?.currentContext != null) {
+      Scrollable.ensureVisible(
+        targetKey!.currentContext!,
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeInOutCubic,
+        alignment: 0.0,
+      );
+    } else {
+      // Fallback to offset-based scrolling
+      double targetOffset = 0;
+      final screenHeight = Get.height;
+      
+      switch (sectionKey.toLowerCase()) {
+        case 'home':
+          targetOffset = 0;
+          break;
+        case 'services':
+          targetOffset = screenHeight * 0.85;
+          break;
+        case 'portfolio':
+        case 'projects':
+          targetOffset = screenHeight * 1.7;
+          break;
+        case 'contact':
+          targetOffset = scrollController.position.maxScrollExtent;
+          break;
+      }
+      
+      scrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeInOutCubic,
+      );
+    }
   }
 
   // Navigate to Contact page

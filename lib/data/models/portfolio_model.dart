@@ -17,6 +17,7 @@ class PortfolioModel extends PortfolioEntity {
     super.projectUrl,
     super.customIconUrl,
     super.useCustomImage,
+    super.order,
   });
 
   /// Create from Firestore document
@@ -33,6 +34,7 @@ class PortfolioModel extends PortfolioEntity {
       projectUrl: json['projectUrl'] as String?,
       customIconUrl: json['customIconUrl'] as String?,
       useCustomImage: json['useCustomImage'] as bool? ?? false,
+      order: json['order'] as int? ?? 0,
     );
   }
 
@@ -48,6 +50,7 @@ class PortfolioModel extends PortfolioEntity {
       'imageUrl': imageUrl,
       'projectUrl': projectUrl,
       'useCustomImage': useCustomImage,
+      'order': order,
       if (customIconUrl != null) 'customIconUrl': customIconUrl,
     };
   }
@@ -66,6 +69,7 @@ class PortfolioModel extends PortfolioEntity {
       projectUrl: entity.projectUrl,
       customIconUrl: entity.customIconUrl,
       useCustomImage: entity.useCustomImage,
+      order: entity.order,
     );
   }
 
@@ -83,10 +87,12 @@ class PortfolioModel extends PortfolioEntity {
       projectUrl: projectUrl,
       customIconUrl: customIconUrl,
       useCustomImage: useCustomImage,
+      order: order,
     );
   }
 
   /// Create a copy with modified fields
+  @override
   PortfolioModel copyWith({
     String? id,
     String? title,
@@ -99,6 +105,7 @@ class PortfolioModel extends PortfolioEntity {
     String? projectUrl,
     String? customIconUrl,
     bool? useCustomImage,
+    int? order,
   }) {
     return PortfolioModel(
       id: id ?? this.id,
@@ -112,6 +119,7 @@ class PortfolioModel extends PortfolioEntity {
       projectUrl: projectUrl ?? this.projectUrl,
       customIconUrl: customIconUrl ?? this.customIconUrl,
       useCustomImage: useCustomImage ?? this.useCustomImage,
+      order: order ?? this.order,
     );
   }
 }

@@ -146,59 +146,85 @@ class AboutPage extends GetView<AboutController> {
   }
 
   Widget _buildAboutContent(BuildContext context) {
+    final isMobile = ResponsiveValue.get<bool>(context, mobile: true, tablet: false, desktop: false);
+    
     return Obx(() {
       final profile = controller.profile.value;
       return ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(ResponsiveValue.get<double>(context, mobile: 16, desktop: 24)),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
           child: Container(
             width: ResponsiveValue.get<double>(context, mobile: double.infinity, desktop: 900),
-            padding: EdgeInsets.all(ResponsiveValue.get<double>(context, mobile: 24, desktop: 40)),
+            padding: EdgeInsets.all(ResponsiveValue.get<double>(context, mobile: 16, tablet: 28, desktop: 40)),
             decoration: BoxDecoration(
               color: AppColors.cardBg.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(ResponsiveValue.get<double>(context, mobile: 16, desktop: 24)),
               border: Border.all(color: AppColors.glassBorder),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(12),
+                // Header - responsive layout
+                isMobile
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.person_rounded, color: AppColors.primary, size: 20),
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Professional Summary',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.person_rounded, color: AppColors.primary, size: 24),
+                          ),
+                          const SizedBox(width: 16),
+                          const Text(
+                            'Professional Summary',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
-                      child: const Icon(Icons.person_rounded, color: AppColors.primary, size: 24),
-                    ),
-                    const SizedBox(width: 16),
-                    const Text(
-                      'Professional Summary',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
+                SizedBox(height: ResponsiveValue.get<double>(context, mobile: 16, desktop: 20)),
                 Text(
                   profile?.summary ?? '',
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: ResponsiveValue.get<double>(context, mobile: 15, desktop: 16),
+                    fontSize: ResponsiveValue.get<double>(context, mobile: 14, tablet: 15, desktop: 16),
                     height: 1.7,
                   ),
                 ),
-                const SizedBox(height: 24),
-                _buildInfoRow(Icons.work_outline_rounded, 'Work Preferences', profile?.workPreferences ?? ''),
-                const SizedBox(height: 12),
-                _buildInfoRow(Icons.location_on_outlined, 'Location', profile?.location ?? ''),
-                const SizedBox(height: 12),
-                _buildInfoRow(Icons.language_rounded, 'Languages', profile?.languages ?? ''),
+                SizedBox(height: ResponsiveValue.get<double>(context, mobile: 20, desktop: 24)),
+                _buildInfoRow(Icons.work_outline_rounded, 'Work Preferences', profile?.workPreferences ?? '', isMobile: isMobile),
+                SizedBox(height: ResponsiveValue.get<double>(context, mobile: 10, desktop: 12)),
+                _buildInfoRow(Icons.location_on_outlined, 'Location', profile?.location ?? '', isMobile: isMobile),
+                SizedBox(height: ResponsiveValue.get<double>(context, mobile: 10, desktop: 12)),
+                _buildInfoRow(Icons.language_rounded, 'Languages', profile?.languages ?? '', isMobile: isMobile),
               ],
             ),
           ),
@@ -207,30 +233,30 @@ class AboutPage extends GetView<AboutController> {
     });
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(IconData icon, String label, String value, {bool isMobile = false}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: AppColors.primaryLight, size: 20),
-        const SizedBox(width: 12),
+        Icon(icon, color: AppColors.primaryLight, size: isMobile ? 18 : 20),
+        SizedBox(width: isMobile ? 10 : 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.primaryLight,
-                  fontSize: 14,
+                  fontSize: isMobile ? 13 : 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: isMobile ? 2 : 4),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
+                  fontSize: isMobile ? 13 : 14,
                   height: 1.5,
                 ),
               ),
@@ -342,34 +368,79 @@ class AboutPage extends GetView<AboutController> {
                 ],
               ),
               const SizedBox(height: 16),
-              ...skills.map((skill) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(top: 6),
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        skill,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 13,
-                          height: 1.4,
+              ...skills.asMap().entries.map((entry) {
+                final index = entry.key;
+                final skillName = entry.value;
+                // Check if there's a corresponding skillEntity with icon
+                SkillEntity? skillEntity;
+                if (controller.expertise.isNotEmpty) {
+                  final exp = controller.expertise.firstWhereOrNull((e) => e.skills.contains(skillName));
+                  if (exp != null && exp.skillEntities.length > index) {
+                    skillEntity = exp.skillEntities.firstWhereOrNull((s) => s.name == skillName);
+                  }
+                }
+                final hasCustomIcon = skillEntity?.useCustomImage == true && skillEntity?.customIconUrl != null;
+                final hasIcon = skillEntity?.icon != null || hasCustomIcon;
+                
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (hasCustomIcon)
+                        Container(
+                          margin: const EdgeInsets.only(top: 2),
+                          width: 20,
+                          height: 20,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.network(
+                              skillEntity!.customIconUrl!,
+                              width: 20,
+                              height: 20,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Icon(
+                                skillEntity?.icon ?? Icons.code,
+                                color: color,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        )
+                      else if (hasIcon)
+                        Container(
+                          margin: const EdgeInsets.only(top: 2),
+                          child: Icon(
+                            skillEntity!.icon!,
+                            color: color,
+                            size: 16,
+                          ),
+                        )
+                      else
+                        Container(
+                          margin: const EdgeInsets.only(top: 6),
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          skillName,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              )),
+                    ],
+                  ),
+                );
+              }),
             ],
           ),
         ),
@@ -378,37 +449,40 @@ class AboutPage extends GetView<AboutController> {
   }
 
   Widget _buildExperience(BuildContext context) {
-    return Obx(() => Column(
-      children: [
-        const Text(
-          'Work Experience',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
+    return Obx(() {
+      // Sort experiences by order
+      final sortedExperiences = List<ExperienceEntity>.from(controller.experiences)
+        ..sort((a, b) => a.order.compareTo(b.order));
+      
+      return Column(
+        children: [
+          const Text(
+            'Work Experience',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-        const SizedBox(height: 32),
-        ...controller.experiences.map((exp) => _buildExperienceCard(
-          context,
-          title: exp.title,
-          company: exp.company,
-          location: exp.location,
-          duration: exp.duration,
-          highlights: exp.highlights,
-        )),
-      ],
-    ));
+          const SizedBox(height: 32),
+          ...sortedExperiences.map((exp) => _buildExperienceCard(
+            context,
+            experience: exp,
+          )),
+        ],
+      );
+    });
   }
 
   Widget _buildExperienceCard(
     BuildContext context, {
-    required String title,
-    required String company,
-    required String location,
-    required String duration,
-    required List<String> highlights,
+    required ExperienceEntity experience,
   }) {
+    final shouldShowCustomImage = experience.useCustomImage && 
+        experience.customIconUrl != null && 
+        experience.customIconUrl!.isNotEmpty;
+    final iconColor = experience.color ?? AppColors.primary;
+    
     return Container(
       width: ResponsiveValue.get<double>(
         context, 
@@ -433,15 +507,48 @@ class AboutPage extends GetView<AboutController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Custom icon/image
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: iconColor.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: shouldShowCustomImage
+                          ? Center(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  experience.customIconUrl!,
+                                  width: 32,
+                                  height: 32,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) => Icon(
+                                    experience.icon ?? Icons.work_rounded,
+                                    color: iconColor,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Center(
+                              child: Icon(
+                                experience.icon ?? Icons.work_rounded,
+                                color: iconColor,
+                                size: 24,
+                              ),
+                            ),
+                    ),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            title,
+                            experience.title,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -450,7 +557,7 @@ class AboutPage extends GetView<AboutController> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            company,
+                            experience.company,
                             style: const TextStyle(
                               color: AppColors.primaryLight,
                               fontSize: 15,
@@ -459,7 +566,7 @@ class AboutPage extends GetView<AboutController> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            location,
+                            experience.location,
                             style: const TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 13,
@@ -475,7 +582,7 @@ class AboutPage extends GetView<AboutController> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        duration,
+                        experience.duration,
                         style: const TextStyle(
                           color: AppColors.primaryLight,
                           fontSize: 12,
@@ -486,7 +593,7 @@ class AboutPage extends GetView<AboutController> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                ...highlights.map((highlight) => Padding(
+                ...experience.highlights.map((highlight) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -495,8 +602,8 @@ class AboutPage extends GetView<AboutController> {
                         margin: const EdgeInsets.only(top: 6),
                         width: 6,
                         height: 6,
-                        decoration: const BoxDecoration(
-                          color: AppColors.accent,
+                        decoration: BoxDecoration(
+                          color: iconColor,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -524,7 +631,10 @@ class AboutPage extends GetView<AboutController> {
 
   Widget _buildEducation(BuildContext context) {
     return Obx(() {
-      final edu = controller.education.isNotEmpty ? controller.education.first : null;
+      // Sort education by order
+      final sortedEducation = List<EducationEntity>.from(controller.education)
+        ..sort((a, b) => a.order.compareTo(b.order));
+      
       return Column(
         children: [
           const Text(
@@ -536,97 +646,133 @@ class AboutPage extends GetView<AboutController> {
             ),
           ),
           const SizedBox(height: 32),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(ResponsiveValue.get<double>(context, mobile: 16, desktop: 20)),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                width: ResponsiveValue.get<double>(context, mobile: double.infinity, smallTablet: 400, tablet: 500, desktop: 600),
-                padding: EdgeInsets.all(ResponsiveValue.get<double>(context, mobile: 16, tablet: 20, desktop: 24)),
-                decoration: BoxDecoration(
-                  color: AppColors.cardBg.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.glassBorder),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(Icons.school_rounded, color: AppColors.primary, size: 32),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      edu?.degree ?? '',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      edu?.institution ?? '',
-                      style: const TextStyle(
-                        color: AppColors.primaryLight,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      edu?.duration ?? '',
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (edu?.cgpa != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.accent.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          'CGPA: ${edu!.cgpa}',
-                          style: const TextStyle(
-                            color: AppColors.accent,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: 16),
-                    if (edu?.specialization != null)
-                      Text(
-                        'Specialization: ${edu!.specialization}',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                      ),
-                    const SizedBox(height: 4),
-                    if (edu?.project != null)
-                      Text(
-                        'FYP: ${edu!.project}',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          ...sortedEducation.map((edu) => _buildEducationCard(context, education: edu)),
         ],
       );
     });
+  }
+
+  Widget _buildEducationCard(BuildContext context, {required EducationEntity education}) {
+    final shouldShowCustomImage = education.useCustomImage && 
+        education.customIconUrl != null && 
+        education.customIconUrl!.isNotEmpty;
+    final iconColor = education.color ?? AppColors.primary;
+    
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ResponsiveValue.get<double>(context, mobile: 16, desktop: 20)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            width: ResponsiveValue.get<double>(context, mobile: double.infinity, smallTablet: 400, tablet: 500, desktop: 600),
+            padding: EdgeInsets.all(ResponsiveValue.get<double>(context, mobile: 16, tablet: 20, desktop: 24)),
+            decoration: BoxDecoration(
+              color: AppColors.cardBg.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.glassBorder),
+            ),
+            child: Column(
+              children: [
+                // Custom icon/image support
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: iconColor.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: shouldShowCustomImage
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            education.customIconUrl!,
+                            width: 32,
+                            height: 32,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => Icon(
+                              education.icon ?? Icons.school_rounded,
+                              color: iconColor,
+                              size: 32,
+                            ),
+                          ),
+                        )
+                      : Icon(
+                          education.icon ?? Icons.school_rounded, 
+                          color: iconColor, 
+                          size: 32,
+                        ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  education.degree,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  education.institution,
+                  style: const TextStyle(
+                    color: AppColors.primaryLight,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  education.duration,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (education.cgpa != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'CGPA: ${education.cgpa}',
+                      style: const TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                if (education.specialization != null)
+                  Text(
+                    'Specialization: ${education.specialization}',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                const SizedBox(height: 4),
+                if (education.project != null)
+                  Text(
+                    'FYP: ${education.project}',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildAchievements(BuildContext context) {
