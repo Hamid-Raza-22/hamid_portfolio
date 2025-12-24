@@ -241,7 +241,7 @@ class _HeroDescription extends GetView<HomeController> {
         'Passionate about building beautiful, performant mobile and web applications.\nTransforming ideas into elegant solutions with Flutter and modern technologies.';
       
       return Padding(
-        padding: const EdgeInsets.only(right: 40.0),
+        padding: const EdgeInsets.only(right: 30.0),
         child: Text(
           description,
           style: ResponsiveTextStyle.body(context).copyWith(
