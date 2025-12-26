@@ -31,10 +31,10 @@ class ServicesSection extends StatelessWidget {
 
     final childAspectRatio = ResponsiveValue.get<double>(
       context,
-      mobile: 1.4,
-      smallTablet: 1.2,
-      tablet: 1.0,
-      desktop: 1.05,
+      mobile: 1.2,
+      smallTablet: 1.0,
+      tablet: 0.9,
+      desktop: 0.95,
     );
 
     final mainAxisSpacing = ResponsiveValue.get<double>(context, mobile: 16, desktop: 24);

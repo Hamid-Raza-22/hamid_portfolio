@@ -482,6 +482,10 @@ class AboutPage extends GetView<AboutController> {
         experience.customIconUrl != null && 
         experience.customIconUrl!.isNotEmpty;
     final iconColor = experience.color ?? AppColors.primary;
+    final isMobile = ResponsiveValue.get<bool>(context, mobile: true, smallTablet: true, tablet: false, desktop: false);
+    final iconSize = isMobile ? 40.0 : 48.0;
+    final iconImageSize = isMobile ? 26.0 : 32.0;
+    final iconInnerSize = isMobile ? 20.0 : 24.0;
     
     return Container(
       width: ResponsiveValue.get<double>(
@@ -497,7 +501,7 @@ class AboutPage extends GetView<AboutController> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            padding: EdgeInsets.all(ResponsiveValue.get<double>(context, mobile: 16, tablet: 20, desktop: 24)),
+            padding: EdgeInsets.all(ResponsiveValue.get<double>(context, mobile: 14, tablet: 20, desktop: 24)),
             decoration: BoxDecoration(
               color: AppColors.cardBg.withOpacity(0.5),
               borderRadius: BorderRadius.circular(20),
@@ -506,114 +510,209 @@ class AboutPage extends GetView<AboutController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Custom icon/image
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: iconColor.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: shouldShowCustomImage
-                          ? Center(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  experience.customIconUrl!,
-                                  width: 32,
-                                  height: 32,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (_, __, ___) => Icon(
-                                    experience.icon ?? Icons.work_rounded,
-                                    color: iconColor,
-                                    size: 24,
-                                  ),
-                                ),
-                              ),
-                            )
-                          : Center(
-                              child: Icon(
-                                experience.icon ?? Icons.work_rounded,
-                                color: iconColor,
-                                size: 24,
-                              ),
-                            ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            experience.title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            experience.company,
-                            style: const TextStyle(
-                              color: AppColors.primaryLight,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            experience.location,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                // Mobile-optimized header layout
+                if (isMobile) ...[
+                  // Duration badge at top on mobile
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
                         experience.duration,
                         style: const TextStyle(
                           color: AppColors.primaryLight,
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                  ),
+                  const SizedBox(height: 10),
+                  // Icon and title row
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: iconSize,
+                        height: iconSize,
+                        decoration: BoxDecoration(
+                          color: iconColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: shouldShowCustomImage
+                            ? Center(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Image.network(
+                                    experience.customIconUrl!,
+                                    width: iconImageSize,
+                                    height: iconImageSize,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (_, __, ___) => Icon(
+                                      experience.icon ?? Icons.work_rounded,
+                                      color: iconColor,
+                                      size: iconInnerSize,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Center(
+                                child: Icon(
+                                  experience.icon ?? Icons.work_rounded,
+                                  color: iconColor,
+                                  size: iconInnerSize,
+                                ),
+                              ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              experience.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              experience.company,
+                              style: const TextStyle(
+                                color: AppColors.primaryLight,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              experience.location,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ] else ...[
+                  // Desktop/Tablet layout - original row with duration badge inline
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: iconSize,
+                        height: iconSize,
+                        decoration: BoxDecoration(
+                          color: iconColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: shouldShowCustomImage
+                            ? Center(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    experience.customIconUrl!,
+                                    width: iconImageSize,
+                                    height: iconImageSize,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (_, __, ___) => Icon(
+                                      experience.icon ?? Icons.work_rounded,
+                                      color: iconColor,
+                                      size: iconInnerSize,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Center(
+                                child: Icon(
+                                  experience.icon ?? Icons.work_rounded,
+                                  color: iconColor,
+                                  size: iconInnerSize,
+                                ),
+                              ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              experience.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              experience.company,
+                              style: const TextStyle(
+                                color: AppColors.primaryLight,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              experience.location,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          experience.duration,
+                          style: const TextStyle(
+                            color: AppColors.primaryLight,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                SizedBox(height: isMobile ? 12 : 16),
                 ...experience.highlights.map((highlight) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: EdgeInsets.only(bottom: isMobile ? 6 : 8),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        margin: const EdgeInsets.only(top: 6),
-                        width: 6,
-                        height: 6,
+                        margin: EdgeInsets.only(top: isMobile ? 5 : 6),
+                        width: isMobile ? 5 : 6,
+                        height: isMobile ? 5 : 6,
                         decoration: BoxDecoration(
                           color: iconColor,
                           shape: BoxShape.circle,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: isMobile ? 8 : 10),
                       Expanded(
                         child: Text(
                           highlight,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
-                            fontSize: 14,
+                            fontSize: isMobile ? 13 : 14,
                             height: 1.5,
                           ),
                         ),

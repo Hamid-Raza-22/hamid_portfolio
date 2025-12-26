@@ -53,20 +53,27 @@ class SocialIconButton extends StatelessWidget {
 }
 
 /// Larger social icon variant for Contact section.
+/// Supports custom images for consistency with Contact Page.
 class SocialIconLarge extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
+  final String? customIconUrl;
+  final bool useCustomImage;
 
   const SocialIconLarge({
     super.key,
     required this.icon,
     required this.label,
     this.onTap,
+    this.customIconUrl,
+    this.useCustomImage = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final shouldShowCustomImage = useCustomImage && customIconUrl != null && customIconUrl!.isNotEmpty;
+    
     return HoverContainer(
       onTap: onTap,
       builder: (isHovered) {
@@ -87,11 +94,28 @@ class SocialIconLarge extends StatelessWidget {
                     : AppColors.glassBorder,
               ),
             ),
-            child: Icon(
-              icon,
-              color: isHovered ? AppColors.primaryLight : AppColors.textSecondary,
-              size: 20,
-            ),
+            child: shouldShowCustomImage
+                ? Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.network(
+                        customIconUrl!,
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Icon(
+                          icon,
+                          color: isHovered ? AppColors.primaryLight : AppColors.textSecondary,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  )
+                : Icon(
+                    icon,
+                    color: isHovered ? AppColors.primaryLight : AppColors.textSecondary,
+                    size: 20,
+                  ),
           ),
         );
       },

@@ -144,6 +144,8 @@ class ContactSection extends GetView<HomeController> {
                 icon: social.icon,
                 label: social.name,
                 onTap: () => controller.launchSocialUrl(social.url),
+                customIconUrl: social.customIconUrl,
+                useCustomImage: social.useCustomImage,
               ),
             );
           }).toList(),

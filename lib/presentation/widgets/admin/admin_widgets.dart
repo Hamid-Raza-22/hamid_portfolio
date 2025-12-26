@@ -167,116 +167,161 @@ class AdminItemCard extends StatelessWidget {
         customIconUrl!.isNotEmpty;
 
     return RepaintBoundary(
-      child: Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      child: Row(
-        children: [
-          if (shouldShowCustomImage)
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: (color ?? AppColors.primary).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Center(
-                child: SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: Image.network(
-                      customIconUrl!,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Icon(
-                        icon ?? Icons.image,
-                        color: color ?? AppColors.primary,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            )
-          else if (icon != null)
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: (color ?? AppColors.primary).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: color ?? AppColors.primary, size: 24),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 400;
+          final iconSize = isMobile ? 40.0 : 48.0;
+          final iconPadding = isMobile ? 10.0 : 12.0;
+          final cardPadding = isMobile ? 12.0 : 16.0;
+          
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: EdgeInsets.all(cardPadding),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
             ),
-          if (shouldShowCustomImage || icon != null) const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                if (shouldShowCustomImage)
+                  Container(
+                    width: iconSize,
+                    height: iconSize,
+                    decoration: BoxDecoration(
+                      color: (color ?? AppColors.primary).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    if (useCustomImage)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          'Custom Image',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
+                    child: Center(
+                      child: SizedBox(
+                        width: iconSize - 8,
+                        height: iconSize - 8,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.network(
+                            customIconUrl!,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => Icon(
+                              icon ?? Icons.image,
+                              color: color ?? AppColors.primary,
+                              size: isMobile ? 20 : 24,
+                            ),
                           ),
                         ),
                       ),
-                  ],
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle!,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 14,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  )
+                else if (icon != null)
+                  Container(
+                    padding: EdgeInsets.all(iconPadding),
+                    decoration: BoxDecoration(
+                      color: (color ?? AppColors.primary).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, color: color ?? AppColors.primary, size: isMobile ? 20 : 24),
                   ),
-                ],
-                if (extraInfo != null) ...extraInfo!,
+                if (shouldShowCustomImage || icon != null) SizedBox(width: isMobile ? 10 : 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: isMobile ? 14 : 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: isMobile ? 1 : 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          // Hide "Custom Image" badge on mobile
+                          if (useCustomImage && !isMobile)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'Custom Image',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle!,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: isMobile ? 12 : 14,
+                          ),
+                          maxLines: isMobile ? 1 : 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                      if (extraInfo != null && !isMobile) ...extraInfo!,
+                    ],
+                  ),
+                ),
+                SizedBox(width: isMobile ? 8 : 16),
+                if (isMobile)
+                  // Compact action buttons on mobile
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 32,
+                        height: 32,
+                        child: IconButton(
+                          onPressed: onEdit,
+                          icon: const Icon(Icons.edit, color: AppColors.primary, size: 18),
+                          tooltip: 'Edit',
+                          padding: EdgeInsets.zero,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 32,
+                        height: 32,
+                        child: IconButton(
+                          onPressed: () => _showDeleteConfirm(context),
+                          icon: const Icon(Icons.delete, color: Colors.red, size: 18),
+                          tooltip: 'Delete',
+                          padding: EdgeInsets.zero,
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: onEdit,
+                        icon: const Icon(Icons.edit, color: AppColors.primary),
+                        tooltip: 'Edit',
+                      ),
+                      IconButton(
+                        onPressed: () => _showDeleteConfirm(context),
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        tooltip: 'Delete',
+                      ),
+                    ],
+                  ),
               ],
             ),
-          ),
-          const SizedBox(width: 16),
-          IconButton(
-            onPressed: onEdit,
-            icon: const Icon(Icons.edit, color: AppColors.primary),
-            tooltip: 'Edit',
-          ),
-          IconButton(
-            onPressed: () => _showDeleteConfirm(context),
-            icon: const Icon(Icons.delete, color: Colors.red),
-            tooltip: 'Delete',
-          ),
-        ],
-      ),
+          );
+        },
       ),
     );
   }
@@ -2833,49 +2878,55 @@ class _HeroSectionManagementState extends State<HeroSectionManagement> {
   }
 
   Widget _buildImageUploadSection(String label, String? imageUrl, VoidCallback onUpload, String hint) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
-        const SizedBox(height: 8),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image Preview
-            Container(
-              width: 150,
-              height: 150,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 400;
+        final imageSize = isMobile ? 100.0 : 150.0;
+        
+        if (isMobile) {
+          // Mobile layout - vertical arrangement
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+              const SizedBox(height: 8),
+              // Image Preview - centered on mobile
+              Center(
+                child: Container(
+                  width: imageSize,
+                  height: imageSize,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: imageUrl != null && imageUrl.isNotEmpty
+                        ? Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(child: CircularProgressIndicator());
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Center(
+                                child: Icon(Icons.broken_image, color: Colors.white54, size: 36),
+                              );
+                            },
+                          )
+                        : const Center(
+                            child: Icon(Icons.image, color: Colors.white30, size: 36),
+                          ),
+                  ),
+                ),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: imageUrl != null && imageUrl.isNotEmpty
-                    ? Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return const Center(child: CircularProgressIndicator());
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Icon(Icons.broken_image, color: Colors.white54, size: 48),
-                          );
-                        },
-                      )
-                    : const Center(
-                        child: Icon(Icons.image, color: Colors.white30, size: 48),
-                      ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ElevatedButton.icon(
+              const SizedBox(height: 12),
+              // Upload button - full width on mobile
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
                   onPressed: _isUploading ? null : onUpload,
                   icon: _isUploading
                       ? const SizedBox(
@@ -2888,15 +2939,85 @@ class _HeroSectionManagementState extends State<HeroSectionManagement> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(hint, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+              ),
+              const SizedBox(height: 6),
+              Center(
+                child: Text(hint, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11)),
+              ),
+            ],
+          );
+        }
+        
+        // Desktop/Tablet layout - horizontal arrangement
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image Preview
+                Container(
+                  width: imageSize,
+                  height: imageSize,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: imageUrl != null && imageUrl.isNotEmpty
+                        ? Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(child: CircularProgressIndicator());
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Center(
+                                child: Icon(Icons.broken_image, color: Colors.white54, size: 48),
+                              );
+                            },
+                          )
+                        : const Center(
+                            child: Icon(Icons.image, color: Colors.white30, size: 48),
+                          ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: _isUploading ? null : onUpload,
+                      icon: _isUploading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.cloud_upload, size: 18),
+                      label: Text(_isUploading ? 'Uploading...' : 'Upload Image'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(hint, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                  ],
+                ),
               ],
             ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 

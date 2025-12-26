@@ -237,27 +237,36 @@ class _PortfolioCardState extends State<PortfolioCard>
   }
 
   Widget _buildTags() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: widget.portfolio.tags.map((tag) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: AppColors.glassBg,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.glassBorder),
-          ),
-          child: Text(
-            tag,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
-            ),
-          ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 300;
+        final tagPaddingH = isMobile ? 8.0 : 10.0;
+        final tagPaddingV = isMobile ? 4.0 : 5.0;
+        final fontSize = isMobile ? 10.0 : 11.0;
+        
+        return Wrap(
+          spacing: isMobile ? 6 : 8,
+          runSpacing: isMobile ? 6 : 8,
+          children: widget.portfolio.tags.map((tag) {
+            return Container(
+              padding: EdgeInsets.symmetric(horizontal: tagPaddingH, vertical: tagPaddingV),
+              decoration: BoxDecoration(
+                color: AppColors.glassBg,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.glassBorder),
+              ),
+              child: Text(
+                tag,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 }

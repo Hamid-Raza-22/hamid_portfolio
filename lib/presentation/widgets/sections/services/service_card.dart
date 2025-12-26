@@ -90,7 +90,7 @@ class _ServiceCardState extends State<ServiceCard> {
                           const SizedBox(height: 20),
                           _buildTitle(context),
                           const SizedBox(height: 10),
-                          Expanded(child: _buildDescription(context)),
+                          Flexible(child: _buildDescription(context)),
                         ],
                       ),
                     ),
@@ -185,12 +185,12 @@ class _ServiceCardState extends State<ServiceCard> {
     return Text(
       widget.service.description,
       textAlign: TextAlign.center,
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
       style: TextStyle(
         fontSize: ResponsiveValue.get<double>(
           context,
           mobile: 13,
+          smallTablet: 13,
+          tablet: 13,
           desktop: 14,
         ),
         color: AppColors.textSecondary,
