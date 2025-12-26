@@ -180,27 +180,6 @@ class HomeStreamController extends GetxController
     Get.toNamed(AppRoutes.projects);
   }
 
-  Future<void> launchEmail() async {
-    final Uri emailUri = Uri(
-      scheme: 'mailto',
-      path: 'hamidraza.engr@gmail.com',
-      queryParameters: {
-        'subject': 'Project Inquiry',
-        'body': 'Hi Hamid,\n\nI would like to discuss a project with you.',
-      },
-    );
-    
-    if (await canLaunchUrl(emailUri)) {
-      await launchUrl(emailUri);
-    }
-  }
-
-  Future<void> launchSocialUrl(String url) async {
-    final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
 
   @override
   void onClose() {

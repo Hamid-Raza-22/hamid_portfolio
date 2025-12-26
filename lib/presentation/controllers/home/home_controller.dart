@@ -244,12 +244,13 @@ class HomeController extends GetxController
     final Uri emailUri = Uri(
       scheme: 'mailto',
       path: 'hamidraza.engr@gmail.com',
-      queryParameters: {
-        'subject': 'Project Inquiry',
-        'body': 'Hi Hamid,\n\nI would like to discuss a project with you.',
-      },
+      query:
+      'subject=${Uri.encodeComponent('Project Inquiry')}'
+          '&body=${Uri.encodeComponent(
+        'Hi Hamid,\n\nI would like to discuss a project with you.',
+      )}',
     );
-    
+
     if (await canLaunchUrl(emailUri)) {
       await launchUrl(emailUri);
     }

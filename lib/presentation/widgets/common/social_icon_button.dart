@@ -9,6 +9,8 @@ class SocialIconButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final double size;
+  final String? customIconUrl;
+  final bool useCustomImage;
 
   const SocialIconButton({
     super.key,
@@ -16,10 +18,14 @@ class SocialIconButton extends StatelessWidget {
     required this.label,
     this.onTap,
     this.size = 38,
+    this.customIconUrl,
+    this.useCustomImage = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final shouldShowCustomImage = useCustomImage && customIconUrl != null && customIconUrl!.isNotEmpty;
+    
     return HoverContainer(
       onTap: onTap,
       builder: (isHovered) {
@@ -40,11 +46,28 @@ class SocialIconButton extends StatelessWidget {
                     : AppColors.glassBorder,
               ),
             ),
-            child: Icon(
-              icon,
-              color: isHovered ? AppColors.primaryLight : AppColors.textMuted,
-              size: size * 0.47,
-            ),
+            child: shouldShowCustomImage
+                ? Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.network(
+                        customIconUrl!,
+                        width: size * 0.5,
+                        height: size * 0.5,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Icon(
+                          icon,
+                          color: isHovered ? AppColors.primaryLight : AppColors.textMuted,
+                          size: size * 0.47,
+                        ),
+                      ),
+                    ),
+                  )
+                : Icon(
+                    icon,
+                    color: isHovered ? AppColors.primaryLight : AppColors.textMuted,
+                    size: size * 0.47,
+                  ),
           ),
         );
       },
