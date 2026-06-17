@@ -3,19 +3,15 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
-/// Configuration is loaded from .env file for security.
+/// Configuration is loaded from compile-time --dart-define or
+/// --dart-define-from-file for security (values are NOT shipped as
+/// downloadable assets).
 ///
-/// Example:
-/// ```dart
-/// import 'firebase_options.dart';
-/// // ...
-/// await dotenv.load();
-/// await Firebase.initializeApp(
-///   options: DefaultFirebaseOptions.currentPlatform,
-/// );
+/// Build example:
+/// ```bash
+/// flutter build web --dart-define-from-file=.env
 /// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
@@ -55,19 +51,16 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // Environment variables loaded from .env file
-  static String get _apiKey => dotenv.env['FIREBASE_API_KEY'] ?? '';
-  static String get _authDomain => dotenv.env['FIREBASE_AUTH_DOMAIN'] ?? '';
-  static String get _projectId => dotenv.env['FIREBASE_PROJECT_ID'] ?? '';
-  static String get _storageBucket =>
-      dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? '';
-  static String get _messagingSenderId =>
-      dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '';
-  static String get _appId => dotenv.env['FIREBASE_APP_ID'] ?? '';
-  static String get _measurementId =>
-      dotenv.env['FIREBASE_MEASUREMENT_ID'] ?? '';
+  // Compile-time constants injected via --dart-define-from-file=.env
+  static const _apiKey = String.fromEnvironment('FIREBASE_API_KEY');
+  static const _authDomain = String.fromEnvironment('FIREBASE_AUTH_DOMAIN');
+  static const _projectId = String.fromEnvironment('FIREBASE_PROJECT_ID');
+  static const _storageBucket = String.fromEnvironment('FIREBASE_STORAGE_BUCKET');
+  static const _messagingSenderId = String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID');
+  static const _appId = String.fromEnvironment('FIREBASE_APP_ID');
+  static const _measurementId = String.fromEnvironment('FIREBASE_MEASUREMENT_ID');
 
-  static FirebaseOptions get web => FirebaseOptions(
+  static const web = FirebaseOptions(
     apiKey: _apiKey,
     appId: _appId,
     messagingSenderId: _messagingSenderId,
@@ -77,3 +70,4 @@ class DefaultFirebaseOptions {
     measurementId: _measurementId,
   );
 }
+

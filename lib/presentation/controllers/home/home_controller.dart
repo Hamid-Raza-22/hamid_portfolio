@@ -109,7 +109,6 @@ class HomeController extends GetxController
       ),
       _watchHeroSectionUseCase().listen(
         (data) {
-          debugPrint('🔥 Hero Section Stream received: ${data.name}, imageUrl: ${data.profileImageUrl}');
           heroSection.value = data;
           _checkLoadingComplete();
         },

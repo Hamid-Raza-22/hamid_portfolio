@@ -210,7 +210,6 @@ class _HeroTextContent extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final hero = controller.heroSection.value;
-      debugPrint('📝 HeroTextContent Obx: hero=${hero?.name}, title=${hero?.title}');
       final subtitle = hero?.subtitle ?? 'Flutter Developer & UI/UX Designer';
       final title = hero?.title ?? 'Crafting Digital\nExperiences That\nInspire';
       

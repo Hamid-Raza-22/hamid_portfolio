@@ -204,42 +204,37 @@ class FooterSection extends GetView<HomeController> {
   }
 
   Widget _buildCopyright() {
+    final currentYear = DateTime.now().year;
+    
     return LayoutBuilder(
       builder: (context, constraints) {
         final isNarrow = constraints.maxWidth < 400;
         
         if (isNarrow) {
-          return Column(
+          return Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    '© 2023 Hamid Raza.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.favorite,
-                    size: 12,
-                    color: AppColors.accentPink,
-                  ),
-                  const SizedBox(width: 4),
-                  const Text(
-                    'Flutter',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ],
+              Text(
+                '© $currentYear Hamid Raza.',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
               ),
-              const SizedBox(height: 8),
-              _buildAdminButton(),
+              const SizedBox(width: 4),
+              const Icon(
+                Icons.favorite,
+                size: 12,
+                color: AppColors.accentPink,
+              ),
+              const SizedBox(width: 4),
+              const Text(
+                'Flutter',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
             ],
           );
         }
@@ -247,9 +242,9 @@ class FooterSection extends GetView<HomeController> {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              '© 2023 Hamid Raza. Made with ',
-              style: TextStyle(
+            Text(
+              '© $currentYear Hamid Raza. Made with ',
+              style: const TextStyle(
                 fontSize: 13,
                 color: AppColors.textMuted,
               ),
@@ -266,56 +261,13 @@ class FooterSection extends GetView<HomeController> {
                 color: AppColors.textMuted,
               ),
             ),
-            const SizedBox(width: 16),
-            _buildAdminButton(),
           ],
         );
       },
     );
   }
 
-  Widget _buildAdminButton() {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => Get.toNamed(AppRoutes.adminLogin),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.primary.withOpacity(0.2),
-                AppColors.accentPurple.withOpacity(0.1),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: AppColors.primary.withOpacity(0.4),
-            ),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.admin_panel_settings,
-                size: 16,
-                color: AppColors.primaryLight,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'Admin',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.primaryLight,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildSocialLinks() {
     return Obx(() => Row(

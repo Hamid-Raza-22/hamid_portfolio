@@ -6,6 +6,7 @@ import '../bindings/home_binding.dart';
 import '../bindings/projects_binding.dart';
 import '../bindings/admin/auth_binding.dart';
 import '../bindings/admin/admin_dashboard_binding.dart';
+import '../middlewares/auth_middleware.dart';
 import '../pages/about/about_page.dart';
 import '../pages/contact/contact_page.dart';
 import '../pages/home/home_page.dart';
@@ -55,6 +56,7 @@ abstract class AppPages {
       name: AppRoutes.adminDashboard,
       page: () => const AdminDashboardPage(),
       bindings: [AuthBinding(), AdminDashboardBinding()],
+      middlewares: [AuthMiddleware()],
       transition: Transition.fadeIn,
     ),
   ];
