@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /portal/auth
+Disallow: /portal/manage
+
+Sitemap: https://hamidraza.dev/sitemap.xml

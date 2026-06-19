@@ -9,6 +9,6 @@ abstract class AppRoutes {
   static const String projects = '/projects';
   
   // Admin routes
-  static const String adminLogin = '/admin/login';
-  static const String adminDashboard = '/admin/dashboard';
+  static const String adminLogin = '/portal/auth';
+  static const String adminDashboard = '/portal/manage';
 }

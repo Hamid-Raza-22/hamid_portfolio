@@ -12,6 +12,7 @@ import '../pages/home/home_page.dart';
 import '../pages/projects/projects_page.dart';
 import '../pages/admin/login_page.dart';
 import '../pages/admin/admin_dashboard_page.dart';
+import '../middlewares/auth_middleware.dart';
 import 'app_routes.dart';
 
 /// Application page configuration for GetX routing.
@@ -55,6 +56,7 @@ abstract class AppPages {
       name: AppRoutes.adminDashboard,
       page: () => const AdminDashboardPage(),
       bindings: [AuthBinding(), AdminDashboardBinding()],
+      middlewares: [AuthMiddleware()],
       transition: Transition.fadeIn,
     ),
   ];
