@@ -31,8 +31,8 @@ class ServicesSection extends StatelessWidget {
 
     final childAspectRatio = ResponsiveValue.get<double>(
       context,
-      mobile: 1.2,
-      smallTablet: 1.0,
+      mobile: 1.6,
+      smallTablet: 1.3,
       tablet: 0.9,
       desktop: 0.95,
     );
@@ -125,7 +125,7 @@ class ServicesSection extends StatelessWidget {
             desktop: 550,
           ),
           child: Text(
-            'Comprehensive solutions tailored to bring your digital vision to life with cutting-edge technology.',
+            'Delivering high-performance, scalable solutions with 45% faster development cycles using optimized architecture and modern Flutter best practices.',
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: ResponsiveValue.get<double>(

@@ -244,17 +244,17 @@ class _MobileHeader extends StatelessWidget {
                   width: 10,
                   height: 10,
                   decoration: BoxDecoration(
-                    gradient: const RadialGradient(
-                      colors: [Colors.blue, Colors.cyan],
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withOpacity(0.6),
-                        blurRadius: 15 * controller.pulseAnimation.value,
-                        spreadRadius: 3 * controller.pulseAnimation.value,
-                      ),
-                    ],
+                    // gradient: const RadialGradient(
+                    //   colors: [Colors.blue, Colors.cyan],
+                    // ),
+                    // shape: BoxShape.circle,
+                    // boxShadow: [
+                    //   BoxShadow(
+                    //     color: Colors.blue.withOpacity(0.6),
+                    //     blurRadius: 15 * controller.pulseAnimation.value,
+                    //     spreadRadius: 3 * controller.pulseAnimation.value,
+                    //   ),
+                    // ],
                   ),
                 ),
               );

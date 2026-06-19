@@ -218,7 +218,7 @@ class _HeroTextContent extends GetView<HomeController> {
         crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [AppColors.primary.withOpacity(0.2), AppColors.accentPurple.withOpacity(0.1)],
@@ -229,14 +229,14 @@ class _HeroTextContent extends GetView<HomeController> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.accent,
-                    shape: BoxShape.circle,
-                  ),
-                ),
+                // Container(
+                //   width: 8,
+                //   height: 8,
+                  // decoration: const BoxDecoration(
+                  //   color: AppColors.accent,
+                  //   shape: BoxShape.circle,
+                  // ),
+                // ),
                 const SizedBox(width: 10),
                 Text(
                   subtitle,
